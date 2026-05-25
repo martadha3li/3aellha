@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>منصة العائلة | البداية</title>
+    <style>
+        :root {
+            --ios-blue: #007AFF;
+            --ios-bg: #F2F2F7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--ios-bg);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            direction: rtl;
+            overflow: hidden;
+        }
+
+        .main-card {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .logo-area { font-size: 50px; margin-bottom: 20px; }
+        .welcome-text h1 { font-size: 24px; color: #1c1c1e; margin-bottom: 10px; }
+        .welcome-text p { color: #8e8e93; font-size: 14px; margin-bottom: 35px; line-height: 1.5; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 15px; }
+        .btn { padding: 16px; border-radius: 15px; font-size: 16px; font-weight: 700; text-decoration: none; transition: all 0.2s ease; display: block; cursor: pointer; border: none; }
+        .btn-register { background-color: var(--ios-blue); color: white; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
+        .btn-login { background-color: #E5E5EA; color: #1c1c1e; }
+        .btn:active { transform: scale(0.97); }
+
+        /* شاشة التفعيل الإجبارية لأول مرة */
+        .onboarding-overlay {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 999999;
+            display: none; /* يتم التحكم به عبر الجافاسكريبت */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .bell-icon {
+            font-size: 70px;
+            animation: ring 1.5s infinite ease-in-out;
+            margin-bottom: 25px;
+        }
+
+        @keyframes ring {
+            0% { transform: rotate(0); }
+            10% { transform: rotate(15deg); }
+            20% { transform: rotate(-15deg); }
+            30% { transform: rotate(10deg); }
+            40% { transform: rotate(-10deg); }
+            50% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+        }
+
+        .onboarding-overlay h2 { font-size: 26px; color: #1c1c1e; margin-bottom: 15px; }
+        .onboarding-overlay p { color: #48484a; font-size: 15px; line-height: 1.6; margin-bottom: 40px; max-width: 320px; }
+        
+        .btn-grant { background: #34c759; color: white; width: 100%; max-width: 300px; box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="onboarding-overlay" id="onboardingScreen">
+        <div class="bell-icon">🔔</div>
+        <h2>تفعيل تنبيهات العائلة</h2>
+        <p>لتصلك الأخبار العاجلة والبيانات الحية فور صدورها على جوالك، يرجى الضغط على الزر أدناه واختيار <b>"السماح - Allow"</b>.</p>
+        <button class="btn btn-grant" onclick="forceNotificationPermission()">تفعيل واستمرار 🚀</button>
+        <p style="font-size: 11px; color: #ff3b30; margin-top: 20px; font-weight: bold;">⚠️ تنبيه: يرجى إبقاء هذه الصفحة مفتوحة في المتصفح دائماً لضمان عمل النظام.</p>
+    </div>
+
+    <div class="main-card">
+        <div class="logo-area">🏆</div>
+        <div class="welcome-text">
+            <h1>منصة أخبار العائلة</h1>
+            <p>أهلاً بك في التايم لاين الرسمي. يمكنك الانتقال مباشرة لساحة الأخبار أو تسجيل الدخول إذا كنت المدير.</p>
+        </div>
+
+        <div class="btn-group">
+            <a href="news.html" class="btn btn-register">📰 تصفح الأخبار العامة</a>
+            <a href="login.html" class="btn btn-login">🔑 دخول الإدارة (خاص)</a>
+        </div>
+    </div>
+
+<script>
+    // 1. فحص ما إذا كان الجهاز يفتح الرابط لأول مرة أو لم يفعل الإشعارات بعد
+    function checkFirstTime() {
+        const isGranted = localStorage.getItem('familyNotifGranted') === 'true';
+        
+        if (!isGranted || Notification.permission !== 'granted') {
+            // إظهار شاشة التفعيل وحجب الموقع بالكامل
+            document.getElementById('onboardingScreen').style.display = 'flex';
+        }
+    }
+
+    // 2. إجبار المستخدم على منح الصلاحية
+    window.forceNotificationPermission = () => {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                localStorage.setItem('familyNotifGranted', 'true');
+                alert("تم تفعيل الإشعارات الحية بنجاح! 🎉 جاري تحويلك للمنصة.");
+                // إخفاء الشاشة بعد السماح
+                document.getElementById('onboardingScreen').style.display = 'none';
+            } else {
+                alert("عذراً! يجب عليك اختيار 'السماح' لتتمكن من استخدام المنصة وتلقي الأخبار.");
+            }
+        });
+    };
+
+    // 3. منع إغلاق الصفحة أو الخروج منها نهائياً (إظهار تحذير تأكيدي)
+    window.addEventListener('beforeunload', function (e) {
+        // تخصيص الرسالة (المتصفحات الحديثة تعرض رسالة النظام القياسية لحمايتها من السخام)
+        const confirmationMessage = 'تنبيه: يجب إبقاء هذه الصفحة مفتوحة دائماً في الخلفية لضمان استمرار استقبال الإشعارات الحية!';
+        (e || window.event).returnValue = confirmationMessage; 
+        return confirmationMessage; 
+    });
+
+    // تشغيل الفحص فور تحميل الصفحة
+    checkFirstTime();
+</script>
+
+</body>
+</html>
