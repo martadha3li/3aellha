@@ -98,22 +98,9 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    // [الخطوة المصيرية]: ضع بيانات مشروعك الخاصة بـ Firebase هنا مباشرة لضمان الاتصال الفوري والمستقر
-    const firebaseConfig = {
-        apiKey: "ضع_هنا_API_KEY",
-        authDomain: "ضع_هنا_AUTH_DOMAIN",
-        projectId: "ضع_هنا_PROJECT_ID",
-        storageBucket: "ضع_هنا_STORAGE_BUCKET",
-        messagingSenderId: "ضع_هنا_MESSAGING_SENDER_ID",
-        appId: "ضع_هنا_APP_ID"
-    };
-
-    // تهيئة المتغيرات محلياً داخل الصفحة لمنع التعليق والانهيار الخفي
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    // جلب ملف الـ config الأصلي الذي يحتوي على إعداداتك المسبقة والجاهزة
+    import { db } from './config.js';
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     if (localStorage.getItem('role') !== 'admin') {
         alert("تنبيه: هذه الصفحة مخصصة للإدارة فقط!");
@@ -207,6 +194,7 @@
         publishBtn.disabled = false;
     });
 
+    // دالة النشر المصلحة بالكامل بناءً على مراجع قاعدة البيانات الموحدة لمنع التعليق
     publishBtn.addEventListener('click', async () => {
         const title = document.getElementById('postTitle').value.trim();
         const content = document.getElementById('postContent').value.trim();
@@ -218,20 +206,23 @@
         publishBtn.disabled = true;
 
         try {
-            // استخدام الكائن db المعرف مباشرة في الأعلى بشكل مستقر
-            await addDoc(collection(db, "News"), {
+            // [إصلاح دقة الاتصال بـ Firestore]:
+            // نمرر db المستورد من config كمعامل أول صريح داخل مجموعة collection
+            const targetCollection = collection(db, "News");
+            
+            await addDoc(targetCollection, {
                 title: title ? title : "", 
                 content: content ? content : "", 
                 img: finalImageBase64,
                 pinned: isPinned,
-                publishDate: Number(Date.now())
+                publishDate: Date.now() // العودة لترميز نظام الطابع الزمني الموحد المستقر قديماً
             });
 
             alert("تم نشر الخبر بنجاح! 🎉");
             window.location.href = "news.html";
 
         } catch (error) {
-            console.error("Firebase Execution Error:", error);
+            console.error("Firebase Storage Write Error:", error);
             alert("فشل النشر! خطأ من قاعدة البيانات: " + error.message);
             publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
