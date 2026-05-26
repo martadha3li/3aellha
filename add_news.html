@@ -25,7 +25,7 @@
         .file-upload-box span { color: var(--ios-blue); font-size: 14px; font-weight: bold; padding: 20px; z-index: 2; pointer-events: none; }
         #imagePreview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1; }
         
-        /* شريط لوحة بيانات حجم الصورة الجديد */
+        /* لوحة مراقبة الحجم */
         .size-info-panel { display: none; background: #fafafa; padding: 12px; border-radius: 14px; border: 1px solid #eee; margin-bottom: 15px; font-size: 13px; text-align: right; }
         .size-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .size-row:last-child { margin-bottom: 0; }
@@ -33,7 +33,7 @@
         .status-success { background-color: var(--ios-green); }
         .status-error { background-color: var(--ios-red); }
 
-        /* الأزرار العملياتية */
+        /* زر الضغط المستقل */
         .btn-compress { width: 100%; padding: 12px; background: #5856D6; color: white; border: none; border-radius: 14px; font-weight: bold; font-size: 14px; cursor: pointer; margin-bottom: 18px; display: none; transition: 0.2s; }
         .btn-compress:active { transform: scale(0.98); }
         
@@ -103,7 +103,7 @@
     }
 
     let finalImageBase64 = "";
-    let originalImageObj = null; // للاحتفاظ بالصورة الأصلية لضغطها عند طلب المستخدم
+    let originalImageObj = null;
     
     const fileInput = document.getElementById('fileInput');
     const uploadBox = document.getElementById('uploadBox');
@@ -117,11 +117,10 @@
 
     uploadBox.addEventListener('click', () => fileInput.click());
 
-    // 1. عند اختيار صورة: حساب حجمها فوراً بدون ضغط تلقائي وتحديث اللوحة
+    // فحص الحجم المبدئي فور اختيار الصورة من الاستوديو
     fileInput.addEventListener('change', function() {
         const file = this.files[0];
         if (file) {
-            // حساب حجم الملف بالكيلوبايت
             const fileSizeInKB = Math.round(file.size / 1024);
             currentSizeText.innerText = fileSizeInKB + " KB";
             sizePanel.style.display = "block";
@@ -132,7 +131,6 @@
             reader.onload = function(e) {
                 finalImageBase64 = e.target.result;
                 
-                // حفظ الكائن الأصلي ليكون جاهزاً للضغط اليدوي لاحقاً
                 originalImageObj = new Image();
                 originalImageObj.src = e.target.result;
 
@@ -141,37 +139,34 @@
                 uploadStatus.innerText = "🔄 تغيير الصورة";
                 uploadStatus.style.background = "rgba(255,255,255,0.85)";
 
-                // فحص هل الحجم مقبول (أقل من 1000 KB) أم لا
                 if (fileSizeInKB <= 1000) {
                     statusBadge.innerText = "مقبول بالنظام 🟢";
                     statusBadge.className = "status-badge status-success";
-                    compressBtn.style.display = "none"; // لا داعي للضغط
+                    compressBtn.style.display = "none";
                     publishBtn.disabled = false;
                 } else {
                     statusBadge.innerText = "أعلى من المتاح 🔴";
                     statusBadge.className = "status-badge status-error";
-                    compressBtn.style.display = "block"; // إظهار زر الضغط الإجباري
-                    publishBtn.disabled = true; // تعطيل النشر حتى يضغط الصورة
-                    alert("⚠️ حجم الصورة كبير جداً ومرفوض من خوادم الفايربيس، يرجى الضغط على زر '🗜️ ضغط وتقليص حجم الصورة' ليتم معالجتها فوراً.");
+                    compressBtn.style.display = "block";
+                    publishBtn.disabled = true;
+                    alert("⚠️ حجم الصورة كبير جداً ومرفوض، يرجى الضغط على زر '🗜️ ضغط وتقليص حجم الصورة' بالأسفل لتصغيرها فوراً.");
                 }
             };
             reader.readAsDataURL(file);
         }
     });
 
-    // 2. زر ضغط وتقليص حجم الصورة اليدوي عند الضغط عليه
+    // تنفيذ عملية القص والضغط من خلال الـ Canvas
     compressBtn.addEventListener('click', () => {
         if (!originalImageObj) return;
-
         uploadStatus.innerText = "جاري تنفيذ عملية الضغط... 🗜️";
         
         const canvas = document.createElement('canvas');
-        const size = 600; // مقاس قياسي لبوست الإنستغرام المربع الموفر للمساحة
+        const size = 500; // حجم مربع ومثالي وموفر للمساحة وسريع للنشر
         canvas.width = size;
         canvas.height = size;
         
         const ctx = canvas.getContext('2d');
-        
         let srcX = 0, srcY = 0, srcWidth = originalImageObj.width, srcHeight = originalImageObj.height;
         if (originalImageObj.width > originalImageObj.height) {
             srcWidth = originalImageObj.height;
@@ -183,27 +178,23 @@
         
         ctx.drawImage(originalImageObj, srcX, srcY, srcWidth, srcHeight, 0, 0, size, size);
         
-        // إعادة معالجة الصورة بجودة 65% مضغوطة جداً وخفيفة
-        finalImageBase64 = canvas.toDataURL('image/jpeg', 0.65);
-        
-        // تحديث المعاينة بالنسخة المضغوطة المربعة الجديدة
+        // ضغط جودة بكسل الصورة إلى 60% لتصغير الحجم بشكل هائل وضمان النشر الفوري
+        finalImageBase64 = canvas.toDataURL('image/jpeg', 0.6); 
         imagePreview.src = finalImageBase64;
         
-        // حساب الحجم التقريبي للنص الجديد المشفر لـ Base64 بالكيلوبايت
         const stringLength = finalImageBase64.length - 'data:image/jpeg;base64,'.length;
         const compressedSizeInKB = Math.round((stringLength * 3) / 4 / 1024);
         
-        // تحديث لوحة التحكم بالبيانات الجديدة المقبولة
-        currentSizeText.innerText = compressedSizeInKB + " KB (تم ضغطها بنجاح)";
+        currentSizeText.innerText = compressedSizeInKB + " KB (تم الضغط بنجاح)";
         statusBadge.innerText = "مقبول الآن 🟢";
         statusBadge.className = "status-badge status-success";
         
-        uploadStatus.innerText = "✅ تم الضغط والتربيع بنجاح";
-        compressBtn.style.display = "none"; // إخفاء زر الضغط بعد إتمام العملية
-        publishBtn.disabled = false; // تفعيل زر النشر فوراُ
+        uploadStatus.innerText = "✅ تم الضغط والتربيع";
+        compressBtn.style.display = "none";
+        publishBtn.disabled = false;
     });
 
-    // 3. عملية النشر الرسمية والآمنة
+    // دالة النشر النهائية المحدثة لـ Firebase لمنع التعليق
     publishBtn.addEventListener('click', async () => {
         const title = document.getElementById('postTitle').value.trim();
         const content = document.getElementById('postContent').value.trim();
@@ -217,20 +208,28 @@
         publishBtn.disabled = true;
 
         try {
-            await addDoc(collection(db, "News"), {
+            // صياغة الكولكشن المضمونة والآمنة للاتصال بقاعدة البيانات السحابية
+            const newsCollectionRef = collection(db, "News");
+            
+            await addDoc(newsCollectionRef, {
                 title: title,
                 content: content,
                 img: finalImageBase64,
                 pinned: isPinned,
-                publishDate: Date.now()
+                publishDate: Number(Date.now()) // تمرير التاريخ كـ Number صريح
             });
 
+            // نافذة التأكيد المطلوبة تظهر فور نجاح الإرسال والـ Response
             alert("تم نشر الخبر بنجاح! 🎉");
-            window.location.replace("news.html");
+            
+            // الانتقال الفوري والمباشر لساحة الأخبار
+            window.location.href = "news.html";
 
         } catch (error) {
-            console.error("Firebase Error:", error);
-            alert("حدث خطأ أثناء الاتصال بقاعدة البيانات: " + error.message);
+            // التقاط أي خطأ من خوادم الفايربيس (مثل الـ Rules المرفوضة) وطباعته للشاشة لمنع التعليق
+            console.error("Firebase Execution Error:", error);
+            alert("فشل النشر! خطأ من قاعدة البيانات: " + error.message);
+            
             publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
         }
