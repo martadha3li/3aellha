@@ -49,28 +49,45 @@
         input[type="text"]:focus, textarea:focus { border-color: var(--ios-blue); background: #fff; }
         textarea { height: 120px; resize: none; }
         
-        /* زر رفع الصورة المخصص */
+        /* حاوية رفع ومعاينة الصورة المربعة (Instagram Style) */
         .file-upload-box {
             border: 2px dashed #007AFF;
             background: rgba(0, 122, 255, 0.03);
-            padding: 20px;
             border-radius: 14px;
             text-align: center;
             cursor: pointer;
             margin-bottom: 18px;
             transition: 0.2s;
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1; /* جعل المساحة مربعة تماماً بشكل إجباري */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
         .file-upload-box:active { transform: scale(0.98); background: rgba(0, 122, 255, 0.08); }
-        .file-upload-box span { color: var(--ios-blue); font-size: 14px; font-weight: bold; }
-        #imagePreview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 10px; margin-top: 10px; display: none; border: 1px solid #ddd; }
+        .file-upload-box span { color: var(--ios-blue); font-size: 14px; font-weight: bold; padding: 20px; z-index: 2; }
         
-        /* خيار التثبيت */
+        /* المعاينة المحدثة لمنع التمطيط والمد بالكامل */
+        #imagePreview { 
+            position: absolute;
+            inset: 0;
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* يقطع الأطراف الزائدة ويحافظ على تناسق الأبعاد الأصلي بدون تمطيط */
+            display: none; 
+            z-index: 1;
+        }
+        
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; padding-right: 4px; }
         .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
         .checkbox-group label { font-size: 14px; color: #1c1c1e; font-weight: bold; cursor: pointer; }
 
         .btn-publish { width: 100%; padding: 15px; background: var(--ios-blue); color: white; border: none; border-radius: 14px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .btn-publish:active { transform: scale(0.97); }
+        .btn-publish:disabled { background-color: #aeaeb2; cursor: not-allowed; }
         
         .back-link { display: block; text-align: center; margin-top: 20px; color: #8e8e93; text-decoration: none; font-size: 14px; font-weight: 600; }
     </style>
@@ -87,13 +104,13 @@
     
     <div class="input-group">
         <label>تفاصيل ونص الخبر</label>
-        <textarea id="postContent" placeholder="اكتب تفاصيل الخبر هنا بالتفصيل..."></textarea>
+        <textarea id="postContent" placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
     </div>
     
     <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
         <span id="uploadStatus">📸 اضغط هنا لإرفاق صورة الخبر</span>
-        <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="previewAndConvertImage(this)">
-        <img id="imagePreview" alt="معاينة الصورة المرفقة">
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        <img id="imagePreview" alt="معاينة الصورة">
     </div>
 
     <div class="checkbox-group">
@@ -101,85 +118,92 @@
         <label for="isPinned">📌 تثبيت هذا الخبر في أعلى المنصة</label>
     </div>
     
-    <button class="btn-publish" id="publishBtn" onclick="handlePublish()">🚀 نشر الخبر الآن</button>
+    <button class="btn-publish" id="publishBtn">🚀 نشر الخبر الآن</button>
     
     <a href="news.html" class="back-link">← العودة لساحة الأخبار العامة</a>
 </div>
 
 <script type="module">
     import { db } from './config.js';
-    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // التحقق الفوري من صلاحية المستخدم (يجب أن يكون المسجل هو الأدمن)
     if (localStorage.getItem('role') !== 'admin') {
         alert("تنبيه: هذه الصفحة مخصصة للإدارة فقط!");
         window.location.href = "news.html";
     }
 
     let base64ImageString = "";
+    const fileInput = document.getElementById('fileInput');
+    const publishBtn = document.getElementById('publishBtn');
 
-    // دالة معاينة الصورة وتحويلها فورياً لـ Base64 لسهولة التخزين
-    window.previewAndConvertImage = (input) => {
-        const file = input.files[0];
+    // دالة المعاينة والتحويل المربعة المحدثة
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
         if (file) {
             const reader = new FileReader();
             document.getElementById('uploadStatus').innerText = "جاري تجهيز الصورة... ⏳";
             
             reader.onload = function(e) {
-                base64ImageString = e.target.result; // الحصول على كود الصورة المشفر
+                base64ImageString = e.target.result;
                 const preview = document.getElementById('imagePreview');
                 preview.src = base64ImageString;
                 preview.style.display = "block";
-                document.getElementById('uploadStatus').innerText = "✅ تم إرفاق الصورة بنجاح";
+                
+                // إخفاء النص أو إبقائه شفافاً فوق الصورة
+                document.getElementById('uploadStatus').style.background = "rgba(255,255,255,0.7)";
+                document.getElementById('uploadStatus').style.borderRadius = "8px";
+                document.getElementById('uploadStatus').innerText = "✅ تعديل الصورة المرفقة";
             };
             reader.readAsDataURL(file);
         }
-    };
+    });
 
-    // دالة رفع ونشر الخبر إلى الفايربيس للظهور فوراً بالاشتراك الحي
+    // دالة النشر المحدثة والمصلحة بالكامل لتعمل فوراً
     window.handlePublish = async () => {
         const title = document.getElementById('postTitle').value.trim();
         const content = document.getElementById('postContent').value.trim();
         const isPinned = document.getElementById('isPinned').checked;
-        const btn = document.getElementById('publishBtn');
 
-        // التحقق من الحقول الأساسية لضمان جودة العرض على ستايل الإنستغرام
         if (!title) return alert("يرجى كتابة عنوان الخبر أولاً");
         if (!content) return alert("يرجى كتابة نص ومحتوى الخبر");
-        if (!base64ImageString) return alert("يرجى إرفاق صورة للخبر ليظهر بشكل صحيح متناسق");
+        if (!base64ImageString) return alert("يرجى إرفاق صورة للخبر ليطابق ستايل الإنستغرام");
 
-        btn.innerText = "جاري النشر والمزامنة... ⏳";
-        btn.disabled = true;
+        publishBtn.innerText = "جاري النشر والمزامنة... ⏳";
+        publishBtn.disabled = true;
 
         try {
-            // إضافة البيانات في مجموعة News بنفس الحقول التي تبحث عنها صفحة التايم لاين المحدثة
+            // إرسال البيانات وضمان إرسال خاصية الوقت بشكل قياسي متوافق مع الـ Subscription اللحظي
             await addDoc(collection(db, "News"), {
                 title: title,
                 content: content,
-                img: base64ImageString, // تخزين كود الصورة المباشر ليعمل بالـ Subscription فوراً
-                pinned: isPinned,
-                publishDate: serverTimestamp() // إضافة التوقيت الرسمي للفايربيس لفرز المنشورات تنازلياً
+                img: base64ImageString,
+                pinned: isPinned, // يرسل القيمة الحقيقية true أو false للتثبيت
+                publishDate: Date.now() // استخدام ملي ثانية النظام لضمان عمل زر النشر الفوري بجميع الأجهزة
             });
 
-            alert("تم نشر الخبر بنجاح! 🎉 سيظهر الآن في التايم لاين لجميع أفراد العائلة فوراً.");
+            alert("تم نشر وتثبيت الخبر بنجاح! 🎉 سيظهر الآن بستايل الإنستغرام في التايم لاين فوراً.");
             
-            // إعادة تصفير الحقول للاستعداد لنشر خبر آخر
+            // تصفير الواجهة
             document.getElementById('postTitle').value = "";
             document.getElementById('postContent').value = "";
-            document.getElementById('fileInput').value = "";
+            fileInput.value = "";
             document.getElementById('isPinned').checked = false;
             document.getElementById('imagePreview').style.display = "none";
             document.getElementById('uploadStatus').innerText = "📸 اضغط هنا لإرفاق صورة الخبر";
+            document.getElementById('uploadStatus').style.background = "none";
             base64ImageString = "";
 
         } catch (error) {
-            console.error("Publishing Error:", error);
-            alert("حدث خطأ أثناء محاولة النشر، يرجى التحقق من اتصال قاعدة البيانات.");
+            console.error("Firebase Publishing Error:", error);
+            alert("حدث خطأ أثناء الاتصال بقاعدة البيانات، يرجى المحاولة لاحقاً.");
         } finally {
-            btn.innerText = "🚀 نشر الخبر الآن";
-            btn.disabled = false;
+            publishBtn.innerText = "🚀 نشر الخبر الآن";
+            publishBtn.disabled = false;
         }
     };
+
+    // ربط الحدث بالزر لضمان تشغيله على كافة المتصفحات والهواتف الذكية
+    publishBtn.addEventListener('click', window.handlePublish);
 </script>
 </body>
 </html>
