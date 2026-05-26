@@ -12,8 +12,12 @@
             --ios-green: #34C759;
             --ios-red: #FF3B30;
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--ios-bg); margin: 0; padding: 20px; direction: rtl; display: flex; flex-direction: column; align-items: center; }
-        .form-card { background: var(--card-bg); padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); width: 100%; max-width: 450px; box-sizing: border-box; border: 0.5px solid #dbdbdb; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--ios-bg); margin: 0; padding: 20px; direction: rtl; display: flex; flex-direction: column; align-items: center; position: relative; }
+        
+        /* شريط رقم التحديث التسلسلي الثابت */
+        .version-badge { position: absolute; top: 10px; right: 15px; font-size: 11px; font-weight: 800; background: #e5e5ea; color: #555; padding: 4px 8px; border-radius: 8px; direction: ltr; }
+        
+        .form-card { background: var(--card-bg); padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); width: 100%; max-width: 450px; box-sizing: border-box; border: 0.5px solid #dbdbdb; margin-top: 20px; }
         h2 { font-size: 20px; color: #1c1c1e; text-align: center; margin-top: 0; margin-bottom: 20px; }
         .input-group { margin-bottom: 18px; text-align: right; }
         .input-group label { display: block; font-size: 13px; color: #8e8e93; margin-bottom: 6px; padding-right: 4px; font-weight: 600; }
@@ -25,7 +29,6 @@
         .file-upload-box span { color: var(--ios-blue); font-size: 14px; font-weight: bold; padding: 20px; z-index: 2; pointer-events: none; }
         #imagePreview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1; }
         
-        /* لوحة مراقبة الحجم */
         .size-info-panel { display: none; background: #fafafa; padding: 12px; border-radius: 14px; border: 1px solid #eee; margin-bottom: 15px; font-size: 13px; text-align: right; }
         .size-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
         .size-row:last-child { margin-bottom: 0; }
@@ -33,7 +36,6 @@
         .status-success { background-color: var(--ios-green); }
         .status-error { background-color: var(--ios-red); }
 
-        /* زر الضغط المستقل */
         .btn-compress { width: 100%; padding: 12px; background: #5856D6; color: white; border: none; border-radius: 14px; font-weight: bold; font-size: 14px; cursor: pointer; margin-bottom: 18px; display: none; transition: 0.2s; }
         .btn-compress:active { transform: scale(0.98); }
         
@@ -48,21 +50,23 @@
 </head>
 <body>
 
+<div class="version-badge">Ver: 206-1</div>
+
 <div class="form-card">
     <h2>📝 نشر خبر عائلي جديد</h2>
     
     <div class="input-group">
-        <label>عنوان الخبر</label>
-        <input type="text" id="postTitle" placeholder="اكتب عنواناً معبراً للخبر...">
+        <label>عنوان الخبر (اختياري)</label>
+        <input type="text" id="postTitle" placeholder="اكتب عنواناً أو اتركه فارغاً...">
     </div>
     
     <div class="input-group">
-        <label>تفاصيل ونص الخبر</label>
-        <textarea id="postContent" placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
+        <label>تفاصيل ونص الخبر (اختياري)</label>
+        <textarea id="postContent" placeholder="اكتب تفاصيل أو اترك الحقل فارغاً..."></textarea>
     </div>
     
     <div class="file-upload-box" id="uploadBox">
-        <span id="uploadStatus">📸 اضغط هنا لإرفاق صورة الخبر</span>
+        <span id="uploadStatus">📸 اضغط هنا لإرفاق صورة الخبر (مطلوب)</span>
         <input type="file" id="fileInput" accept="image/*" style="display: none;">
         <img id="imagePreview" alt="معاينة الصورة">
     </div>
@@ -117,7 +121,6 @@
 
     uploadBox.addEventListener('click', () => fileInput.click());
 
-    // فحص الحجم المبدئي فور اختيار الصورة من الاستوديو
     fileInput.addEventListener('change', function() {
         const file = this.files[0];
         if (file) {
@@ -130,7 +133,6 @@
             
             reader.onload = function(e) {
                 finalImageBase64 = e.target.result;
-                
                 originalImageObj = new Image();
                 originalImageObj.src = e.target.result;
 
@@ -149,20 +151,19 @@
                     statusBadge.className = "status-badge status-error";
                     compressBtn.style.display = "block";
                     publishBtn.disabled = true;
-                    alert("⚠️ حجم الصورة كبير جداً ومرفوض، يرجى الضغط على زر '🗜️ ضغط وتقليص حجم الصورة' بالأسفل لتصغيرها فوراً.");
+                    alert("⚠️ حجم الصورة كبير جداً ومرفوض، اضغط على زر '🗜️ ضغط وتقليص حجم الصورة' بالأسفل لتصغيرها فوراً.");
                 }
             };
             reader.readAsDataURL(file);
         }
     });
 
-    // تنفيذ عملية القص والضغط من خلال الـ Canvas
     compressBtn.addEventListener('click', () => {
         if (!originalImageObj) return;
         uploadStatus.innerText = "جاري تنفيذ عملية الضغط... 🗜️";
         
         const canvas = document.createElement('canvas');
-        const size = 500; // حجم مربع ومثالي وموفر للمساحة وسريع للنشر
+        const size = 500; 
         canvas.width = size;
         canvas.height = size;
         
@@ -177,8 +178,6 @@
         }
         
         ctx.drawImage(originalImageObj, srcX, srcY, srcWidth, srcHeight, 0, 0, size, size);
-        
-        // ضغط جودة بكسل الصورة إلى 60% لتصغير الحجم بشكل هائل وضمان النشر الفوري
         finalImageBase64 = canvas.toDataURL('image/jpeg', 0.6); 
         imagePreview.src = finalImageBase64;
         
@@ -194,42 +193,34 @@
         publishBtn.disabled = false;
     });
 
-    // دالة النشر النهائية المحدثة لـ Firebase لمنع التعليق
     publishBtn.addEventListener('click', async () => {
         const title = document.getElementById('postTitle').value.trim();
         const content = document.getElementById('postContent').value.trim();
         const isPinned = document.getElementById('isPinned').checked;
 
-        if (!title) return alert("يرجى كتابة عنوان الخبر أولاً");
-        if (!content) return alert("يرجى كتابة نص ومحتوى الخبر");
-        if (!finalImageBase64) return alert("يرجى إرفاق صورة للخبر");
+        // [التحديث الجديد]: فقط صورة الخبر هي المطلوبة وإلزامية لنظام الإنستغرام
+        if (!finalImageBase64) return alert("يرجى إرفاق صورة الخبر أولاً، فهي حجر الأساس للنشر!");
 
         publishBtn.innerText = "جاري النشر والمزامنة... ⏳";
         publishBtn.disabled = true;
 
         try {
-            // صياغة الكولكشن المضمونة والآمنة للاتصال بقاعدة البيانات السحابية
             const newsCollectionRef = collection(db, "News");
             
             await addDoc(newsCollectionRef, {
-                title: title,
-                content: content,
+                title: title ? title : "", // يتم الإرسال كنص فارغ إذا لم يكتب الإداري شيئاً
+                content: content ? content : "", 
                 img: finalImageBase64,
                 pinned: isPinned,
-                publishDate: Number(Date.now()) // تمرير التاريخ كـ Number صريح
+                publishDate: Number(Date.now())
             });
 
-            // نافذة التأكيد المطلوبة تظهر فور نجاح الإرسال والـ Response
             alert("تم نشر الخبر بنجاح! 🎉");
-            
-            // الانتقال الفوري والمباشر لساحة الأخبار
             window.location.href = "news.html";
 
         } catch (error) {
-            // التقاط أي خطأ من خوادم الفايربيس (مثل الـ Rules المرفوضة) وطباعته للشاشة لمنع التعليق
             console.error("Firebase Execution Error:", error);
             alert("فشل النشر! خطأ من قاعدة البيانات: " + error.message);
-            
             publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
         }
