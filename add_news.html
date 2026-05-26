@@ -5,90 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>إضافة خبر جديد | لوحة التحكم</title>
     <style>
-        :root { 
-            --ios-blue: #007AFF; 
-            --ios-bg: #F2F2F7; 
-            --card-bg: #FFFFFF;
-        }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            background: var(--ios-bg); 
-            margin: 0; 
-            padding: 20px; 
-            direction: rtl; 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .form-card { 
-            background: var(--card-bg); 
-            padding: 25px; 
-            border-radius: 24px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.06); 
-            width: 100%; 
-            max-width: 450px; 
-            box-sizing: border-box;
-            border: 0.5px solid #dbdbdb;
-        }
+        :root { --ios-blue: #007AFF; --ios-bg: #F2F2F7; --card-bg: #FFFFFF; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--ios-bg); margin: 0; padding: 20px; direction: rtl; display: flex; flex-direction: column; align-items: center; }
+        .form-card { background: var(--card-bg); padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); width: 100%; max-width: 450px; box-sizing: border-box; border: 0.5px solid #dbdbdb; }
         h2 { font-size: 20px; color: #1c1c1e; text-align: center; margin-top: 0; margin-bottom: 20px; }
-        
         .input-group { margin-bottom: 18px; text-align: right; }
         .input-group label { display: block; font-size: 13px; color: #8e8e93; margin-bottom: 6px; padding-right: 4px; font-weight: 600; }
-        
-        input[type="text"], textarea { 
-            width: 100%; 
-            padding: 14px; 
-            border: 1px solid #ddd; 
-            border-radius: 14px; 
-            box-sizing: border-box; 
-            outline: none; 
-            font-size: 15px; 
-            background: #fafafa;
-            transition: border-color 0.2s;
-        }
+        input[type="text"], textarea { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 14px; box-sizing: border-box; outline: none; font-size: 15px; background: #fafafa; }
         input[type="text"]:focus, textarea:focus { border-color: var(--ios-blue); background: #fff; }
         textarea { height: 120px; resize: none; }
         
-        /* حاوية رفع ومعاينة الصورة المربعة (Instagram Style) */
-        .file-upload-box {
-            border: 2px dashed #007AFF;
-            background: rgba(0, 122, 255, 0.03);
-            border-radius: 14px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 18px;
-            transition: 0.2s;
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1 / 1; /* جعل المساحة مربعة تماماً بشكل إجباري */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        .file-upload-box:active { transform: scale(0.98); background: rgba(0, 122, 255, 0.08); }
-        .file-upload-box span { color: var(--ios-blue); font-size: 14px; font-weight: bold; padding: 20px; z-index: 2; }
-        
-        /* المعاينة المحدثة لمنع التمطيط والمد بالكامل */
-        #imagePreview { 
-            position: absolute;
-            inset: 0;
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; /* يقطع الأطراف الزائدة ويحافظ على تناسق الأبعاد الأصلي بدون تمطيط */
-            display: none; 
-            z-index: 1;
-        }
+        /* كرت رفع ومعاينة الصور على نمط الإنستغرام المربع */
+        .file-upload-box { border: 2px dashed #007AFF; background: rgba(0, 122, 255, 0.03); border-radius: 14px; text-align: center; cursor: pointer; margin-bottom: 18px; position: relative; width: 100%; aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        .file-upload-box span { color: var(--ios-blue); font-size: 14px; font-weight: bold; padding: 20px; z-index: 2; pointer-events: none; }
+        #imagePreview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1; }
         
         .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; padding-right: 4px; }
         .checkbox-group input { width: 18px; height: 18px; cursor: pointer; }
         .checkbox-group label { font-size: 14px; color: #1c1c1e; font-weight: bold; cursor: pointer; }
-
         .btn-publish { width: 100%; padding: 15px; background: var(--ios-blue); color: white; border: none; border-radius: 14px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; }
-        .btn-publish:active { transform: scale(0.97); }
         .btn-publish:disabled { background-color: #aeaeb2; cursor: not-allowed; }
-        
         .back-link { display: block; text-align: center; margin-top: 20px; color: #8e8e93; text-decoration: none; font-size: 14px; font-weight: 600; }
     </style>
 </head>
@@ -107,7 +43,7 @@
         <textarea id="postContent" placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
     </div>
     
-    <div class="file-upload-box" onclick="document.getElementById('fileInput').click()">
+    <div class="file-upload-box" id="uploadBox">
         <span id="uploadStatus">📸 اضغط هنا لإرفاق صورة الخبر</span>
         <input type="file" id="fileInput" accept="image/*" style="display: none;">
         <img id="imagePreview" alt="معاينة الصورة">
@@ -119,7 +55,6 @@
     </div>
     
     <button class="btn-publish" id="publishBtn">🚀 نشر الخبر الآن</button>
-    
     <a href="news.html" class="back-link">← العودة لساحة الأخبار العامة</a>
 </div>
 
@@ -134,32 +69,32 @@
 
     let base64ImageString = "";
     const fileInput = document.getElementById('fileInput');
+    const uploadBox = document.getElementById('uploadBox');
+    const imagePreview = document.getElementById('imagePreview');
+    const uploadStatus = document.getElementById('uploadStatus');
     const publishBtn = document.getElementById('publishBtn');
 
-    // دالة المعاينة والتحويل المربعة المحدثة
+    uploadBox.addEventListener('click', () => fileInput.click());
+
     fileInput.addEventListener('change', function() {
         const file = this.files[0];
         if (file) {
             const reader = new FileReader();
-            document.getElementById('uploadStatus').innerText = "جاري تجهيز الصورة... ⏳";
-            
+            uploadStatus.innerText = "جاري تجهيز الصورة... ⏳";
             reader.onload = function(e) {
                 base64ImageString = e.target.result;
-                const preview = document.getElementById('imagePreview');
-                preview.src = base64ImageString;
-                preview.style.display = "block";
-                
-                // إخفاء النص أو إبقائه شفافاً فوق الصورة
-                document.getElementById('uploadStatus').style.background = "rgba(255,255,255,0.7)";
-                document.getElementById('uploadStatus').style.borderRadius = "8px";
-                document.getElementById('uploadStatus').innerText = "✅ تعديل الصورة المرفقة";
+                imagePreview.src = base64ImageString;
+                imagePreview.style.display = "block";
+                uploadStatus.style.background = "rgba(255,255,255,0.85)";
+                uploadStatus.style.borderRadius = "8px";
+                uploadStatus.style.padding = "8px 12px";
+                uploadStatus.innerText = "🔄 تغيير الصورة المرفقة";
             };
             reader.readAsDataURL(file);
         }
     });
 
-    // دالة النشر المحدثة والمصلحة بالكامل لتعمل فوراً
-    window.handlePublish = async () => {
+    publishBtn.addEventListener('click', async () => {
         const title = document.getElementById('postTitle').value.trim();
         const content = document.getElementById('postContent').value.trim();
         const isPinned = document.getElementById('isPinned').checked;
@@ -172,38 +107,24 @@
         publishBtn.disabled = true;
 
         try {
-            // إرسال البيانات وضمان إرسال خاصية الوقت بشكل قياسي متوافق مع الـ Subscription اللحظي
             await addDoc(collection(db, "News"), {
                 title: title,
                 content: content,
                 img: base64ImageString,
-                pinned: isPinned, // يرسل القيمة الحقيقية true أو false للتثبيت
-                publishDate: Date.now() // استخدام ملي ثانية النظام لضمان عمل زر النشر الفوري بجميع الأجهزة
+                pinned: isPinned,
+                publishDate: Date.now()
             });
 
-            alert("تم نشر وتثبيت الخبر بنجاح! 🎉 سيظهر الآن بستايل الإنستغرام في التايم لاين فوراً.");
-            
-            // تصفير الواجهة
-            document.getElementById('postTitle').value = "";
-            document.getElementById('postContent').value = "";
-            fileInput.value = "";
-            document.getElementById('isPinned').checked = false;
-            document.getElementById('imagePreview').style.display = "none";
-            document.getElementById('uploadStatus').innerText = "📸 اضغط هنا لإرفاق صورة الخبر";
-            document.getElementById('uploadStatus').style.background = "none";
-            base64ImageString = "";
+            alert("تم نشر الخبر بنجاح! 🎉");
+            window.location.replace("news.html");
 
         } catch (error) {
-            console.error("Firebase Publishing Error:", error);
-            alert("حدث خطأ أثناء الاتصال بقاعدة البيانات، يرجى المحاولة لاحقاً.");
-        } finally {
+            console.error("Firebase Error:", error);
+            alert("حدث خطأ أثناء الاتصال بالمنصة.");
             publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
         }
-    };
-
-    // ربط الحدث بالزر لضمان تشغيله على كافة المتصفحات والهواتف الذكية
-    publishBtn.addEventListener('click', window.handlePublish);
+    });
 </script>
 </body>
 </html>
