@@ -30,7 +30,6 @@
             border: 0.5px solid #dbdbdb;
         }
         
-        /* تنسيق شعار أخبار العائلة */
         .app-logo-area {
             margin-bottom: 20px;
         }
@@ -118,28 +117,26 @@
         const userInp = document.getElementById('adminUser').value.trim();
         const passInp = document.getElementById('adminPass').value.trim();
 
-        if (!userInp || !passInp) return alert("يرجى ملء كافة الحقول");
+        if (!userInp || !passInp) return alert("يرجى fill كافة الحقول");
 
-        const adminRef = doc(db, "AdminSettings", "credentials");
-        let adminSnap = await getDoc(adminRef);
+        try {
+            const adminRef = doc(db, "AdminSettings", "credentials");
+            let adminSnap = await getDoc(adminRef);
 
-        // إنشاء الحساب الافتراضي في أول مرة على قاعدة البيانات إذا لم يتواجد
-        if (!adminSnap.exists()) {
-            await setDoc(adminRef, { username: "admin", password: "admin" });
-            adminSnap = await getDoc(adminRef);
-        }
+            if (!adminSnap.exists()) {
+                await setDoc(adminRef, { username: "admin", password: "admin" });
+                adminSnap = await getDoc(adminRef);
+            }
 
-        const adminData = adminSnap.data();
+            const adminData = adminSnap.data();
 
-        if (userInp === adminData.username && passInp === adminData.password) {
-            localStorage.setItem('role', 'admin');
-            
-            // التوجيه المباشر والآمن فوراً لصفحة إضافة الأخبار
-            window.location.href = "add_news.html";
-        } else {
-            alert("اسم المستخدم أو 🔑 كلمة المرور غير صحيحة!");
-        }
-    };
-</script>
-</body>
-</html>
+            if (userInp === adminData.username && passInp === adminData.password) {
+                localStorage.setItem('role', 'admin');
+                alert("مرحباً بك أيها المدير! تم الدخول بنجاح.");
+                
+                // التوجيه الصارم والمباشر لصفحة إضافة الأخبار
+                window.location.replace("add_news.html");
+            } else {
+                alert("اسم المستخدم أو كلمة المرور غير صحيحة!");
+            }
+        } catch (error
