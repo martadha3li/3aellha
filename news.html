@@ -1,4 +1,188 @@
-// دالة الاشتراك الحي واللحظي (Subscription) المحدثة لمزامنة الأخبار الفورية
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>منصة أخبار العائلة | التايم لاين</title>
+    <style>
+        :root {
+            --ios-bg: #fafafa;
+            --card-bg: #ffffff;
+            --text-main: #262626;
+            --text-sec: #8e8e8e;
+            --ios-blue: #007AFF;
+            --gold-bg: #fff9e6;
+            --gold-border: #d4af37;
+        }
+
+        body { 
+            background-color: var(--ios-bg); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            padding-top: 75px; 
+            padding-bottom: 80px; 
+            direction: rtl;
+        }
+
+        .feed-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #pinnedArea { margin-bottom: 10px; display: none; }
+        .pin-card { 
+            background: var(--gold-bg); 
+            border: 1px solid var(--gold-border); 
+            padding: 12px; 
+            border-radius: 12px; 
+            margin: 0 10px 10px 10px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .instagram-post {
+            background: var(--card-bg);
+            border: 1px solid #dbdbdb;
+            margin-bottom: 24px;
+            border-radius: 0;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            position: relative;
+        }
+
+        .post-header-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .author-avatar {
+            width: 32px;
+            height: 32px;
+            background: var(--ios-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .author-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .post-image-wrap {
+            width: 100%;
+            position: relative;
+            aspect-ratio: 1 / 1;
+            background-color: #efefef;
+            overflow: hidden;
+        }
+
+        .post-main-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-body {
+            padding: 12px 16px;
+        }
+
+        .post-caption {
+            font-size: 14px;
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0 0 8px 0;
+            white-space: pre-line;
+        }
+
+        .post-time-stamp {
+            font-size: 11px;
+            color: var(--text-sec);
+            display: block;
+        }
+
+        .admin-only { display: none; }
+        .dropdown { 
+            position: absolute; 
+            left: 16px; 
+            top: 45px; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+            display: none; 
+            flex-direction: column; 
+            z-index: 100; 
+            border: 1px solid #dbdbdb; 
+            overflow: hidden; 
+        }
+        .dropdown button { 
+            padding: 12px 16px; 
+            border: none; 
+            background: none; 
+            text-align: right; 
+            font-size: 13px; 
+            width: 120px; 
+            cursor: pointer; 
+        }
+
+        .admin-floating-btn { position: fixed; bottom: 25px; left: 20px; width: 55px; height: 55px; background: var(--ios-blue); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,122,255,0.3); z-index: 500000; cursor: pointer; }
+        #visitorLoginBtn { position: fixed; bottom: 25px; left: 20px; width: 50px; height: 50px; background: #e5e5ea; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; z-index: 500000; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 600000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-content { background: white; width: 90%; max-width: 450px; border-radius: 20px; max-height: 80vh; overflow-y: auto; position: relative; padding: 20px; box-sizing: border-box; }
+        .close-modal { position: absolute; left: 15px; top: 15px; font-size: 24px; cursor: pointer; color: #999; border: none; background: none; }
+
+        @media (min-width: 500px) {
+            .instagram-post { border-radius: 3px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        <div id="pinnedArea"></div>
+        <div id="instagramFeed"></div>
+    </div>
+
+    <div id="postModal" class="modal" onclick="if(event.target==this) closeModal()">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">✕</button>
+            <div id="modalBody" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <div class="admin-floating-btn" id="adminBtn" onclick="window.location.href='add_news.html'">⚙️</div>
+    <div id="visitorLoginBtn" onclick="window.location.href='login.html'">🔑</div>
+
+    <script type="module" src="header.js"></script>
+    <script type="module" src="navbar.js"></script>
+
+<script type="module">
+    import { db } from './config.js';
+    import { collection, onSnapshot, doc, getDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const isAdmin = localStorage.getItem('role') === 'admin';
+
+    if (isAdmin) {
+        document.getElementById('adminBtn').style.display = 'flex';
+        document.getElementById('visitorLoginBtn').style.display = 'none';
+    }
+
     function listenToNewsFeed() {
         onSnapshot(query(collection(db, "News"), orderBy("publishDate", "desc")), (snap) => {
             const feed = document.getElementById('instagramFeed');
@@ -11,7 +195,6 @@
                 const post = docSnap.data();
                 const postId = docSnap.id;
 
-                // 1. التعامل الدقيق مع الأخبار المثبتة (pinned) لتثبيتها في أعلى الصفحة شريط ذهبي
                 if (post.pinned === true || post.isPinned === true) {
                     const pinCard = document.createElement('div');
                     pinCard.className = "pin-card";
@@ -20,23 +203,13 @@
                     pinnedArea.appendChild(pinCard);
                 }
 
-                // 2. صياغة كرت الخبر بهيئة منشور إنستغرام (صورة مربعة، أسفلها النص والتاريخ)
                 const instaCard = document.createElement('div');
                 instaCard.className = "instagram-post";
                 
-                // حساب وتحويل الطابع الزمني المحدث (Date.now) بدقة تامة لتنسيق سعودي عائلي مرن
                 let formattedDate = "قبل قليل";
                 if (post.publishDate) {
-                    // فحص إذا كان الوقت مخزن كميلي ثانية مباشرة أو كنظام الفايربيس القديم
                     const dateObj = typeof post.publishDate === 'number' ? new Date(post.publishDate) : (post.publishDate.seconds ? new Date(post.publishDate.seconds * 1000) : new Date(post.publishDate));
-                    
-                    formattedDate = dateObj.toLocaleString('ar-SA', { 
-                        hour: '2-digit', 
-                        minute: '2-digit', 
-                        day: 'numeric', 
-                        month: 'short', 
-                        year: 'numeric' 
-                    });
+                    formattedDate = dateObj.toLocaleString('ar-SA', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short', year: 'numeric' });
                 }
 
                 instaCard.innerHTML = `
@@ -66,7 +239,40 @@
                 feed.appendChild(instaCard);
             });
 
-            // إظهار أو إخفاء مساحة التثبيت تلقائياً بحسب المحتوى المخزن
             pinnedArea.style.display = pinnedArea.innerHTML === "" ? "none" : "block";
         });
     }
+
+    window.showPinnedFull = async (id) => {
+        const snap = await getDoc(doc(db, "News", id));
+        if (snap.exists()) {
+            const post = snap.data();
+            document.getElementById('modalBody').innerHTML = `
+                ${(post.img || post.image) ? `<img src="${post.img || post.image}" style="width:100%; border-radius:10px; margin-bottom:15px;">` : ''}
+                <h3 style="margin:0 0 10px 0; color:var(--text-main);">${post.title}</h3>
+                <p style="font-size:14px; color:#444; line-height:1.6; white-space:pre-line;">${post.content || post.body || ''}</p>
+            `;
+            document.getElementById('postModal').style.display = 'flex';
+        }
+    };
+
+    window.toggleDrop = (e, id) => {
+        e.stopPropagation();
+        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+        document.getElementById(`drop-${id}`).style.display = 'flex';
+    };
+
+    window.delNews = async (e, id) => {
+        e.stopPropagation();
+        if (confirm("هل أنت متأكد من حذف هذا المنشور نهائياً من التايم لاين؟")) {
+            await deleteDoc(doc(db, "News", id));
+        }
+    };
+
+    window.closeModal = () => { document.getElementById('postModal').style.display = 'none'; };
+    document.addEventListener('click', () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none'));
+
+    listenToNewsFeed();
+</script>
+</body>
+</html>
