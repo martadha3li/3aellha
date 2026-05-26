@@ -5,19 +5,103 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>دخول الإدارة | منصة العائلة</title>
     <style>
-        :root { --ios-blue: #007AFF; --ios-bg: #F2F2F7; }
-        body { font-family: -apple-system, sans-serif; background: var(--ios-bg); display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; direction: rtl; }
-        .login-box { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 90%; max-width: 360px; text-align: center; }
-        input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; box-sizing: border-box; outline: none; text-align: center; font-size: 16px; }
-        button { width: 100%; padding: 14px; background: var(--ios-blue); color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 15px; }
-        .back-link { display: block; margin-top: 20px; color: #8e8e93; text-decoration: none; font-size: 14px; }
+        :root { 
+            --ios-blue: #007AFF; 
+            --ios-bg: #F2F2F7; 
+        }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: var(--ios-bg); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            direction: rtl; 
+        }
+        .login-box { 
+            background: white; 
+            padding: 35px 30px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            width: 90%; 
+            max-width: 360px; 
+            text-align: center; 
+            border: 0.5px solid #dbdbdb;
+        }
+        
+        /* تنسيق شعار أخبار العائلة */
+        .app-logo-area {
+            margin-bottom: 20px;
+        }
+        .app-logo-area img {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            object-fit: cover;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+        .app-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #1c1c1e;
+            margin: 10px 0 2px 0;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            outline: none; 
+            text-align: center; 
+            font-size: 16px; 
+            background: #fafafa;
+        }
+        input:focus {
+            border-color: var(--ios-blue);
+            background: #fff;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background: var(--ios-blue); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            transition: 0.2s;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .back-link { 
+            display: block; 
+            margin-top: 22px; 
+            color: #8e8e93; 
+            text-decoration: none; 
+            font-size: 14px; 
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
 <div class="login-box">
-    <h2 style="margin-bottom: 5px;">دخول لوحة التحكم</h2>
-    <p style="color: #8e8e93; font-size: 13px; margin-bottom: 20px;">خاص بمدير المنصة فقط</p>
+    
+    <div class="app-logo-area">
+        <img src="logo.png" onerror="this.src='https://via.placeholder.com/80/007AFF/FFFFFF?text=📸'">
+        <div class="app-title">أخبار العائلة</div>
+    </div>
+    
+    <p style="color: #8e8e93; font-size: 13px; margin-bottom: 20px; margin-top: 0;">لوحة تحكم نشر وإدارة الأخبار</p>
     
     <input type="text" id="adminUser" placeholder="اسم المستخدم">
     <input type="password" id="adminPass" placeholder="كلمة المرور">
@@ -34,9 +118,12 @@
         const userInp = document.getElementById('adminUser').value.trim();
         const passInp = document.getElementById('adminPass').value.trim();
 
+        if (!userInp || !passInp) return alert("يرجى ملء كافة الحقول");
+
         const adminRef = doc(db, "AdminSettings", "credentials");
         let adminSnap = await getDoc(adminRef);
 
+        // إنشاء الحساب الافتراضي في أول مرة على قاعدة البيانات إذا لم يتواجد
         if (!adminSnap.exists()) {
             await setDoc(adminRef, { username: "admin", password: "admin" });
             adminSnap = await getDoc(adminRef);
@@ -46,10 +133,11 @@
 
         if (userInp === adminData.username && passInp === adminData.password) {
             localStorage.setItem('role', 'admin');
-            alert("مرحباً بك أيها المدير! تم الدخول بنجاح.");
-            window.location.href = "news.html";
+            
+            // التوجيه المباشر والآمن فوراً لصفحة إضافة الأخبار
+            window.location.href = "add_news.html";
         } else {
-            alert("اسم المستخدم أو كلمة المرور غير صحيحة!");
+            alert("اسم المستخدم أو 🔑 كلمة المرور غير صحيحة!");
         }
     };
 </script>
