@@ -98,8 +98,22 @@
 </div>
 
 <script type="module">
-    import { db } from './config.js';
-    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // [الخطوة المصيرية]: ضع بيانات مشروعك الخاصة بـ Firebase هنا مباشرة لضمان الاتصال الفوري والمستقر
+    const firebaseConfig = {
+        apiKey: "ضع_هنا_API_KEY",
+        authDomain: "ضع_هنا_AUTH_DOMAIN",
+        projectId: "ضع_هنا_PROJECT_ID",
+        storageBucket: "ضع_هنا_STORAGE_BUCKET",
+        messagingSenderId: "ضع_هنا_MESSAGING_SENDER_ID",
+        appId: "ضع_هنا_APP_ID"
+    };
+
+    // تهيئة المتغيرات محلياً داخل الصفحة لمنع التعليق والانهيار الخفي
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
     if (localStorage.getItem('role') !== 'admin') {
         alert("تنبيه: هذه الصفحة مخصصة للإدارة فقط!");
@@ -198,17 +212,15 @@
         const content = document.getElementById('postContent').value.trim();
         const isPinned = document.getElementById('isPinned').checked;
 
-        // [التحديث الجديد]: فقط صورة الخبر هي المطلوبة وإلزامية لنظام الإنستغرام
         if (!finalImageBase64) return alert("يرجى إرفاق صورة الخبر أولاً، فهي حجر الأساس للنشر!");
 
         publishBtn.innerText = "جاري النشر والمزامنة... ⏳";
         publishBtn.disabled = true;
 
         try {
-            const newsCollectionRef = collection(db, "News");
-            
-            await addDoc(newsCollectionRef, {
-                title: title ? title : "", // يتم الإرسال كنص فارغ إذا لم يكتب الإداري شيئاً
+            // استخدام الكائن db المعرف مباشرة في الأعلى بشكل مستقر
+            await addDoc(collection(db, "News"), {
+                title: title ? title : "", 
                 content: content ? content : "", 
                 img: finalImageBase64,
                 pinned: isPinned,
