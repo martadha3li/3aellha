@@ -15,7 +15,6 @@
         input[type="text"]:focus, textarea:focus { border-color: var(--ios-blue); background: #fff; }
         textarea { height: 120px; resize: none; }
         
-        /* كرت رفع ومعاينة الصور على نمط الإنستغرام المربع */
         .file-upload-box { border: 2px dashed #007AFF; background: rgba(0, 122, 255, 0.03); border-radius: 14px; text-align: center; cursor: pointer; margin-bottom: 18px; position: relative; width: 100%; aspect-ratio: 1 / 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
         .file-upload-box span { color: var(--ios-blue); font-size: 14px; font-weight: bold; padding: 20px; z-index: 2; pointer-events: none; }
         #imagePreview { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; z-index: 1; }
@@ -67,7 +66,7 @@
         window.location.href = "news.html";
     }
 
-    let base64ImageString = "";
+    let compressedImageBase64 = "";
     const fileInput = document.getElementById('fileInput');
     const uploadBox = document.getElementById('uploadBox');
     const imagePreview = document.getElementById('imagePreview');
@@ -79,16 +78,45 @@
     fileInput.addEventListener('change', function() {
         const file = this.files[0];
         if (file) {
+            uploadStatus.innerText = "جاري معالجة وضغط الصورة... ⏳";
             const reader = new FileReader();
-            uploadStatus.innerText = "جاري تجهيز الصورة... ⏳";
+            
             reader.onload = function(e) {
-                base64ImageString = e.target.result;
-                imagePreview.src = base64ImageString;
-                imagePreview.style.display = "block";
-                uploadStatus.style.background = "rgba(255,255,255,0.85)";
-                uploadStatus.style.borderRadius = "8px";
-                uploadStatus.style.padding = "8px 12px";
-                uploadStatus.innerText = "🔄 تغيير الصورة المرفقة";
+                const img = new Image();
+                img.onload = function() {
+                    // استخدام Canvas لقص وضغط الصورة إلى مقاس مربع متناسق (600x600 بكسل كحد أقصى)
+                    const canvas = document.createElement('canvas');
+                    const size = 600; 
+                    canvas.width = size;
+                    canvas.height = size;
+                    
+                    const ctx = canvas.getContext('2d');
+                    
+                    // منطق احترافي لقص الصورة من المنتصف لتبدو مربعة بدون تمطيط
+                    let srcX = 0, srcY = 0, srcWidth = img.width, srcHeight = img.height;
+                    if (img.width > img.height) {
+                        srcWidth = img.height;
+                        srcX = (img.width - img.height) / 2;
+                    } else {
+                        srcHeight = img.width;
+                        srcY = (img.height - img.width) / 2;
+                    }
+                    
+                    ctx.drawImage(img, srcX, srcY, srcWidth, srcHeight, 0, 0, size, size);
+                    
+                    // تحويل الصورة المقصوصة إلى Base64 مع ضغط الجودة بنسبة 70% لتصغير الحجم بشكل هائل
+                    compressedImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                    
+                    // عرض المعاينة الفورية للمستخدم
+                    imagePreview.src = compressedImageBase64;
+                    imagePreview.style.display = "block";
+                    
+                    uploadStatus.style.background = "rgba(255,255,255,0.85)";
+                    uploadStatus.style.borderRadius = "8px";
+                    uploadStatus.style.padding = "8px 12px";
+                    uploadStatus.innerText = "🔄 تغيير الصورة المرفقة";
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
@@ -101,26 +129,30 @@
 
         if (!title) return alert("يرجى كتابة عنوان الخبر أولاً");
         if (!content) return alert("يرجى كتابة نص ومحتوى الخبر");
-        if (!base64ImageString) return alert("يرجى إرفاق صورة للخبر ليطابق ستايل الإنستغرام");
+        if (!compressedImageBase64) return alert("يرجى إرفاق صورة للخبر ليطابق ستايل الإنستغرام");
 
         publishBtn.innerText = "جاري النشر والمزامنة... ⏳";
         publishBtn.disabled = true;
 
         try {
+            // إرسال البيانات المجهزة إلى كولكشن News في Firestore
             await addDoc(collection(db, "News"), {
                 title: title,
                 content: content,
-                img: base64ImageString,
+                img: compressedImageBase64, // الصورة المضغوطة والسريعة الآن
                 pinned: isPinned,
                 publishDate: Date.now()
             });
 
+            // إظهار نافذة التأكيد المطلوبة
             alert("تم نشر الخبر بنجاح! 🎉");
+            
+            // التوجيه الفوري لصفحة الأخبار والتأكد من تحديث الجلسة
             window.location.replace("news.html");
 
         } catch (error) {
-            console.error("Firebase Error:", error);
-            alert("حدث خطأ أثناء الاتصال بالمنصة.");
+            console.error("Firebase Critical Error:", error);
+            alert("فشل النشر! السبب محتمل: " + error.message);
             publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
         }
