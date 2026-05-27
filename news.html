@@ -3,180 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة أخبار العائلة | التايم لاين</title>
+    <title>أخبار العائلة | Ver: 206-5</title>
     <style>
-        :root { --ios-bg: #fafafa; --card-bg: #ffffff; --text-main: #262626; --text-sec: #8e8e8e; --ios-blue: #007AFF; --gold-bg: #fff9e6; --gold-border: #d4af37; }
-        body { background-color: var(--ios-bg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding-top: 75px; padding-bottom: 80px; direction: rtl; position: relative; }
+        :root { --ios-bg: #fafafa; --card-bg: #ffffff; --ios-blue: #007AFF; }
+        body { background: var(--ios-bg); font-family: -apple-system, sans-serif; margin: 0; direction: rtl; padding-bottom: 80px; }
+        .version-badge { position: fixed; top: 10px; left: 10px; font-size: 10px; background: #eee; padding: 3px 6px; border-radius: 5px; z-index: 10000; }
         
-        /* شريط رقم التحديث التسلسلي الثابت */
-        .version-badge { position: absolute; top: 10px; right: 15px; font-size: 11px; font-weight: 800; background: #e5e5ea; color: #555; padding: 4px 8px; border-radius: 8px; direction: ltr; z-index: 500000; }
-        
-        .feed-container { width: 100%; max-width: 500px; margin: 0 auto; margin-top: 15px; }
-        #pinnedArea { margin-bottom: 10px; display: none; }
-        .pin-card { background: var(--gold-bg); border: 1px solid var(--gold-border); padding: 12px; border-radius: 12px; margin: 0 10px 10px 10px; display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
-        .instagram-post { background: var(--card-bg); border: 1px solid #dbdbdb; margin-bottom: 24px; border-radius: 0; }
-        .post-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; position: relative; }
-        .post-header-author { display: flex; align-items: center; gap: 10px; }
-        .author-avatar { width: 32px; height: 32px; background: var(--ios-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
-        .author-name { font-size: 14px; font-weight: 600; color: var(--text-main); }
-        .post-image-wrap { width: 100%; position: relative; aspect-ratio: 1 / 1; background-color: #efefef; overflow: hidden; }
-        .post-main-img { width: 100%; height: 100%; object-fit: cover; }
-        .post-body { padding: 12px 16px; }
-        .post-caption { font-size: 14px; color: var(--text-main); line-height: 1.6; margin: 0 0 8px 0; white-space: pre-line; }
-        .post-time-stamp { font-size: 11px; color: var(--text-sec); display: block; }
-        .dropdown { position: absolute; left: 16px; top: 45px; background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; z-index: 100; border: 1px solid #dbdbdb; overflow: hidden; }
-        .dropdown button { padding: 12px 16px; border: none; background: none; text-align: right; font-size: 13px; width: 120px; cursor: pointer; }
-        .admin-floating-btn { position: fixed; bottom: 25px; left: 20px; width: 55px; height: 55px; background: var(--ios-blue); color: white; border-radius: 50%; display: none; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(0,122,255,0.3); z-index: 500000; cursor: pointer; }
-        #visitorLoginBtn { position: fixed; bottom: 25px; left: 20px; width: 50px; height: 50px; background: #e5e5ea; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; z-index: 500000; }
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 600000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .modal-content { background: white; width: 90%; max-width: 450px; border-radius: 20px; max-height: 80vh; overflow-y: auto; position: relative; padding: 20px; box-sizing: border-box; }
-        .close-modal { position: absolute; left: 15px; top: 15px; font-size: 24px; cursor: pointer; color: #999; border: none; background: none; }
-        @media (min-width: 500px) { .instagram-post { border-radius: 3px; } }
+        /* شريط طلب الإشعارات العلوي */
+        #notifBanner { display: none; background: #fff; padding: 15px; border-bottom: 1px solid #dbdbdb; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .notif-btn { background: var(--ios-blue); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+
+        .feed-container { max-width: 500px; margin: 0 auto; padding-top: 10px; }
+        .insta-post { background: #fff; border: 1px solid #dbdbdb; margin-bottom: 20px; }
+        .post-header { padding: 12px; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; }
+        .avatar { width: 30px; height: 30px; background: var(--ios-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
+        .post-img-wrap { width: 100%; aspect-ratio: 1/1; background: #f0f0f0; }
+        .post-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .post-content { padding: 12px; }
+        .post-title { font-weight: bold; margin-bottom: 5px; display: block; }
+        .post-text { font-size: 14px; color: #444; line-height: 1.5; }
+        .post-date { font-size: 10px; color: #999; margin-top: 8px; display: block; }
+
+        .floating-add { position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; background: var(--ios-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 5px 15px rgba(0,122,255,0.4); text-decoration: none; z-index: 9999; }
     </style>
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-1</div>
+<div class="version-badge">Ver: 206-5</div>
 
-    <div class="feed-container">
-        <div id="pinnedArea"></div>
-        <div id="instagramFeed"></div>
-    </div>
+<div id="notifBanner">
+    <div style="font-size: 14px; font-weight: bold;">🔔 فعل التنبيهات لتصلك أخبار العائلة فوراً</div>
+    <button class="notif-btn" onclick="requestPermission()">سماح بالظهور على الجوال</button>
+</div>
 
-    <div id="postModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" id="closeModalBtn">✕</button>
-            <div id="modalBody" style="margin-top: 20px;"></div>
-        </div>
-    </div>
+<div class="feed-container" id="feed"></div>
 
-    <div class="admin-floating-btn" id="adminBtn">⚙️</div>
-    <div id="visitorLoginBtn" onclick="window.location.href='login.html'">🔑</div>
-
-    <script type="module" src="header.js"></script>
-    <script type="module" src="navbar.js"></script>
+<a href="add_news.html" class="floating-add">＋</a>
 
 <script type="module">
     import { db } from './config.js';
-    import { collection, onSnapshot, doc, getDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const isAdmin = localStorage.getItem('role') === 'admin';
-    const adminBtn = document.getElementById('adminBtn');
-    const visitorLoginBtn = document.getElementById('visitorLoginBtn');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const postModal = document.getElementById('postModal');
+    // طلب صلاحية الإشعارات
+    window.requestPermission = () => {
+        Notification.requestPermission().then(p => {
+            if(p === 'granted') {
+                alert("تم تفعيل الإشعارات بنجاح! ✅");
+                document.getElementById('notifBanner').style.display = 'none';
+            } else {
+                alert("يجب السماح بالإشعارات من إعدادات المتصفح.");
+            }
+        });
+    };
 
-    if (isAdmin) {
-        adminBtn.style.display = 'flex';
-        visitorLoginBtn.style.display = 'none';
-        adminBtn.addEventListener('click', () => window.location.href = 'add_news.html');
+    if(Notification.permission !== 'granted') {
+        document.getElementById('notifBanner').style.display = 'block';
     }
 
+    // جلب البيانات لحظياً
     onSnapshot(query(collection(db, "News"), orderBy("publishDate", "desc")), (snap) => {
-        const feed = document.getElementById('instagramFeed');
-        const pinnedArea = document.getElementById('pinnedArea');
-        
-        feed.innerHTML = ""; 
-        pinnedArea.innerHTML = "";
-
+        const feed = document.getElementById('feed');
+        feed.innerHTML = "";
         snap.forEach(docSnap => {
             const post = docSnap.data();
-            const postId = docSnap.id;
-
-            if (post.pinned === true || post.isPinned === true) {
-                const pinCard = document.createElement('div');
-                pinCard.className = "pin-card";
-                pinCard.addEventListener('click', () => showPinnedFull(postId));
-                // إذا لم يكن هناك عنوان للخبر المتبت يعرض ترويسة افتراضية
-                const pinTitle = post.title ? post.title : (post.content ? post.content : "منشور مثبت جديد");
-                pinCard.innerHTML = `📌 <b style="margin-right:5px; flex:1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${pinTitle}</b> <span style="color:var(--text-sec); font-size:11px;">عرض ←</span>`;
-                pinnedArea.appendChild(pinCard);
-            }
-
-            const instaCard = document.createElement('div');
-            instaCard.className = "instagram-post";
-            
-            let formattedDate = "قبل قليل";
-            if (post.publishDate) {
-                const dateObj = typeof post.publishDate === 'number' ? new Date(post.publishDate) : (post.publishDate.seconds ? new Date(post.publishDate.seconds * 1000) : new Date(post.publishDate));
-                formattedDate = dateObj.toLocaleString('ar-SA', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short', year: 'numeric' });
-            }
-
-            // [التحديث الجديد]: إخفاء مساحة السطور أو Strong الترويسة إذا كان العنوان أو النص فارغين تماماً لضمان نظافة خلاصة الإنستغرام
-            const hasTextContent = post.title || post.content;
-            const captionHTML = hasTextContent ? `
-                <p class="post-caption">
-                    ${post.title ? `<strong>${post.title}</strong>` : ''} 
-                    ${post.content ? post.content : ''}
-                </p>
-            ` : '';
-
-            instaCard.innerHTML = `
+            const date = new Date(post.publishDate).toLocaleString('ar-SA');
+            const card = document.createElement('div');
+            card.className = "insta-post";
+            card.innerHTML = `
                 <div class="post-header">
-                    <div class="post-header-author">
-                        <div class="author-avatar">ع</div>
-                        <span class="author-name">أخبار العائلة</span>
-                    </div>
-                    ${isAdmin ? `
-                        <div class="drop-trigger" data-id="${postId}" style="padding:5px; color:#262626; font-weight:bold; cursor:pointer;">⋮</div>
-                        <div id="drop-${postId}" class="dropdown">
-                            <button class="del-btn" data-id="${postId}" style="color:red;">🗑️ حذف المنشور</button>
-                        </div>
-                    ` : ''}
+                    <div class="avatar">ع</div>
+                    <span>أخبار العائلة</span>
                 </div>
-                <div class="post-image-wrap">
-                    <img class="post-main-img" src="${post.img || post.image || 'logo.png'}" onerror="this.src='https://via.placeholder.com/500x500/efefef/8e8e8e?text=No+Image'">
-                </div>
-                <div class="post-body">
-                    ${captionHTML}
-                    <span class="post-time-stamp">${formattedDate}</span>
+                <div class="post-img-wrap"><img src="${post.img}"></div>
+                <div class="post-content">
+                    ${post.title ? `<span class="post-title">${post.title}</span>` : ''}
+                    ${post.content ? `<div class="post-text">${post.content}</div>` : ''}
+                    <span class="post-date">${date}</span>
                 </div>
             `;
-            feed.appendChild(instaCard);
+            feed.appendChild(card);
         });
-
-        pinnedArea.style.display = pinnedArea.innerHTML === "" ? "none" : "block";
-        bindAdminEvents();
     });
-
-    function bindAdminEvents() {
-        if (!isAdmin) return;
-        document.querySelectorAll('.drop-trigger').forEach(trigger => {
-            trigger.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const id = trigger.getAttribute('data-id');
-                document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
-                document.getElementById(`drop-${id}`).style.display = 'flex';
-            });
-        });
-
-        document.querySelectorAll('.del-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const id = btn.getAttribute('data-id');
-                if (confirm("هل أنت متأكد من حذف هذا المنشور نهائياً من التايم لاين؟")) {
-                    await deleteDoc(doc(db, "News", id));
-                }
-            });
-        });
-    }
-
-    async function showPinnedFull(id) {
-        const snap = await getDoc(doc(db, "News", id));
-        if (snap.exists()) {
-            const post = snap.data();
-            document.getElementById('modalBody').innerHTML = `
-                ${(post.img || post.image) ? `<img src="${post.img || post.image}" style="width:100%; border-radius:10px; margin-bottom:15px;">` : ''}
-                <h3 style="margin:0 0 10px 0; color:var(--text-main);">${post.title ? post.title : 'خبر مثبت'}</h3>
-                <p style="font-size:14px; color:#444; line-height:1.6; white-space:pre-line;">${post.content || post.body || ''}</p>
-            `;
-            postModal.style.display = 'flex';
-        }
-    }
-
-    closeModalBtn.addEventListener('click', () => postModal.style.display = 'none');
-    postModal.addEventListener('click', (e) => { if(e.target === postModal) postModal.style.display = 'none'; });
-    document.addEventListener('click', () => document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none'));
 </script>
 </body>
 </html>
