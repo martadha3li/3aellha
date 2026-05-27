@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أخبار العائلة | Ver: 206-5</title>
+    <title>أخبار العائلة | Ver: 206-7</title>
     <style>
         :root { --ios-bg: #fafafa; --card-bg: #ffffff; --ios-blue: #007AFF; }
         body { background: var(--ios-bg); font-family: -apple-system, sans-serif; margin: 0; direction: rtl; padding-bottom: 80px; }
+        
+        /* شريط رقم التحديث التسلسلي الجديد 206-7 لتخطي كاش المتصفح */
         .version-badge { position: fixed; top: 10px; left: 10px; font-size: 10px; background: #eee; padding: 3px 6px; border-radius: 5px; z-index: 10000; }
         
         /* شريط طلب الإشعارات العلوي */
@@ -29,7 +31,7 @@
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-5</div>
+<div class="version-badge">Ver: 206-7</div>
 
 <div id="notifBanner">
     <div style="font-size: 14px; font-weight: bold;">🔔 فعل التنبيهات لتصلك أخبار العائلة فوراً</div>
@@ -41,10 +43,24 @@
 <a href="add_news.html" class="floating-add">＋</a>
 
 <script type="module">
-    import { db } from './config.js';
-    import { collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // طلب صلاحية الإشعارات
+    // [الربط المباشر المضمون]: نضع إعدادات مشروعك هنا مباشرة ليتصل المتصفح فوراً دون وسيط خارجي
+    const firebaseConfig = {
+        apiKey: "ضع_هنا_API_KEY",
+        authDomain: "ضع_هنا_AUTH_DOMAIN",
+        projectId: "ضع_هنا_PROJECT_ID",
+        storageBucket: "ضع_هنا_STORAGE_BUCKET",
+        messagingSenderId: "ضع_هنا_MESSAGING_SENDER_ID",
+        appId: "ضع_هنا_APP_ID"
+    };
+
+    // تهيئة الفايربيس محلياً داخل الصفحة
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // طلب صلاحية الإشعارات وتنبيه المستخدم
     window.requestPermission = () => {
         Notification.requestPermission().then(p => {
             if(p === 'granted') {
@@ -56,17 +72,23 @@
         });
     };
 
-    if(Notification.permission !== 'granted') {
+    if (window.Notification && Notification.permission !== 'granted') {
         document.getElementById('notifBanner').style.display = 'block';
     }
 
-    // جلب البيانات لحظياً
+    // جلب الأخبار لحظياً ومزامنتها مباشرة من جدول News
     onSnapshot(query(collection(db, "News"), orderBy("publishDate", "desc")), (snap) => {
         const feed = document.getElementById('feed');
         feed.innerHTML = "";
+        
+        if(snap.empty) {
+            feed.innerHTML = "<div style='text-align:center; padding:5px; color:#8e8e93; font-size:14px; margin-top:50px;'>📭 لا توجد أخبار منشورة حالياً في المنصة.</div>";
+            return;
+        }
+
         snap.forEach(docSnap => {
             const post = docSnap.data();
-            const date = new Date(post.publishDate).toLocaleString('ar-SA');
+            const date = post.publishDate ? new Date(post.publishDate).toLocaleString('ar-SA') : "قبل قليل";
             const card = document.createElement('div');
             card.className = "insta-post";
             card.innerHTML = `
@@ -74,7 +96,9 @@
                     <div class="avatar">ع</div>
                     <span>أخبار العائلة</span>
                 </div>
-                <div class="post-img-wrap"><img src="${post.img}"></div>
+                <div class="post-img-wrap">
+                    <img src="${post.img || 'logo.png'}" onerror="this.src='https://via.placeholder.com/500x500/f0f0f0/999?text=No+Image'">
+                </div>
                 <div class="post-content">
                     ${post.title ? `<span class="post-title">${post.title}</span>` : ''}
                     ${post.content ? `<div class="post-text">${post.content}</div>` : ''}
@@ -83,6 +107,9 @@
             `;
             feed.appendChild(card);
         });
+    }, (error) => {
+        console.error("Firestore Read Error:", error);
+        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>حدث خطأ أثناء جلب البيانات من السيرفر: " + error.message + "</div>";
     });
 </script>
 </body>
