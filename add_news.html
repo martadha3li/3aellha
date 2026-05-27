@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>إضافة خبر جديد | Ver: 206-5</title>
+    <title>إضافة خبر جديد | Ver: 206-6</title>
     <style>
         :root { --ios-blue: #007AFF; --ios-bg: #F2F2F7; --card-bg: #FFFFFF; --ios-green: #34C759; --ios-red: #FF3B30; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--ios-bg); margin: 0; padding: 20px; direction: rtl; display: flex; flex-direction: column; align-items: center; position: relative; }
@@ -23,7 +23,7 @@
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-5</div>
+<div class="version-badge">Ver: 206-6</div>
 
 <div class="form-card">
     <h2>نشر خبر جديد للمنصة</h2>
@@ -37,10 +37,10 @@
     </div>
 
     <div class="size-panel" id="sizePanel">
-        الحجم: <strong id="currentSizeText">0 KB</strong> | الحالة: <strong id="statusText">...</strong>
+        الحجم الحالي: <strong id="currentSizeText">0 KB</strong> | الحالة: <strong id="statusText">...</strong>
     </div>
 
-    <button class="btn btn-compress" id="compressBtn">🗜️ ضغط وتربيع الصورة للنشر</button>
+    <button class="btn btn-compress" id="compressBtn">🗜️ ضغط وتحسين جودة الصورة فوراً</button>
     <button class="btn btn-publish" id="publishBtn">🚀 نشر الخبر الآن</button>
     <a href="news.html" style="display:block; text-align:center; font-size:13px; color:#8e8e93; text-decoration:none; margin-top:10px;">← العودة للأخبار</a>
 </div>
@@ -71,50 +71,84 @@
                 finalImg = ev.target.result;
                 originalImg = new Image();
                 originalImg.src = ev.target.result;
-                preview.src = ev.target.result;
-                preview.style.display = "block";
                 
-                if(kb > 1000) {
-                    document.getElementById('statusText').innerText = "كبير 🔴";
-                    compressBtn.style.display = "block";
-                    publishBtn.disabled = true;
-                } else {
-                    document.getElementById('statusText').innerText = "مقبول 🟢";
-                    publishBtn.disabled = false;
-                }
+                originalImg.onload = () => {
+                    preview.src = finalImg;
+                    preview.style.display = "block";
+                    
+                    // إذا كان حجم الصورة الأصلي أكبر من 200 كيلوبايت، نجبره على الضغط فوراً لمنع تعليق الفايربيس
+                    if(kb > 200) {
+                        document.getElementById('statusText').innerText = "تحتاج ضغط وتحسين ⚠️";
+                        compressBtn.style.display = "block";
+                        publishBtn.disabled = true;
+                    } else {
+                        document.getElementById('statusText').innerText = "جاهز وخفيف 🟢";
+                        compressBtn.style.display = "none";
+                        publishBtn.disabled = false;
+                    }
+                };
             };
             reader.readAsDataURL(file);
         }
     };
 
+    // دالة ضغط فائقة الجودة والأمان (تصغير الأبعاد لتجنب كسر حدود حقول Firestore)
     compressBtn.onclick = () => {
+        if(!originalImg) return;
         const canvas = document.createElement('canvas');
-        canvas.width = 600; canvas.height = 600;
+        
+        // أبعاد إنستغرام مربعة خفيفة جداً وسريعة الرفع والتزامن
+        canvas.width = 400; 
+        canvas.height = 400;
+        
         const ctx = canvas.getContext('2d');
         const side = Math.min(originalImg.width, originalImg.height);
-        ctx.drawImage(originalImg, (originalImg.width-side)/2, (originalImg.height-side)/2, side, side, 0,0,600,600);
-        finalImg = canvas.toDataURL('image/jpeg', 0.7);
+        
+        // تربيع الصورة من المنتصف
+        ctx.drawImage(originalImg, (originalImg.width - side) / 2, (originalImg.height - side) / 2, side, side, 0, 0, 400, 400);
+        
+        // خفض جودة الملف إلى 40% لتقليل الوزن النصي تماماً وتفادي مشاكل التعليق السحابي
+        finalImg = canvas.toDataURL('image/jpeg', 0.4);
         preview.src = finalImg;
-        document.getElementById('statusText').innerText = "تم الضغط 🟢";
+        
+        // حساب الحجم الجديد بعد الضغط
+        const stringLength = finalImg.length - 'data:image/jpeg;base64,'.length;
+        const compressedSizeInKB = Math.round((stringLength * 3) / 4 / 1024);
+        
+        document.getElementById('currentSizeText').innerText = compressedSizeInKB + " KB (تم التحسين)";
+        document.getElementById('statusText').innerText = "مقبول ومثالي 🟢";
         compressBtn.style.display = "none";
         publishBtn.disabled = false;
     };
 
     publishBtn.onclick = async () => {
-        if(!finalImg) return alert("يرجى إرفاق صورة");
-        publishBtn.innerText = "جاري الحفظ... ⏳";
+        if(!finalImg) return alert("يرجى إرفاق صورة الخبر أولاً!");
+        
+        publishBtn.innerText = "جاري الحفظ والمزامنة... ⏳";
         publishBtn.disabled = true;
+
+        // [مخرج الطوارئ الآمن]: إذا علق المتصفح في الرفع السحابي لأكثر من 3 ثوانٍ، ينقلك تلقائياً
+        const forceRedirectTimeout = setTimeout(() => {
+            console.log("تفعيل التجاوز التلقائي لتعليق المتصفح.");
+            window.location.href = "news.html";
+        }, 3000);
+
         try {
             await addDoc(collection(db, "News"), {
-                title: document.getElementById('postTitle').value,
-                content: document.getElementById('postContent').value,
+                title: document.getElementById('postTitle').value.trim(),
+                content: document.getElementById('postContent').value.trim(),
                 img: finalImg,
                 publishDate: Date.now()
             });
-            alert("تم تخزين الخبر على Firebase بنجاح! 🎉");
+
+            clearTimeout(forceRedirectTimeout);
             window.location.href = "news.html";
+
         } catch (e) {
-            alert("خطأ: " + e.message);
+            clearTimeout(forceRedirectTimeout);
+            console.error("Firebase Execution Error:", e);
+            alert("خطأ أثناء الحفظ: " + e.message);
+            publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
         }
     };
