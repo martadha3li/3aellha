@@ -1,19 +1,18 @@
-// config.js - Ver: 206-9
+// config.js - Ver: 206-11
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// [الربط المركزي المعتمد] - ضع بيانات مشروع فايربيس الخاص بك هنا بدقة
+// إعدادات منصة العائلة الرسمية الخاصة بمرتضى
 const firebaseConfig = {
-    apiKey: "ضع_هنا_API_KEY",
-    authDomain: "ضع_هنا_AUTH_DOMAIN",
-    projectId: "ضع_هنا_PROJECT_ID",
-    storageBucket: "ضع_هنا_STORAGE_BUCKET",
-    messagingSenderId: "ضع_هنا_MESSAGING_SENDER_ID",
-    appId: "ضع_هنا_APP_ID"
+  apiKey: "AIzaSyCt6XkYWcA6W0IlBjJp2T-QwNnz_-N4LqE",
+  authDomain: "vertical-reason-572.firebaseapp.com",
+  databaseURL: "https://vertical-reason-572.firebaseio.com",
+  projectId: "vertical-reason-572",
+  storageBucket: "vertical-reason-572.firebasestorage.app",
+  messagingSenderId: "580690748055",
+  appId: "1:580690748055:web:31ecd085296e6dd8d7ffd2",
+  measurementId: "G-JR4B6B0MNB"
 };
 
-// تهيئة الخدمة والاتصال بقاعدة البيانات السحابية بشكل صريح
 const app = initializeApp(firebaseConfig);
-
-// تصدير متغير db ليكون متاحاً للاستدعاء الفوري في بقية ملفات المنصة
 export const db = getFirestore(app);
