@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أخبار العائلة | Ver: 206-11</title>
+    <title>أخبار العائلة | Ver: 206-16</title>
     <style>
         :root { --ios-bg: #fafafa; --card-bg: #ffffff; --ios-blue: #007AFF; }
         body { background: var(--ios-bg); font-family: -apple-system, sans-serif; margin: 0; direction: rtl; padding-bottom: 80px; }
         .version-badge { position: fixed; top: 10px; left: 10px; font-size: 10px; background: #eee; padding: 3px 6px; border-radius: 5px; z-index: 10000; }
-        
-        #notifBanner { display: none; background: #fff; padding: 15px; border-bottom: 1px solid #dbdbdb; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        #notifBanner { display: none; background: #fff; padding: 15px; border-bottom: 1px solid #dbdbdb; text-align: center; }
         .notif-btn { background: var(--ios-blue); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-
         .feed-container { max-width: 500px; margin: 0 auto; padding-top: 10px; }
         .insta-post { background: #fff; border: 1px solid #dbdbdb; margin-bottom: 20px; }
         .post-header { padding: 12px; display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 14px; }
@@ -22,13 +20,12 @@
         .post-title { font-weight: bold; margin-bottom: 5px; display: block; }
         .post-text { font-size: 14px; color: #444; line-height: 1.5; }
         .post-date { font-size: 10px; color: #999; margin-top: 8px; display: block; }
-
         .floating-add { position: fixed; bottom: 20px; left: 20px; width: 60px; height: 60px; background: var(--ios-blue); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 5px 15px rgba(0,122,255,0.4); text-decoration: none; z-index: 9999; }
     </style>
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-11</div>
+<div class="version-badge">Ver: 206-16</div>
 
 <div id="notifBanner">
     <div style="font-size: 14px; font-weight: bold;">🔔 فعل التنبيهات لتصلك أخبار العائلة فوراً على جوالك</div>
@@ -44,16 +41,11 @@
     import { collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     window.requestPermission = () => {
-        if (!("Notification" in window)) {
-            alert("هذا المتصفح لا يدعم الإشعارات الهاتفية.");
-            return;
-        }
+        if (!("Notification" in window)) return alert("المتصفح لا يدعم الإشعارات.");
         Notification.requestPermission().then(p => {
             if(p === 'granted') {
                 alert("تم تفعيل الإشعارات بنجاح! ✅");
                 document.getElementById('notifBanner').style.display = 'none';
-            } else {
-                alert("يرجى السماح بالإشعارات يدوياً من إعدادات المتصفح بموقعك.");
             }
         });
     };
@@ -62,12 +54,13 @@
         document.getElementById('notifBanner').style.display = 'block';
     }
 
+    // الاستماع المباشر المتوافق مع الفهرسة التلقائية لـ Datastore Mode
     onSnapshot(query(collection(db, "News"), orderBy("publishDate", "desc")), (snap) => {
         const feed = document.getElementById('feed');
         feed.innerHTML = "";
         
         if(snap.empty) {
-            feed.innerHTML = "<div style='text-align:center; padding:20px; color:#999; font-size:14px; margin-top:50px;'>📭 لا توجد أخبار منشورة حالياً في المنصة.</div>";
+            feed.innerHTML = "<div style='text-align:center; padding:20px; color:#999; font-size:14px; margin-top:50px;'>📭 لا توجد أخبار منشورة في نظام Datastore حالياً.</div>";
             return;
         }
 
@@ -93,7 +86,8 @@
             feed.appendChild(card);
         });
     }, (error) => {
-        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>خطأ في قراءة قاعدة البيانات: " + error.message + "</div>";
+        console.error(error);
+        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>خطأ Datastore: يرجى التأكد من تفعيل الفهرس (Index) أو صلاحيات الجوجل كونسول.</div>";
     });
 </script>
 </body>
