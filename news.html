@@ -3,15 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أخبار العائلة | Ver: 206-7</title>
+    <title>أخبار العائلة | Ver: 206-11</title>
     <style>
         :root { --ios-bg: #fafafa; --card-bg: #ffffff; --ios-blue: #007AFF; }
         body { background: var(--ios-bg); font-family: -apple-system, sans-serif; margin: 0; direction: rtl; padding-bottom: 80px; }
-        
-        /* شريط رقم التحديث التسلسلي الجديد 206-7 لتخطي كاش المتصفح */
         .version-badge { position: fixed; top: 10px; left: 10px; font-size: 10px; background: #eee; padding: 3px 6px; border-radius: 5px; z-index: 10000; }
         
-        /* شريط طلب الإشعارات العلوي */
         #notifBanner { display: none; background: #fff; padding: 15px; border-bottom: 1px solid #dbdbdb; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .notif-btn { background: var(--ios-blue); color: white; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; margin-top: 10px; cursor: pointer; }
 
@@ -31,10 +28,10 @@
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-7</div>
+<div class="version-badge">Ver: 206-11</div>
 
 <div id="notifBanner">
-    <div style="font-size: 14px; font-weight: bold;">🔔 فعل التنبيهات لتصلك أخبار العائلة فوراً</div>
+    <div style="font-size: 14px; font-weight: bold;">🔔 فعل التنبيهات لتصلك أخبار العائلة فوراً على جوالك</div>
     <button class="notif-btn" onclick="requestPermission()">سماح بالظهور على الجوال</button>
 </div>
 
@@ -43,31 +40,20 @@
 <a href="add_news.html" class="floating-add">＋</a>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { db } from './config.js';
+    import { collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // [الربط المباشر المضمون]: نضع إعدادات مشروعك هنا مباشرة ليتصل المتصفح فوراً دون وسيط خارجي
-    const firebaseConfig = {
-        apiKey: "ضع_هنا_API_KEY",
-        authDomain: "ضع_هنا_AUTH_DOMAIN",
-        projectId: "ضع_هنا_PROJECT_ID",
-        storageBucket: "ضع_هنا_STORAGE_BUCKET",
-        messagingSenderId: "ضع_هنا_MESSAGING_SENDER_ID",
-        appId: "ضع_هنا_APP_ID"
-    };
-
-    // تهيئة الفايربيس محلياً داخل الصفحة
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // طلب صلاحية الإشعارات وتنبيه المستخدم
     window.requestPermission = () => {
+        if (!("Notification" in window)) {
+            alert("هذا المتصفح لا يدعم الإشعارات الهاتفية.");
+            return;
+        }
         Notification.requestPermission().then(p => {
             if(p === 'granted') {
                 alert("تم تفعيل الإشعارات بنجاح! ✅");
                 document.getElementById('notifBanner').style.display = 'none';
             } else {
-                alert("يجب السماح بالإشعارات من إعدادات المتصفح.");
+                alert("يرجى السماح بالإشعارات يدوياً من إعدادات المتصفح بموقعك.");
             }
         });
     };
@@ -76,13 +62,12 @@
         document.getElementById('notifBanner').style.display = 'block';
     }
 
-    // جلب الأخبار لحظياً ومزامنتها مباشرة من جدول News
     onSnapshot(query(collection(db, "News"), orderBy("publishDate", "desc")), (snap) => {
         const feed = document.getElementById('feed');
         feed.innerHTML = "";
         
         if(snap.empty) {
-            feed.innerHTML = "<div style='text-align:center; padding:5px; color:#8e8e93; font-size:14px; margin-top:50px;'>📭 لا توجد أخبار منشورة حالياً في المنصة.</div>";
+            feed.innerHTML = "<div style='text-align:center; padding:20px; color:#999; font-size:14px; margin-top:50px;'>📭 لا توجد أخبار منشورة حالياً في المنصة.</div>";
             return;
         }
 
@@ -108,8 +93,7 @@
             feed.appendChild(card);
         });
     }, (error) => {
-        console.error("Firestore Read Error:", error);
-        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>حدث خطأ أثناء جلب البيانات من السيرفر: " + error.message + "</div>";
+        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>خطأ في قراءة قاعدة البيانات: " + error.message + "</div>";
     });
 </script>
 </body>
