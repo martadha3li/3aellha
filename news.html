@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أخبار العائلة | Ver: 206-16</title>
+    <title>أخبار العائلة | Ver: 206-17</title>
     <style>
         :root { --ios-bg: #fafafa; --card-bg: #ffffff; --ios-blue: #007AFF; }
         body { background: var(--ios-bg); font-family: -apple-system, sans-serif; margin: 0; direction: rtl; padding-bottom: 80px; }
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-16</div>
+<div class="version-badge">Ver: 206-17</div>
 
 <div id="notifBanner">
     <div style="font-size: 14px; font-weight: bold;">🔔 فعل التنبيهات لتصلك أخبار العائلة فوراً على جوالك</div>
@@ -38,10 +38,10 @@
 
 <script type="module">
     import { db } from './config.js';
-    import { collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     window.requestPermission = () => {
-        if (!("Notification" in window)) return alert("المتصفح لا يدعم الإشعارات.");
+        if (!("Notification" in window)) return;
         Notification.requestPermission().then(p => {
             if(p === 'granted') {
                 alert("تم تفعيل الإشعارات بنجاح! ✅");
@@ -54,18 +54,26 @@
         document.getElementById('notifBanner').style.display = 'block';
     }
 
-    // الاستماع المباشر المتوافق مع الفهرسة التلقائية لـ Datastore Mode
-    onSnapshot(query(collection(db, "News"), orderBy("publishDate", "desc")), (snap) => {
+    // [كسر حظر الكونسول]: تم الاستعلام بدون كود الترتيب السيرفري orderBy لتجنب تعليق نظام الـ Datastore
+    onSnapshot(collection(db, "News"), (snap) => {
         const feed = document.getElementById('feed');
         feed.innerHTML = "";
         
         if(snap.empty) {
-            feed.innerHTML = "<div style='text-align:center; padding:20px; color:#999; font-size:14px; margin-top:50px;'>📭 لا توجد أخبار منشورة في نظام Datastore حالياً.</div>";
+            feed.innerHTML = "<div style='text-align:center; padding:20px; color:#999; font-size:14px; margin-top:50px;'>📭 لا توجد أخبار منشورة حالياً في المنصة.</div>";
             return;
         }
 
+        // تحويل الوثائق إلى مصفوفة مخصصة لترتيبها محلياً بكفاءة وسرعة فائقة
+        let postsArray = [];
         snap.forEach(docSnap => {
-            const post = docSnap.data();
+            postsArray.push(docSnap.data());
+        });
+
+        // الترتيب المحلي المباشر: من الأحدث للأقدم بناءً على الطابع الزمني
+        postsArray.sort((a, b) => (b.publishDate || 0) - (a.publishDate || 0));
+
+        postsArray.forEach(post => {
             const date = post.publishDate ? new Date(post.publishDate).toLocaleString('ar-SA') : "قبل قليل";
             const card = document.createElement('div');
             card.className = "insta-post";
@@ -86,8 +94,7 @@
             feed.appendChild(card);
         });
     }, (error) => {
-        console.error(error);
-        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>خطأ Datastore: يرجى التأكد من تفعيل الفهرس (Index) أو صلاحيات الجوجل كونسول.</div>";
+        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>حدث خطأ في الاتصال بالسيرفر: " + error.message + "</div>";
     });
 </script>
 </body>
