@@ -1,8 +1,7 @@
-// config.js - Ver: 206-11
+// config.js - Ver: 206-16
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// إعدادات منصة العائلة الرسمية الخاصة بمرتضى
 const firebaseConfig = {
   apiKey: "AIzaSyCt6XkYWcA6W0IlBjJp2T-QwNnz_-N4LqE",
   authDomain: "vertical-reason-572.firebaseapp.com",
@@ -15,4 +14,5 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+// تهيئة دقيقة تتوافق تلقائياً مع وضع Datastore المستضاف
 export const db = getFirestore(app);
