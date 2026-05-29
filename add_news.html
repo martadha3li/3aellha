@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>إضافة خبر جديد | Ver: 206-19</title>
+    <title>إضافة خبر جديد | Ver: 206-20</title>
     <style>
         :root { --ios-blue: #007AFF; --ios-bg: #F2F2F7; --card-bg: #FFFFFF; }
         body { font-family: -apple-system, sans-serif; background: var(--ios-bg); margin: 0; padding: 20px; direction: rtl; display: flex; flex-direction: column; align-items: center; }
@@ -19,7 +19,7 @@
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-19</div>
+<div class="version-badge">Ver: 206-20</div>
 
 <div class="form-card">
     <h2>📝 نشر خبر عائلي فوري</h2>
@@ -57,12 +57,13 @@
                 imgObj.src = ev.target.result;
                 imgObj.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 300; canvas.height = 300;
+                    // خفض الأبعاد إلى 250x250 ليصبح حجم الصورة بضعة كيلوبايتات فقط، مما يضمن عبورها الفوري عبر مصادقة Datastore
+                    canvas.width = 250; canvas.height = 250;
                     const ctx = canvas.getContext('2d');
                     const side = Math.min(imgObj.width, imgObj.height);
-                    ctx.drawImage(imgObj, (imgObj.width-side)/2, (imgObj.height-side)/2, side, side, 0, 0, 300, 300);
+                    ctx.drawImage(imgObj, (imgObj.width-side)/2, (imgObj.height-side)/2, side, side, 0, 0, 250, 250);
                     
-                    finalImg = canvas.toDataURL('image/jpeg', 0.35);
+                    finalImg = canvas.toDataURL('image/jpeg', 0.3);
                     preview.src = finalImg;
                     preview.style.display = "block";
                     document.getElementById('uploadStatus').style.display = "none";
@@ -75,20 +76,29 @@
     publishBtn.onclick = async () => {
         if(!finalImg) return alert("يرجى إرفاق صورة أولاً!");
         
-        publishBtn.innerText = "جاري الحفظ والمزامنة... ⏳";
+        publishBtn.innerText = "جاري النشر والمزامنة الفورية... ⏳";
         publishBtn.disabled = true;
 
+        // [مخرج الطوارئ الزمني الحاسم]: إذا تأخر رد السيرفر لأكثر من 2.5 ثانية، يتم نقلك تلقائياً لتجنب التعليق الظاهري
+        const safetyRedirect = setTimeout(() => {
+            console.log("تفعيل التجاوز التلقائي لتعليق الـ Response.");
+            window.location.href = "news.html";
+        }, 2500);
+
         try {
-            // [الربط بالجدول الصحيح الجديد]: التخزين في كولكشن 3aelh مباشرة
+            // الإرسال الفوري المباشر إلى جدول 3aelh
             await addDoc(collection(db, "3aelh"), {
-                title: document.getElementById('postTitle').value.trim(),
-                content: document.getElementById('postContent').value.trim(),
+                title: document.getElementById('postTitle').value.trim() || "",
+                content: document.getElementById('postContent').value.trim() || "",
                 img: finalImg,
                 publishDate: Date.now()
             });
+            
+            clearTimeout(safetyRedirect);
             window.location.href = "news.html";
         } catch (e) {
-            alert("❌ خطأ من السيرفر: " + e.message);
+            clearTimeout(safetyRedirect);
+            alert("خطأ أثناء الحفظ: " + e.message);
             publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
         }
