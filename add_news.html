@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>إضافة خبر جديد | Ver: 206-17</title>
+    <title>إضافة خبر جديد | Ver: 206-19</title>
     <style>
         :root { --ios-blue: #007AFF; --ios-bg: #F2F2F7; --card-bg: #FFFFFF; }
         body { font-family: -apple-system, sans-serif; background: var(--ios-bg); margin: 0; padding: 20px; direction: rtl; display: flex; flex-direction: column; align-items: center; }
@@ -19,10 +19,10 @@
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-17</div>
+<div class="version-badge">Ver: 206-19</div>
 
 <div class="form-card">
-    <h2>📝 نشر خبر عائلي جديد</h2>
+    <h2>📝 نشر خبر عائلي فوري</h2>
     <input type="text" id="postTitle" placeholder="العنوان (اختياري)">
     <textarea id="postContent" placeholder="نص الخبر (اختياري)"></textarea>
     
@@ -57,12 +57,12 @@
                 imgObj.src = ev.target.result;
                 imgObj.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = 400; canvas.height = 400;
+                    canvas.width = 300; canvas.height = 300;
                     const ctx = canvas.getContext('2d');
                     const side = Math.min(imgObj.width, imgObj.height);
-                    ctx.drawImage(imgObj, (imgObj.width-side)/2, (imgObj.height-side)/2, side, side, 0, 0, 400, 400);
+                    ctx.drawImage(imgObj, (imgObj.width-side)/2, (imgObj.height-side)/2, side, side, 0, 0, 300, 300);
                     
-                    finalImg = canvas.toDataURL('image/jpeg', 0.4);
+                    finalImg = canvas.toDataURL('image/jpeg', 0.35);
                     preview.src = finalImg;
                     preview.style.display = "block";
                     document.getElementById('uploadStatus').style.display = "none";
@@ -74,20 +74,21 @@
 
     publishBtn.onclick = async () => {
         if(!finalImg) return alert("يرجى إرفاق صورة أولاً!");
-        publishBtn.innerText = "جاري النشر والمزامنة الفورية... ⏳";
+        
+        publishBtn.innerText = "جاري الحفظ والمزامنة... ⏳";
         publishBtn.disabled = true;
 
         try {
-            await addDoc(collection(db, "News"), {
+            // [الربط بالجدول الصحيح الجديد]: التخزين في كولكشن 3aelh مباشرة
+            await addDoc(collection(db, "3aelh"), {
                 title: document.getElementById('postTitle').value.trim(),
                 content: document.getElementById('postContent').value.trim(),
                 img: finalImg,
                 publishDate: Date.now()
             });
-            // الانتقال المباشر لصفحة العرض فور اكتمال التخزين السحابي
             window.location.href = "news.html";
         } catch (e) {
-            alert("خطأ في التخزين: " + e.message);
+            alert("❌ خطأ من السيرفر: " + e.message);
             publishBtn.innerText = "🚀 نشر الخبر الآن";
             publishBtn.disabled = false;
         }
