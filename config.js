@@ -1,4 +1,4 @@
-// config.js - Ver: 206-16
+// config.js - Ver: 206-19
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -14,5 +14,4 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-// تهيئة دقيقة تتوافق تلقائياً مع وضع Datastore المستضاف
 export const db = getFirestore(app);
