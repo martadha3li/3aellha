@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>أخبار العائلة | Ver: 206-17</title>
+    <title>أخبار العائلة | Ver: 206-19</title>
     <style>
         :root { --ios-bg: #fafafa; --card-bg: #ffffff; --ios-blue: #007AFF; }
         body { background: var(--ios-bg); font-family: -apple-system, sans-serif; margin: 0; direction: rtl; padding-bottom: 80px; }
@@ -25,7 +25,7 @@
 </head>
 <body>
 
-<div class="version-badge">Ver: 206-17</div>
+<div class="version-badge">Ver: 206-19</div>
 
 <div id="notifBanner">
     <div style="font-size: 14px; font-weight: bold;">🔔 فعل التنبيهات لتصلك أخبار العائلة فوراً على جوالك</div>
@@ -38,7 +38,7 @@
 
 <script type="module">
     import { db } from './config.js';
-    import { collection, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     window.requestPermission = () => {
         if (!("Notification" in window)) return;
@@ -54,8 +54,8 @@
         document.getElementById('notifBanner').style.display = 'block';
     }
 
-    // [كسر حظر الكونسول]: تم الاستعلام بدون كود الترتيب السيرفري orderBy لتجنب تعليق نظام الـ Datastore
-    onSnapshot(collection(db, "News"), (snap) => {
+    // الاستماع المباشر الفوري لكولكشن 3aelh
+    onSnapshot(collection(db, "3aelh"), (snap) => {
         const feed = document.getElementById('feed');
         feed.innerHTML = "";
         
@@ -64,13 +64,12 @@
             return;
         }
 
-        // تحويل الوثائق إلى مصفوفة مخصصة لترتيبها محلياً بكفاءة وسرعة فائقة
         let postsArray = [];
         snap.forEach(docSnap => {
             postsArray.push(docSnap.data());
         });
 
-        // الترتيب المحلي المباشر: من الأحدث للأقدم بناءً على الطابع الزمني
+        // ترتيب محلي فوري من الأحدث للأقدم لتجنب تعليق الفهرس
         postsArray.sort((a, b) => (b.publishDate || 0) - (a.publishDate || 0));
 
         postsArray.forEach(post => {
@@ -94,7 +93,7 @@
             feed.appendChild(card);
         });
     }, (error) => {
-        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>حدث خطأ في الاتصال بالسيرفر: " + error.message + "</div>";
+        document.getElementById('feed').innerHTML = "<div style='text-align:center; color:red; padding:20px;'>خطأ في قراءة السيرفر الجديد: " + error.message + "</div>";
     });
 </script>
 </body>
