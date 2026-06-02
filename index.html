@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="logo.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="logo.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
+    
     <title>منصة الأخبار العائلية</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -76,7 +85,6 @@
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
 
-        /* الشاشة المنبثقة الإجبارية للإشعارات */
         .noti-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.9); backdrop-filter: blur(8px);
@@ -95,7 +103,6 @@
             box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
         }
 
-        /* زر الطوارئ العائم الدائم */
         .floating-force-btn {
             position: fixed; bottom: 16px; left: 16px; right: 16px;
             background: linear-gradient(135deg, var(--danger), #c0392b);
@@ -108,7 +115,6 @@
 </head>
 <body>
 
-<!-- واجهة طلب الإذن الإجبارية عند أول زيارة -->
 <div id="notificationPrompt" class="noti-overlay" style="display: none;">
     <div class="noti-card">
         <h2>🔔 تفعيل تطبيق الأخبار</h2>
@@ -151,71 +157,49 @@
     let allNews = [];
     let selectedCategory = 'all';
 
-    // دالة فحص حالة الإشعارات المحدثة والملائمة للجوال
     function checkNotificationStatus() {
-        if (!('Notification' in window)) {
-            console.log("هذا المتصفح لا يدعم الإشعارات");
-            return;
-        }
+        if (!('Notification' in window)) return;
 
-        // إذا كانت أول مرة يفتح فيها الرابط (حالة default)
         if (Notification.permission === 'default') {
             document.getElementById('notificationPrompt').style.display = 'flex';
             document.getElementById('floatingForceBtn').style.display = 'block';
-        } 
-        // إذا قام المستخدم بالرفض سابقاً
-        else if (Notification.permission === 'denied') {
+        } else if (Notification.permission === 'denied') {
             document.getElementById('floatingForceBtn').style.display = 'block';
             document.getElementById('floatingForceBtn').innerText = "⚠️ الإشعارات مغلقة بجوالك! اضغط هنا واقبل الإذن من إعدادات المتصفح";
-        } 
-        // مفعّل مسبقاً وبنجاح
-        else if (Notification.permission === 'granted') {
+        } else if (Notification.permission === 'granted') {
             document.getElementById('notificationPrompt').style.display = 'none';
             document.getElementById('floatingForceBtn').style.display = 'none';
         }
     }
 
-    // الدالة المسؤولة عن إجبار الجوال على إظهار طلب المتصفح الرسمي عبر تفاعل حقيقي (User Gesture)
     window.triggerNotificationPermission = function() {
         if (!('Notification' in window)) return;
-
-        // الطريقة الحديثة والمضمونة للتعامل مع وعود المتصفحات (Promises)
         try {
             Notification.requestPermission().then(permission => {
                 handlePermissionResult(permission);
             }).catch(err => {
-                // الطريقة التقليدية القديمة لمتصفحات السافاري القديمة وبعض الجوالات
                 Notification.requestPermission(function(permission) {
                     handlePermissionResult(permission);
                 });
             });
-        } catch (e) {
-            console.error("خطأ في استدعاء طلب الإذن:", e);
-        }
+        } catch (e) { console.error(e); }
     };
 
     function handlePermissionResult(permission) {
         if (permission === 'granted') {
-            alert("🎉 رائع! تم تفعيل الإشعارات بنجاح كتطبيق.");
+            alert("🎉 ممتاز! تم تفعيل الإشعارات بنجاح كتطبيق.");
             document.getElementById('notificationPrompt').style.display = 'none';
             document.getElementById('floatingForceBtn').style.display = 'none';
         } else if (permission === 'denied') {
-            alert("⚠️ تنبيه: قمت برفض الإذن. لن تتلقى أي إشعارات عند إغلاق المتصفح إلا إذا قمت بتعديلها من إعدادات الجوال.");
+            alert("⚠️ تنبيه: قمت برفض الإذن. يرجى تعديلها يدوياً لتلقي التنبيهات.");
             document.getElementById('floatingForceBtn').style.display = 'block';
         }
     }
 
-    // تسجيل الـ Service Worker وبدء تفعيل دالة الفحص الفوري
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(reg => {
-            console.log("Service Worker Registered!");
-            // انتظام الفحص بعد التحميل الكامل للـ Service Worker
             checkNotificationStatus();
-        }).catch(err => {
-            console.error("SW Registration failed:", err);
-            // تشغيل الفحص حتى في حال فشل الـ SW محلياً
-            checkNotificationStatus();
-        });
+        }).catch(err => { checkNotificationStatus(); });
     } else {
         checkNotificationStatus();
     }
@@ -265,7 +249,7 @@
             navigator.serviceWorker.ready.then(registration => {
                 registration.showNotification(title, {
                     body: body,
-                    icon: '🏡'
+                    icon: 'logo.png' // 🔔 تم ربط أيقونة الإشعارات أيضاً بشعارك الخاص
                 });
             });
         }
@@ -274,7 +258,6 @@
     function renderNews() {
         const container = document.getElementById('newsList');
         container.innerHTML = '';
-
         const filtered = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
 
         if (filtered.length === 0) {
@@ -285,13 +268,10 @@
         filtered.forEach(news => {
             const hasTitle = news.title && news.title.trim() !== "";
             const hasText = news.text && news.text.trim() !== "";
-
             let cardHtml = `<div class="news-card">`;
-            
             if (news.image) {
                 cardHtml += `<div class="img-container"><img src="${news.image}" class="news-img" alt="News Image"></div>`;
             }
-            
             if (hasTitle || hasText) {
                 cardHtml += `<div class="news-content">`;
                 if (hasTitle) cardHtml += `<div class="news-title">${news.title}</div>`;
@@ -301,7 +281,6 @@
             } else {
                 cardHtml += `<div class="news-content" style="padding-top: 8px;"><div class="news-date">📅 تاريخ الخبر: ${news.date}</div></div>`;
             }
-
             cardHtml += `</div>`;
             container.innerHTML += cardHtml;
         });
