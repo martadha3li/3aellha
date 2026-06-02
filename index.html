@@ -30,7 +30,6 @@
             background: linear-gradient(135deg, var(--primary-light), var(--primary));
             -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-        /* قائمة التصنيفات */
         .categories-container {
             display: flex; gap: 8px; overflow-x: auto;
             padding: 4px 0 12px 0; margin-bottom: 12px;
@@ -46,7 +45,6 @@
         .cat-badge.active {
             background: var(--primary); color: white; border-color: var(--primary);
         }
-        /* كروت الأخبار الذكية */
         .news-list { display: flex; flex-direction: column; gap: 16px; }
         .news-card {
             background: white; border-radius: 24px; overflow: hidden;
@@ -68,12 +66,10 @@
         <h1>🏡 منصة الأخبار العائلية</h1>
     </div>
 
-    <!-- شريط التصنيفات -->
     <div class="categories-container" id="categoriesBar">
         <div class="cat-badge active" onclick="filterNews('all')">الكل</div>
     </div>
 
-    <!-- قائمة عرض الأخبار -->
     <div class="news-list" id="newsList">
         <div class="no-data">جاري تحميل الأخبار العائلية...</div>
     </div>
@@ -81,9 +77,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-    // نفس أدوات الربط والـ Credentials الخاصة بـ Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
         projectId: "fnews-7525e",
@@ -96,53 +91,59 @@
     let allNews = [];
     let selectedCategory = 'all';
 
-    // طلب إذن الإشعارات بشكل إجباري عند فتح الرابط
     async function requestNotificationPermission() {
         if ('Notification' in window) {
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
-                // إعادة الطلب في حال الرفض لإجبار المستخدم
                 setTimeout(requestNotificationPermission, 5000);
             }
         }
     }
 
-    // تسجيل الـ Service Worker لتشغيل الإشعارات في الخلفية وحين إغلاق المتصفح
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(() => {
             requestNotificationPermission();
         });
     }
 
-    // تحميل التصنيفات
     async function loadCategories() {
-        const snap = await getDocs(collection(db, "categories"));
-        const bar = document.getElementById('categoriesBar');
-        bar.innerHTML = `<div class="cat-badge ${selectedCategory === 'all' ? 'active' : ''}" onclick="window.filterNews('all')">الكل</div>`;
-        snap.forEach(doc => {
-            const cat = doc.data().name;
-            bar.innerHTML += `<div class="cat-badge ${selectedCategory === cat ? 'active' : ''}" onclick="window.filterNews('${cat}')">${cat}</div>`;
-        });
+        try {
+            const snap = await getDocs(collection(db, "categories"));
+            const bar = document.getElementById('categoriesBar');
+            bar.innerHTML = `<div class="cat-badge ${selectedCategory === 'all' ? 'active' : ''}" onclick="window.filterNews('all')">الكل</div>`;
+            snap.forEach(doc => {
+                const cat = doc.data().name;
+                bar.innerHTML += `<div class="cat-badge ${selectedCategory === cat ? 'active' : ''}" onclick="window.filterNews('${cat}')">${cat}</div>`;
+            });
+        } catch (e) { console.error(e); }
     }
 
-    // الاستماع الفوري للأخبار الجديدة لإنتاج إشعار حتى لو أغلق المتصفح (عبر ميزة Realtime listener)
-    const q = query(collection(db, "news"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snapshot) => {
-        allNews = [];
+    // تم إزالة الترتيب orderBy البرمي لمنع حظر الاستعلام بدون فهارس، وسيتم الترتيب يدوياً بالمتصفح لضمان ظهور المحتوى فوراً
+    onSnapshot(collection(db, "news"), (snapshot) => {
         let isFirstLoad = allNews.length === 0;
+        let tempNews = [];
         
         snapshot.forEach(doc => {
-            allNews.push({ id: doc.id, ...doc.data() });
+            tempNews.push({ id: doc.id, ...doc.data() });
+        });
+
+        // ترتيب الأخبار يدوياً في المتصفح من الأحدث للأقدم عبر كود الطابع الزمني المرفق
+        allNews = tempNews.sort((a, b) => {
+            const dateA = a.createdAt ? (a.createdAt.seconds || 0) : 0;
+            const dateB = b.createdAt ? (b.createdAt.seconds || 0) : 0;
+            return dateB - dateA;
         });
         
-        // إطلاق إشعار جوال في حال قدوم خبر جديد ولم تكن هذه المرة الأولى للتحميل
         if (!isFirstLoad && snapshot.docChanges().some(change => change.type === "added")) {
-            const newDoc = snapshot.docChanges().find(change => change.type === "added").doc.data();
-            sendLocalNotification(newDoc.title || "خبر عائلي جديد!", newDoc.date || "");
+            const addedDoc = snapshot.docChanges().find(change => change.type === "added").doc.data();
+            sendLocalNotification(addedDoc.title || "خبر عائلي جديد!", addedDoc.date || "");
         }
 
         renderNews();
         loadCategories();
+    }, (error) => {
+        console.error("Firestore Error: ", error);
+        document.getElementById('newsList').innerHTML = `<div class="no-data" style="color:red;">حدث خطأ أثناء جلب البيانات: ${error.message}</div>`;
     });
 
     function sendLocalNotification(title, body) {
@@ -157,7 +158,6 @@
         }
     }
 
-    // دالة عرض الأخبار الذكية حسب الشروط المطلوبة
     function renderNews() {
         const container = document.getElementById('newsList');
         container.innerHTML = '';
@@ -173,14 +173,12 @@
             const hasTitle = news.title && news.title.trim() !== "";
             const hasText = news.text && news.text.trim() !== "";
 
-            // هيكلية الكرت الذكي: تختفي الخانات تماماً في حال عدم وجود العنوان أو النص
             let cardHtml = `<div class="news-card">`;
             
             if (news.image) {
                 cardHtml += `<img src="${news.image}" class="news-img" alt="News Image">`;
             }
             
-            // تظهر الخانات فقط عند وجودها
             if (hasTitle || hasText) {
                 cardHtml += `<div class="news-content">`;
                 if (hasTitle) cardHtml += `<div class="news-title">${news.title}</div>`;
@@ -188,7 +186,6 @@
                 cardHtml += `<div class="news-date">📅 ${news.date}</div>`;
                 cardHtml += `</div>`;
             } else {
-                // في حال عدم وجود عنوان ونص، يظهر تاريخ الخبر أسفل الصورة مباشرة
                 cardHtml += `<div class="news-content" style="padding-top: 8px;"><div class="news-date">📅 تاريخ الخبر: ${news.date}</div></div>`;
             }
 
