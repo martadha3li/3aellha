@@ -102,10 +102,8 @@
 
     let compressedImageBase64 = "";
 
-    // تعيين تاريخ اليوم كقيمة افتراضية
     document.getElementById('newsDate').valueAsDate = new Date();
 
-    // تحميل التصنيفات في القائمة المنسدلة
     async function loadCategoriesIntoSelect() {
         const snap = await getDocs(collection(db, "categories"));
         const select = document.getElementById('newsCategory');
@@ -117,7 +115,6 @@
     }
     loadCategoriesIntoSelect();
 
-    // إضافة تصنيف جديد
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('newCatName').value.trim();
@@ -129,7 +126,7 @@
         loadCategoriesIntoSelect();
     });
 
-    // آلية ضغط الصور المرفقة فوراً عبر عنصر Canvas لمنع تحميل قاعدة البيانات
+    // معالجة وضغط الصورة فور اختيارها لحفظ مساحة فايربيس وقبول الملفات الكبيرة
     document.getElementById('newsImageFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -142,7 +139,6 @@
                 let width = img.width;
                 let height = img.height;
 
-                // تحديث الأبعاد بحد أقصى 800 بكسل للحفاظ على الدقة والسرعة
                 const max_size = 800;
                 if (width > height) {
                     if (width > max_size) { height *= max_size / width; width = max_size; }
@@ -152,10 +148,11 @@
 
                 canvas.width = width;
                 canvas.height = height;
-                const ctx = canvas.getContext('2ends');
+                
+                // تم تصحيح الكود البرمجي هنا لتصبح 2d وتعمل بنجاح
+                const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // ضغط الصورة بجودة 60% فقط وتحويلها إلى Base64 خفيف جداً
                 compressedImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
                 
                 const preview = document.getElementById('imgPreview');
@@ -167,7 +164,6 @@
         reader.readAsDataURL(file);
     });
 
-    // نشر الخبر وحفظه في قاعدة البيانات
     document.getElementById('newsForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const category = document.getElementById('newsCategory').value;
@@ -183,17 +179,20 @@
             title,
             text,
             date,
-            image: compressedImageBase64, // الصورة المضغوطة
+            image: compressedImageBase64,
             createdAt: new Date()
         };
 
-        await addDoc(collection(db, "news"), newsData);
-        alert("تم نشر الخبر العائلي بنجاح وعرضه بالصفحة الرئيسية!");
-        
-        document.getElementById('newsForm').reset();
-        document.getElementById('imgPreview').style.display = 'none';
-        compressedImageBase64 = "";
-        document.getElementById('newsDate').valueAsDate = new Date();
+        try {
+            await addDoc(collection(db, "news"), newsData);
+            alert("تم نشر الخبر العائلي بنجاح وعرضه بالصفحة الرئيسية!");
+            document.getElementById('newsForm').reset();
+            document.getElementById('imgPreview').style.display = 'none';
+            compressedImageBase64 = "";
+            document.getElementById('newsDate').valueAsDate = new Date();
+        } catch (error) {
+            alert("حدث خطأ أثناء حفظ الخبر: " + error.message);
+        }
     });
 </script>
 </body>
