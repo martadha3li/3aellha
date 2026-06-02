@@ -1,4 +1,3 @@
-// Service Worker لتشغيل واستقبال الإشعارات في الخلفية
 self.addEventListener('push', function(event) {
     const data = event.data ? event.data.json() : {};
     const title = data.title || "خبر عائلي جديد";
