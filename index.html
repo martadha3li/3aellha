@@ -12,6 +12,7 @@
             --dark: #2c3e50;
             --gray: #7f8c8d;
             --light: #f5f7fa;
+            --success: #27ae60;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,7 +20,7 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #eef2f3 100%);
             min-height: 100vh; color: var(--dark);
         }
-        .main-container { max-width: 500px; margin: 0 auto; } /* تم تقليل العرض قليلاً ليناسب طابع الإنستغرام */
+        .main-container { max-width: 500px; margin: 0 auto; }
         .header-bar {
             background: white; padding: 16px; border-radius: 24px;
             margin-bottom: 16px; text-align: center;
@@ -51,11 +52,9 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             display: flex; flex-direction: column;
         }
-        
-        /* تصميم الصورة بأبعاد الإنستغرام (مربّع 1:1) وبكامل تفاصيلها دون تشويه */
         .img-container {
             width: 100%;
-            aspect-ratio: 1 / 1; /* يجعل الحاوية مربعة تماماً كالإنستغرام */
+            aspect-ratio: 1 / 1;
             background-color: #f8f9fa; 
             display: flex;
             align-items: center;
@@ -65,18 +64,48 @@
         .news-img { 
             width: 100%; 
             height: 100%; 
-            object-fit: contain; /* يضمن ظهور الصورة كاملة بجميع أبعادها دون قص */
+            object-fit: contain;
             background: #fafafa;
         }
-        
         .news-content { padding: 16px; }
         .news-title { font-size: 1.15rem; margin: 0 0 8px 0; color: var(--dark); font-weight: bold; }
         .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
+
+        /* نافذة إجبار تفعيل الإشعارات المخصصة للموبايل */
+        .noti-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .noti-card {
+            background: white; padding: 30px 24px; border-radius: 32px;
+            width: 100%; max-width: 380px; text-align: center;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+            animation: popUp 0.4s ease;
+        }
+        @keyframes popUp { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .noti-card h2 { margin-top: 0; color: var(--primary); font-size: 1.4rem; }
+        .noti-card p { color: var(--dark); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px; }
+        .btn-noti {
+            background: var(--success); color: white; border: none; padding: 14px;
+            width: 100%; font-size: 16px; font-weight: bold; border-radius: 14px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-noti:active { background: #1e8c4d; }
     </style>
 </head>
 <body>
+
+<!-- نافذة طلب إذن الإشعارات المنبثقة -->
+<div id="notificationPrompt" class="noti-overlay" style="display: none;">
+    <div class="noti-card">
+        <h2>🔔 تفعيل إشعارات العائلة</h2>
+        <p>يرجى السماح باستقبال الإشعارات لتصلك أحدث الأخبار والمناسبات العائلية فور حدوثها مباشرة على شاشة جوالك كتطبيق.</p>
+        <button class="btn-noti" onclick="triggerNotificationPermission()">✨ تفعيل الإشعارات الآن</button>
+    </div>
+</div>
 
 <div class="main-container">
     <div class="header-bar">
@@ -108,18 +137,34 @@
     let allNews = [];
     let selectedCategory = 'all';
 
-    async function requestNotificationPermission() {
+    // فحص حالة الإذن عند الدخول لفتح النافذة الإجبارية إذا لم يسبق تفعيلها
+    function checkNotificationStatus() {
         if ('Notification' in window) {
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                setTimeout(requestNotificationPermission, 5000);
+            if (Notification.permission === 'default') {
+                document.getElementById('notificationPrompt').style.display = 'flex';
+            } else if (Notification.permission === 'denied') {
+                console.log("المنشورات محظورة من إعدادات متصفح المستخدم");
             }
         }
     }
 
+    // الدالة التنفيذية التي تنطلق عند نقر زر التفعيل لإظهار طلب المتصفح الرسمي بدون حظر
+    window.triggerNotificationPermission = async () => {
+        if ('Notification' in window) {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                alert("🎉 تم تفعيل الإشعارات بنجاح! ستصلك التحديثات فوراً.");
+                document.getElementById('notificationPrompt').style.display = 'none';
+            } else {
+                alert("⚠️ لم يتم تفعيل الإشعارات. يرجى إعطاء الصلاحية لتلقي الأخبار.");
+            }
+        }
+    };
+
+    // تسجيل الـ Service Worker وتشغيل فحص الإشعارات البدئي
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(() => {
-            requestNotificationPermission();
+            checkNotificationStatus();
         });
     }
 
@@ -141,7 +186,6 @@
         
         snapshot.forEach(doc => {
             const data = doc.data();
-            // شرط إضافي: لا نعرض الخبر إذا كانت خاصية الإيقاف المستمر (status === 'hidden')
             if (data.status !== 'hidden') {
                 tempNews.push({ id: doc.id, ...data });
             }
