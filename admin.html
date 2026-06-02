@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الأخبار العائلية</title>
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            --success: #27ae60;
+            --primary: #764ba2;
+            --dark: #2c3e50;
+            --light: #f5f7fa;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0; padding: 16px; background: #f0f2f5; color: var(--dark);
+        }
+        .admin-container { max-width: 550px; margin: 0 auto; }
+        .card {
+            background: white; padding: 20px; border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px;
+        }
+        h2 { margin-top: 0; font-size: 1.25rem; border-right: 4px solid var(--primary); padding-right: 10px; }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0;
+            border-radius: 12px; font-size: 14px; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        .btn {
+            width: 100%; padding: 13px; border: none; border-radius: 12px;
+            font-weight: bold; font-size: 15px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn:active { transform: scale(0.98); }
+        .preview-box { text-align: center; margin-top: 8px; }
+        .preview-box img { max-width: 100%; max-height: 150px; border-radius: 12px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <div class="card">
+        <h2 style="border-color: var(--success);">📁 إضافة تصنيف جديد</h2>
+        <form id="categoryForm">
+            <div class="form-group">
+                <label>اسم التصنيف:</label>
+                <input type="text" id="newCatName" placeholder="مثال: مناسبات، تخرج، مولود جديد" required>
+            </div>
+            <button type="submit" class="btn btn-success">➕ حفظ التصنيف</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>📝 إضافة خبر جديد</h2>
+        <form id="newsForm">
+            <div class="form-group">
+                <label>تصنيف الخبر:</label>
+                <select id="newsCategory" required>
+                    <option value="">-- اختر التصنيف --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>عنوان الخبر (اختياري):</label>
+                <input type="text" id="newsTitle" placeholder="أدخل العنوان">
+            </div>
+            <div class="form-group">
+                <label>نص الخبر (اختياري):</label>
+                <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>تاريخ الخبر:</label>
+                <input type="date" id="newsDate" required>
+            </div>
+            <div class="form-group">
+                <label>صورة الخبر المرفقة (سيتم ضغطها فوراً):</label>
+                <input type="file" id="newsImageFile" accept="image/*" required>
+                <div class="preview-box">
+                    <img id="imgPreview" src="" alt="المعاينة">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">🚀 نشر الخبر العائلي</button>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
+        projectId: "fnews-7525e",
+        appId: "1:1023530532546:web:cbc1be1753237179bd455b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let compressedImageBase64 = "";
+
+    // تعيين تاريخ اليوم كقيمة افتراضية
+    document.getElementById('newsDate').valueAsDate = new Date();
+
+    // تحميل التصنيفات في القائمة المنسدلة
+    async function loadCategoriesIntoSelect() {
+        const snap = await getDocs(collection(db, "categories"));
+        const select = document.getElementById('newsCategory');
+        select.innerHTML = '<option value="">-- اختر التصنيف --</option>';
+        snap.forEach(doc => {
+            const name = doc.data().name;
+            select.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+    }
+    loadCategoriesIntoSelect();
+
+    // إضافة تصنيف جديد
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('newCatName').value.trim();
+        if(!name) return;
+
+        await addDoc(collection(db, "categories"), { name, createdAt: new Date() });
+        alert("تم إضافة التصنيف بنجاح!");
+        document.getElementById('categoryForm').reset();
+        loadCategoriesIntoSelect();
+    });
+
+    // آلية ضغط الصور المرفقة فوراً عبر عنصر Canvas لمنع تحميل قاعدة البيانات
+    document.getElementById('newsImageFile').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // تحديث الأبعاد بحد أقصى 800 بكسل للحفاظ على الدقة والسرعة
+                const max_size = 800;
+                if (width > height) {
+                    if (width > max_size) { height *= max_size / width; width = max_size; }
+                } else {
+                    if (height > max_size) { width *= max_size / height; height = max_size; }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2ends');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // ضغط الصورة بجودة 60% فقط وتحويلها إلى Base64 خفيف جداً
+                compressedImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                
+                const preview = document.getElementById('imgPreview');
+                preview.src = compressedImageBase64;
+                preview.style.display = 'inline-block';
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // نشر الخبر وحفظه في قاعدة البيانات
+    document.getElementById('newsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const category = document.getElementById('newsCategory').value;
+        const title = document.getElementById('newsTitle').value.trim();
+        const text = document.getElementById('newsText').value.trim();
+        const date = document.getElementById('newsDate').value;
+
+        if(!category) return alert("يرجى اختيار تصنيف للخبر");
+        if(!compressedImageBase64) return alert("يرجى إرفاق صورة للخبر");
+
+        const newsData = {
+            category,
+            title,
+            text,
+            date,
+            image: compressedImageBase64, // الصورة المضغوطة
+            createdAt: new Date()
+        };
+
+        await addDoc(collection(db, "news"), newsData);
+        alert("تم نشر الخبر العائلي بنجاح وعرضه بالصفحة الرئيسية!");
+        
+        document.getElementById('newsForm').reset();
+        document.getElementById('imgPreview').style.display = 'none';
+        compressedImageBase64 = "";
+        document.getElementById('newsDate').valueAsDate = new Date();
+    });
+</script>
+</body>
+</html>
