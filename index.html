@@ -13,12 +13,15 @@
             --gray: #7f8c8d;
             --light: #f5f7fa;
             --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f1c40f;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0; padding: 12px;
             background: linear-gradient(135deg, #f5f7fa 0%, #eef2f3 100%);
             min-height: 100vh; color: var(--dark);
+            padding-bottom: 80px; /* مساحة بالأسفل لكي لا يغطي الزر العائم محتوى الأخبار */
         }
         .main-container { max-width: 500px; margin: 0 auto; }
         .header-bar {
@@ -73,7 +76,7 @@
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
 
-        /* نافذة إجبار تفعيل الإشعارات المخصصة للموبايل */
+        /* نافذة إجبار تفعيل الإشعارات المنبثقة */
         .noti-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
@@ -93,18 +96,35 @@
             width: 100%; font-size: 16px; font-weight: bold; border-radius: 14px; cursor: pointer;
             transition: background 0.2s;
         }
-        .btn-noti:active { background: #1e8c4d; }
+
+        /* 🚨 تصميم الزر العائم الإجباري أسفل الشاشة في حال عدم التفعيل */
+        .floating-force-btn {
+            position: fixed; bottom: 16px; left: 16px; right: 16px;
+            background: linear-gradient(135deg, var(--danger), #c0392b);
+            color: white; border: 3px solid var(--warning); padding: 16px;
+            border-radius: 16px; text-align: center; font-weight: bold;
+            font-size: 15px; box-shadow: 0 8px 24px rgba(231, 76, 60, 0.4);
+            z-index: 999; cursor: pointer; display: none;
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            from { transform: scale(1); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4); }
+            to { transform: scale(1.02); box-shadow: 0 8px 30px rgba(241, 196, 15, 0.7); }
+        }
     </style>
 </head>
 <body>
 
-<!-- نافذة طلب إذن الإشعارات المنبثقة -->
 <div id="notificationPrompt" class="noti-overlay" style="display: none;">
     <div class="noti-card">
         <h2>🔔 تفعيل إشعارات العائلة</h2>
-        <p>يرجى السماح باستقبال الإشعارات لتصلك أحدث الأخبار والمناسبات العائلية فور حدوثها مباشرة على شاشة جوالك كتطبيق.</p>
+        <p>يرجى السماح باستقبال الإشعارات لتصلك أحدث الأخبار والمناسبات العائلية فور حدوثها مباشرة على شاشة جوالك كتطبيق حتى عند إغلاق المتصفح.</p>
         <button class="btn-noti" onclick="triggerNotificationPermission()">✨ تفعيل الإشعارات الآن</button>
     </div>
+</div>
+
+<div id="floatingForceBtn" class="floating-force-btn" onclick="triggerNotificationPermission()">
+    ⚠️ اضغط هنا لتفعيل إشعارات الجوال (مطلوب لتصفح الأخبار)
 </div>
 
 <div class="main-container">
@@ -137,31 +157,42 @@
     let allNews = [];
     let selectedCategory = 'all';
 
-    // فحص حالة الإذن عند الدخول لفتح النافذة الإجبارية إذا لم يسبق تفعيلها
+    // دالة ذكية لفحص إذن الإشعارات وإدارة ظهور الأدوات الإجبارية
     function checkNotificationStatus() {
         if ('Notification' in window) {
             if (Notification.permission === 'default') {
+                // تفعيل النافذة والزر العائم معاً للإجبار الكامل
                 document.getElementById('notificationPrompt').style.display = 'flex';
+                document.getElementById('floatingForceBtn').style.display = 'block';
             } else if (Notification.permission === 'denied') {
-                console.log("المنشورات محظورة من إعدادات متصفح المستخدم");
+                // إذا قام المستخدم برفض الإشعار سابقاً، يظل الزر العائم ظاهر ومستمر بالأسفل لتنبيهه
+                document.getElementById('floatingForceBtn').style.display = 'block';
+                document.getElementById('floatingForceBtn').innerText = "⚠️ الإشعارات محظورة بجوالك! اضغط هنا لإعادة تفعيلها من إعدادات المتصفح";
+            } else if (Notification.permission === 'granted') {
+                // في حال كان مفعلاً مسبقاً، تختفي كل أدوات الطلب
+                document.getElementById('notificationPrompt').style.display = 'none';
+                document.getElementById('floatingForceBtn').style.display = 'none';
             }
         }
     }
 
-    // الدالة التنفيذية التي تنطلق عند نقر زر التفعيل لإظهار طلب المتصفح الرسمي بدون حظر
+    // دالة إطلاق طلب الإذن الرسمي للمتصفح وإخفاء الأزرار فور القبول
     window.triggerNotificationPermission = async () => {
         if ('Notification' in window) {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
-                alert("🎉 تم تفعيل الإشعارات بنجاح! ستصلك التحديثات فوراً.");
+                alert("🎉 ممتاز! تم تفعيل إشعارات التطبيق بنجاح.");
+                // إخفاء فوري للنافذة والزر العائم
                 document.getElementById('notificationPrompt').style.display = 'none';
+                document.getElementById('floatingForceBtn').style.display = 'none';
             } else {
-                alert("⚠️ لم يتم تفعيل الإشعارات. يرجى إعطاء الصلاحية لتلقي الأخبار.");
+                alert("⚠️ تنبيه: بدون تفعيل الإشعارات، لن تصلك الأخبار عند إغلاق المتصفح. يرجى الضغط على الزر الأحمر بالأسفل للمحاولة مجدداً.");
+                document.getElementById('floatingForceBtn').style.display = 'block';
             }
         }
     };
 
-    // تسجيل الـ Service Worker وتشغيل فحص الإشعارات البدئي
+    // تشغيل وفحص النظام عند بدء تشغيل الـ Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(() => {
             checkNotificationStatus();
