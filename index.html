@@ -2,142 +2,206 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>منصة العائلة | البداية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>منصة الأخبار العائلية</title>
     <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
-            --ios-blue: #007AFF;
-            --ios-bg: #F2F2F7;
+            --primary: #764ba2;
+            --primary-light: #667eea;
+            --dark: #2c3e50;
+            --gray: #7f8c8d;
+            --light: #f5f7fa;
         }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--ios-bg);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            direction: rtl;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0; padding: 12px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef2f3 100%);
+            min-height: 100vh; color: var(--dark);
         }
-
-        .main-card {
-            background: white;
-            padding: 40px 20px;
-            border-radius: 30px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            z-index: 10;
+        .main-container { max-width: 600px; margin: 0 auto; }
+        .header-bar {
+            background: white; padding: 16px; border-radius: 24px;
+            margin-bottom: 16px; text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
-
-        .logo-area { font-size: 50px; margin-bottom: 20px; }
-        .welcome-text h1 { font-size: 24px; color: #1c1c1e; margin-bottom: 10px; }
-        .welcome-text p { color: #8e8e93; font-size: 14px; margin-bottom: 35px; line-height: 1.5; }
-        
-        .btn-group { display: flex; flex-direction: column; gap: 15px; }
-        .btn { padding: 16px; border-radius: 15px; font-size: 16px; font-weight: 700; text-decoration: none; transition: all 0.2s ease; display: block; cursor: pointer; border: none; }
-        .btn-register { background-color: var(--ios-blue); color: white; box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3); }
-        .btn-login { background-color: #E5E5EA; color: #1c1c1e; }
-        .btn:active { transform: scale(0.97); }
-
-        /* شاشة التفعيل الإجبارية لأول مرة */
-        .onboarding-overlay {
-            position: fixed;
-            inset: 0;
-            background: white;
-            z-index: 999999;
-            display: none; /* يتم التحكم به عبر الجافاسكريبت */
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 30px;
-            text-align: center;
+        .header-bar h1 {
+            margin: 0; font-size: 1.4rem;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-
-        .bell-icon {
-            font-size: 70px;
-            animation: ring 1.5s infinite ease-in-out;
-            margin-bottom: 25px;
+        /* قائمة التصنيفات */
+        .categories-container {
+            display: flex; gap: 8px; overflow-x: auto;
+            padding: 4px 0 12px 0; margin-bottom: 12px;
+            scrollbar-width: none;
         }
-
-        @keyframes ring {
-            0% { transform: rotate(0); }
-            10% { transform: rotate(15deg); }
-            20% { transform: rotate(-15deg); }
-            30% { transform: rotate(10deg); }
-            40% { transform: rotate(-10deg); }
-            50% { transform: rotate(0); }
-            100% { transform: rotate(0); }
+        .categories-container::-webkit-scrollbar { display: none; }
+        .cat-badge {
+            background: white; padding: 8px 16px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            border: 2px solid transparent; transition: all 0.2s;
         }
-
-        .onboarding-overlay h2 { font-size: 26px; color: #1c1c1e; margin-bottom: 15px; }
-        .onboarding-overlay p { color: #48484a; font-size: 15px; line-height: 1.6; margin-bottom: 40px; max-width: 320px; }
-        
-        .btn-grant { background: #34c759; color: white; width: 100%; max-width: 300px; box-shadow: 0 4px 12px rgba(52, 199, 89, 0.3); }
+        .cat-badge.active {
+            background: var(--primary); color: white; border-color: var(--primary);
+        }
+        /* كروت الأخبار الذكية */
+        .news-list { display: flex; flex-direction: column; gap: 16px; }
+        .news-card {
+            background: white; border-radius: 24px; overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column;
+        }
+        .news-img { width: 100%; height: auto; max-height: 350px; object-fit: cover; display: block; }
+        .news-content { padding: 16px; }
+        .news-title { font-size: 1.2rem; margin: 0 0 8px 0; color: var(--dark); font-weight: bold; }
+        .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
+        .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
+        .no-data { text-align: center; padding: 30px; color: var(--gray); }
     </style>
 </head>
 <body>
 
-    <div class="onboarding-overlay" id="onboardingScreen">
-        <div class="bell-icon">🔔</div>
-        <h2>تفعيل تنبيهات العائلة</h2>
-        <p>لتصلك الأخبار العاجلة والبيانات الحية فور صدورها على جوالك، يرجى الضغط على الزر أدناه واختيار <b>"السماح - Allow"</b>.</p>
-        <button class="btn btn-grant" onclick="forceNotificationPermission()">تفعيل واستمرار 🚀</button>
-        <p style="font-size: 11px; color: #ff3b30; margin-top: 20px; font-weight: bold;">⚠️ تنبيه: يرجى إبقاء هذه الصفحة مفتوحة في المتصفح دائماً لضمان عمل النظام.</p>
+<div class="main-container">
+    <div class="header-bar">
+        <h1>🏡 منصة الأخبار العائلية</h1>
     </div>
 
-    <div class="main-card">
-        <div class="logo-area">🏆</div>
-        <div class="welcome-text">
-            <h1>منصة أخبار العائلة</h1>
-            <p>أهلاً بك في التايم لاين الرسمي. يمكنك الانتقال مباشرة لساحة الأخبار أو تسجيل الدخول إذا كنت المدير.</p>
-        </div>
-
-        <div class="btn-group">
-            <a href="news.html" class="btn btn-register">📰 تصفح الأخبار العامة</a>
-            <a href="login.html" class="btn btn-login">🔑 دخول الإدارة (خاص)</a>
-        </div>
+    <!-- شريط التصنيفات -->
+    <div class="categories-container" id="categoriesBar">
+        <div class="cat-badge active" onclick="filterNews('all')">الكل</div>
     </div>
 
-<script>
-    // 1. فحص ما إذا كان الجهاز يفتح الرابط لأول مرة أو لم يفعل الإشعارات بعد
-    function checkFirstTime() {
-        const isGranted = localStorage.getItem('familyNotifGranted') === 'true';
-        
-        if (!isGranted || Notification.permission !== 'granted') {
-            // إظهار شاشة التفعيل وحجب الموقع بالكامل
-            document.getElementById('onboardingScreen').style.display = 'flex';
+    <!-- قائمة عرض الأخبار -->
+    <div class="news-list" id="newsList">
+        <div class="no-data">جاري تحميل الأخبار العائلية...</div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    // نفس أدوات الربط والـ Credentials الخاصة بـ Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
+        projectId: "fnews-7525e",
+        appId: "1:1023530532546:web:cbc1be1753237179bd455b"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let allNews = [];
+    let selectedCategory = 'all';
+
+    // طلب إذن الإشعارات بشكل إجباري عند فتح الرابط
+    async function requestNotificationPermission() {
+        if ('Notification' in window) {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                // إعادة الطلب في حال الرفض لإجبار المستخدم
+                setTimeout(requestNotificationPermission, 5000);
+            }
         }
     }
 
-    // 2. إجبار المستخدم على منح الصلاحية
-    window.forceNotificationPermission = () => {
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                localStorage.setItem('familyNotifGranted', 'true');
-                alert("تم تفعيل الإشعارات الحية بنجاح! 🎉 جاري تحويلك للمنصة.");
-                // إخفاء الشاشة بعد السماح
-                document.getElementById('onboardingScreen').style.display = 'none';
-            } else {
-                alert("عذراً! يجب عليك اختيار 'السماح' لتتمكن من استخدام المنصة وتلقي الأخبار.");
-            }
+    // تسجيل الـ Service Worker لتشغيل الإشعارات في الخلفية وحين إغلاق المتصفح
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(() => {
+            requestNotificationPermission();
         });
-    };
+    }
 
-    // 3. منع إغلاق الصفحة أو الخروج منها نهائياً (إظهار تحذير تأكيدي)
-    window.addEventListener('beforeunload', function (e) {
-        // تخصيص الرسالة (المتصفحات الحديثة تعرض رسالة النظام القياسية لحمايتها من السخام)
-        const confirmationMessage = 'تنبيه: يجب إبقاء هذه الصفحة مفتوحة دائماً في الخلفية لضمان استمرار استقبال الإشعارات الحية!';
-        (e || window.event).returnValue = confirmationMessage; 
-        return confirmationMessage; 
+    // تحميل التصنيفات
+    async function loadCategories() {
+        const snap = await getDocs(collection(db, "categories"));
+        const bar = document.getElementById('categoriesBar');
+        bar.innerHTML = `<div class="cat-badge ${selectedCategory === 'all' ? 'active' : ''}" onclick="window.filterNews('all')">الكل</div>`;
+        snap.forEach(doc => {
+            const cat = doc.data().name;
+            bar.innerHTML += `<div class="cat-badge ${selectedCategory === cat ? 'active' : ''}" onclick="window.filterNews('${cat}')">${cat}</div>`;
+        });
+    }
+
+    // الاستماع الفوري للأخبار الجديدة لإنتاج إشعار حتى لو أغلق المتصفح (عبر ميزة Realtime listener)
+    const q = query(collection(db, "news"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+        allNews = [];
+        let isFirstLoad = allNews.length === 0;
+        
+        snapshot.forEach(doc => {
+            allNews.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // إطلاق إشعار جوال في حال قدوم خبر جديد ولم تكن هذه المرة الأولى للتحميل
+        if (!isFirstLoad && snapshot.docChanges().some(change => change.type === "added")) {
+            const newDoc = snapshot.docChanges().find(change => change.type === "added").doc.data();
+            sendLocalNotification(newDoc.title || "خبر عائلي جديد!", newDoc.date || "");
+        }
+
+        renderNews();
+        loadCategories();
     });
 
-    // تشغيل الفحص فور تحميل الصفحة
-    checkFirstTime();
-</script>
+    function sendLocalNotification(title, body) {
+        if (Notification.permission === "granted") {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification(title, {
+                    body: body,
+                    icon: '🏡',
+                    vibrate: [200, 100, 200]
+                });
+            });
+        }
+    }
 
+    // دالة عرض الأخبار الذكية حسب الشروط المطلوبة
+    function renderNews() {
+        const container = document.getElementById('newsList');
+        container.innerHTML = '';
+
+        const filtered = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div class="no-data">لا توجد أخبار في هذا التصنيف حالياً.</div>';
+            return;
+        }
+
+        filtered.forEach(news => {
+            const hasTitle = news.title && news.title.trim() !== "";
+            const hasText = news.text && news.text.trim() !== "";
+
+            // هيكلية الكرت الذكي: تختفي الخانات تماماً في حال عدم وجود العنوان أو النص
+            let cardHtml = `<div class="news-card">`;
+            
+            if (news.image) {
+                cardHtml += `<img src="${news.image}" class="news-img" alt="News Image">`;
+            }
+            
+            // تظهر الخانات فقط عند وجودها
+            if (hasTitle || hasText) {
+                cardHtml += `<div class="news-content">`;
+                if (hasTitle) cardHtml += `<div class="news-title">${news.title}</div>`;
+                if (hasText) cardHtml += `<div class="news-text">${news.text}</div>`;
+                cardHtml += `<div class="news-date">📅 ${news.date}</div>`;
+                cardHtml += `</div>`;
+            } else {
+                // في حال عدم وجود عنوان ونص، يظهر تاريخ الخبر أسفل الصورة مباشرة
+                cardHtml += `<div class="news-content" style="padding-top: 8px;"><div class="news-date">📅 تاريخ الخبر: ${news.date}</div></div>`;
+            }
+
+            cardHtml += `</div>`;
+            container.innerHTML += cardHtml;
+        });
+    }
+
+    window.filterNews = (cat) => {
+        selectedCategory = cat;
+        renderNews();
+        loadCategories();
+    };
+</script>
 </body>
 </html>
