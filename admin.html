@@ -86,7 +86,6 @@
         </form>
     </div>
 </div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
@@ -102,8 +101,10 @@
 
     let compressedImageBase64 = "";
 
+    // تعيين تاريخ اليوم تلقائياً
     document.getElementById('newsDate').valueAsDate = new Date();
 
+    // جلب التصنيفات
     async function loadCategoriesIntoSelect() {
         const snap = await getDocs(collection(db, "categories"));
         const select = document.getElementById('newsCategory');
@@ -115,6 +116,7 @@
     }
     loadCategoriesIntoSelect();
 
+    // حفظ تصنيف جديد
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('newCatName').value.trim();
@@ -126,35 +128,44 @@
         loadCategoriesIntoSelect();
     });
 
-    // معالجة وضغط الصورة فور اختيارها لحفظ مساحة فايربيس وقبول الملفات الكبيرة
+    // معالجة واختيار الصورة مع الضغط الذكي والآمن
     document.getElementById('newsImageFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onload = function(event) {
+            // حفظ الصورة كخيار احتياطي فوراً في حال فشل الـ Canvas لأي سبب
+            compressedImageBase64 = event.target.result; 
+
             const img = new Image();
             img.onload = function() {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
+                try {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
 
-                const max_size = 800;
-                if (width > height) {
-                    if (width > max_size) { height *= max_size / width; width = max_size; }
-                } else {
-                    if (height > max_size) { width *= max_size / height; height = max_size; }
+                    const max_size = 700; // حجم مناسب جداً للتحميل السريع
+                    if (width > height) {
+                        if (width > max_size) { height *= max_size / width; width = max_size; }
+                    } else {
+                        if (height > max_size) { width *= max_size / height; height = max_size; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    // رسم الصورة بالكامل بشكل صحيح
+                    ctx.drawImage(img, 0, 0, width, height); 
+
+                    // تحويل وضغط بجودة 50% لتوفير المساحة القصوى
+                    compressedImageBase64 = canvas.toDataURL('image/jpeg', 0.5); 
+                } catch (err) {
+                    console.log("تم استخدام الصورة الأصلية لتعذر معالجة الضغط الرقمي:", err);
                 }
-
-                canvas.width = width;
-                canvas.height = height;
                 
-                // تم تصحيح الكود البرمجي هنا لتصبح 2d وتعمل بنجاح
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-
-                compressedImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                
+                // إظهار المعاينة للمستخدم للتأكيد
                 const preview = document.getElementById('imgPreview');
                 preview.src = compressedImageBase64;
                 preview.style.display = 'inline-block';
@@ -164,6 +175,7 @@
         reader.readAsDataURL(file);
     });
 
+    // نشر الخبر
     document.getElementById('newsForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const category = document.getElementById('newsCategory').value;
@@ -186,6 +198,8 @@
         try {
             await addDoc(collection(db, "news"), newsData);
             alert("تم نشر الخبر العائلي بنجاح وعرضه بالصفحة الرئيسية!");
+            
+            // إعادة تعيين النموذج بالكامل
             document.getElementById('newsForm').reset();
             document.getElementById('imgPreview').style.display = 'none';
             compressedImageBase64 = "";
