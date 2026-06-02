@@ -1,0 +1,20 @@
+{
+  "name": "منصة الأخبار العائلية",
+  "short_name": "أخبار العائلة",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#764ba2",
+  "theme_color": "#764ba2",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
