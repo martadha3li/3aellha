@@ -10,13 +10,15 @@
             --success: #27ae60;
             --primary: #764ba2;
             --dark: #2c3e50;
+            --danger: #e74c3c;
+            --warning: #f39c12;
             --light: #f5f7fa;
         }
         body {
             font-family: 'Segoe UI', Tahoma, sans-serif;
             margin: 0; padding: 16px; background: #f0f2f5; color: var(--dark);
         }
-        .admin-container { max-width: 550px; margin: 0 auto; }
+        .admin-container { max-width: 700px; margin: 0 auto; }
         .card {
             background: white; padding: 20px; border-radius: 24px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px;
@@ -30,34 +32,47 @@
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; }
         .btn {
-            width: 100%; padding: 13px; border: none; border-radius: 12px;
-            font-weight: bold; font-size: 15px; cursor: pointer; transition: all 0.2s;
+            padding: 10px 14px; border: none; border-radius: 10px;
+            font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
         }
+        .btn-block { width: 100%; padding: 13px; font-size: 15px; border-radius: 12px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
         .btn:active { transform: scale(0.98); }
         .preview-box { text-align: center; margin-top: 8px; }
-        .preview-box img { max-width: 100%; max-height: 150px; border-radius: 12px; display: none; }
+        .preview-box img { max-width: 100%; max-height: 120px; border-radius: 12px; display: none; }
+        
+        /* تصميم جدول السجلات المضافة للتحكم */
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background-color: #f8f9fa; font-weight: bold; }
+        .row-hidden { background-color: #fceade; opacity: 0.8; }
+        .action-btns { display: flex; gap: 4px; }
+        .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
     </style>
 </head>
 <body>
 
 <div class="admin-container">
     <div class="card">
-        <h2 style="border-color: var(--success);">📁 إضافة تصنيف جديد</h2>
+        <h2 style="border-color: var(--success);">📁 إدارة التصنيفات العائلية</h2>
         <form id="categoryForm">
             <div class="form-group">
-                <label>اسم التصنيف:</label>
-                <input type="text" id="newCatName" placeholder="مثال: مناسبات، تخرج، مولود جديد" required>
+                <label>اسم التصنيف الجديد:</label>
+                <input type="text" id="newCatName" placeholder="مثال: مناسبات، تخرج، لقاءات" required>
             </div>
-            <button type="submit" class="btn btn-success">➕ حفظ التصنيف</button>
+            <button type="submit" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
         </form>
     </div>
 
     <div class="card">
-        <h2>📝 إضافة خبر جديد</h2>
+        <h2 id="formTitle">📝 نشر خبر عائلي جديد</h2>
         <form id="newsForm">
-            <div class="form-group">
+            <input type="hidden" id="editDocId" value=""> <div class="form-group">
                 <label>تصنيف الخبر:</label>
                 <select id="newsCategory" required>
                     <option value="">-- اختر التصنيف --</option>
@@ -69,26 +84,50 @@
             </div>
             <div class="form-group">
                 <label>نص الخبر (اختياري):</label>
-                <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل الخبر هنا..."></textarea>
+                <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل ومحتوى الخبر هنا..."></textarea>
             </div>
             <div class="form-group">
                 <label>تاريخ الخبر:</label>
                 <input type="date" id="newsDate" required>
             </div>
             <div class="form-group">
-                <label>صورة الخبر المرفقة (سيتم ضغطها فوراً):</label>
-                <input type="file" id="newsImageFile" accept="image/*" required>
+                <label>صورة الخبر (سيتم تهيئتها فوراً للأبعاد المناسبة):</label>
+                <input type="file" id="newsImageFile" accept="image/*">
                 <div class="preview-box">
                     <img id="imgPreview" src="" alt="المعاينة">
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary">🚀 نشر الخبر العائلي</button>
+            <button type="submit" id="submitBtn" class="btn btn-primary btn-block">🚀 نشر الخبر العائلي</button>
+            <button type="button" id="cancelEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء وضع التعديل</button>
         </form>
     </div>
+
+    <div class="card">
+        <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات المنشورة</h2>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الصورة</th>
+                        <th>العنوان / التصنيف</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                        <th>إجراءات التحكم</th>
+                    </tr>
+                </thead>
+                <tbody id="adminNewsTable">
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:#7f8c8d;">جاري جلب سجلات الأخبار...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
@@ -100,11 +139,9 @@
     const db = getFirestore(app);
 
     let compressedImageBase64 = "";
-
-    // تعيين تاريخ اليوم تلقائياً
     document.getElementById('newsDate').valueAsDate = new Date();
 
-    // جلب التصنيفات
+    // جلب وتحديث قوائم التصنيفات
     async function loadCategoriesIntoSelect() {
         const snap = await getDocs(collection(db, "categories"));
         const select = document.getElementById('newsCategory');
@@ -116,98 +153,175 @@
     }
     loadCategoriesIntoSelect();
 
-    // حفظ تصنيف جديد
+    // إضافة تصنيف جديد
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const name = document.getElementById('newCatName').value.trim();
         if(!name) return;
-
         await addDoc(collection(db, "categories"), { name, createdAt: new Date() });
         alert("تم إضافة التصنيف بنجاح!");
         document.getElementById('categoryForm').reset();
         loadCategoriesIntoSelect();
     });
 
-    // معالجة واختيار الصورة مع الضغط الذكي والآمن
+    // استماع وجلب الأخبار المنشورة في جدول التحكم بالـ Admin
+    onSnapshot(collection(db, "news"), (snapshot) => {
+        const tbody = document.getElementById('adminNewsTable');
+        tbody.innerHTML = '';
+        
+        let localItems = [];
+        snapshot.forEach(doc => {
+            localItems.push({ id: doc.id, ...doc.data() });
+        });
+
+        // الترتيب من الأحدث للأقدم في الجدول
+        localItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+        if(localItems.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">لا توجد أخبار منشورة بعد.</td></tr>';
+            return;
+        }
+
+        localItems.forEach(item => {
+            const isHidden = item.status === 'hidden';
+            const rowClass = isHidden ? 'class="row-hidden"' : '';
+            const statusText = isHidden ? '❌ مخفي' : '🔹 معروض';
+            const toggleText = isHidden ? 'عرض' : 'إيقاف';
+            const toggleColor = isHidden ? 'btn-success' : 'btn-warning';
+
+            tbody.innerHTML += `
+                <tr ${rowClass}>
+                    <td><img src="${item.image || ''}" class="thumb-img" alt="img"></td>
+                    <td>
+                        <strong>${item.title || '(بدون عنوان)'}</strong><br>
+                        <small style="color:#7f8c8d;">📁 ${item.category}</small>
+                    </td>
+                    <td>${item.date}</td>
+                    <td><strong>${statusText}</strong></td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-primary" onclick="startEditNews('${item.id}', '${btoa(unescape(encodeURIComponent(JSON.stringify(item))))}')">📝 تعديل</button>
+                            <button class="btn ${toggleColor}" onclick="toggleNewsStatus('${item.id}', '${item.status || 'visible'}')">👁️ ${toggleText}</button>
+                            <button class="btn btn-danger" onclick="deleteNewsItem('${item.id}')">🗑️ حذف</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+    });
+
+    // ضغط ومعالجة الصورة المرفقة
     document.getElementById('newsImageFile').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(event) {
-            // حفظ الصورة كخيار احتياطي فوراً في حال فشل الـ Canvas لأي سبب
             compressedImageBase64 = event.target.result; 
-
             const img = new Image();
             img.onload = function() {
                 try {
                     const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
-                    const max_size = 700; // حجم مناسب جداً للتحميل السريع
-                    if (width > height) {
-                        if (width > max_size) { height *= max_size / width; width = max_size; }
-                    } else {
-                        if (height > max_size) { width *= max_size / height; height = max_size; }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    
+                    let width = img.width; let height = img.height;
+                    const max_size = 700;
+                    if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } }
+                    else { if (height > max_size) { width *= max_size / height; height = max_size; } }
+                    canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
-                    // رسم الصورة بالكامل بشكل صحيح
                     ctx.drawImage(img, 0, 0, width, height); 
-
-                    // تحويل وضغط بجودة 50% لتوفير المساحة القصوى
                     compressedImageBase64 = canvas.toDataURL('image/jpeg', 0.5); 
-                } catch (err) {
-                    console.log("تم استخدام الصورة الأصلية لتعذر معالجة الضغط الرقمي:", err);
-                }
-                
-                // إظهار المعاينة للمستخدم للتأكيد
+                } catch (err) { console.log(err); }
                 const preview = document.getElementById('imgPreview');
-                preview.src = compressedImageBase64;
-                preview.style.display = 'inline-block';
+                preview.src = compressedImageBase64; preview.style.display = 'inline-block';
             };
             img.src = event.target.result;
         };
         reader.readAsDataURL(file);
     });
 
-    // نشر الخبر
+    // معالجة نموذج الحفظ (نشر جديد أو تعديل منشور سابق)
     document.getElementById('newsForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const editId = document.getElementById('editDocId').value;
         const category = document.getElementById('newsCategory').value;
         const title = document.getElementById('newsTitle').value.trim();
         const text = document.getElementById('newsText').value.trim();
         const date = document.getElementById('newsDate').value;
 
         if(!category) return alert("يرجى اختيار تصنيف للخبر");
-        if(!compressedImageBase64) return alert("يرجى إرفاق صورة للخبر");
 
-        const newsData = {
-            category,
-            title,
-            text,
-            date,
-            image: compressedImageBase64,
-            createdAt: new Date()
-        };
+        const newsData = { category, title, text, date };
+        if(compressedImageBase64) {
+            newsData.image = compressedImageBase64;
+        }
 
         try {
-            await addDoc(collection(db, "news"), newsData);
-            alert("تم نشر الخبر العائلي بنجاح وعرضه بالصفحة الرئيسية!");
-            
-            // إعادة تعيين النموذج بالكامل
-            document.getElementById('newsForm').reset();
-            document.getElementById('imgPreview').style.display = 'none';
-            compressedImageBase64 = "";
-            document.getElementById('newsDate').valueAsDate = new Date();
-        } catch (error) {
-            alert("حدث خطأ أثناء حفظ الخبر: " + error.message);
-        }
+            if(editId) {
+                // وضع التعديل لحساب السجل السابق
+                await updateDoc(doc(db, "news", editId), newsData);
+                alert("تم تحديث وتعديل الخبر العائلي بنجاح!");
+                resetFormToNormal();
+            } else {
+                // وضع الإضافة لخبر جديد تماماً
+                if(!compressedImageBase64) return alert("يرجى إرفاق صورة للخبر أولاً");
+                newsData.image = compressedImageBase64;
+                newsData.status = 'visible';
+                newsData.createdAt = new Date();
+                await addDoc(collection(db, "news"), newsData);
+                alert("تم نشر الخبر العائلي الجديد بنجاح!");
+                resetFormToNormal();
+            }
+        } catch (error) { alert("حدث خطأ: " + error.message); }
     });
+
+    // دالة حذف السجل نهائياً
+    window.deleteNewsItem = async (id) => {
+        if(confirm("هل أنت متأكد من حذف هذا الخبر نهائياً من قاعدة البيانات؟")) {
+            await deleteDoc(doc(db, "news", id));
+            alert("تم حذف السجل بنجاح.");
+        }
+    }
+
+    // دالة إيقاف وتفعيل العرض التلقائي
+    window.toggleNewsStatus = async (id, currentStatus) => {
+        const nextStatus = currentStatus === 'hidden' ? 'visible' : 'hidden';
+        await updateDoc(doc(db, "news", id), { status: nextStatus });
+    }
+
+    // دالة بدء إرسال البيانات للحقول لتعديلها
+    window.startEditNews = (id, base64Data) => {
+        const item = JSON.parse(decodeURIComponent(escape(atob(base64Data))));
+        document.getElementById('editDocId').value = id;
+        document.getElementById('newsCategory').value = item.category;
+        document.getElementById('newsTitle').value = item.title || '';
+        document.getElementById('newsText').value = item.text || '';
+        document.getElementById('newsDate').value = item.date;
+        
+        if(item.image) {
+            const preview = document.getElementById('imgPreview');
+            preview.src = item.image;
+            preview.style.display = 'inline-block';
+        }
+
+        document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي";
+        document.getElementById('submitBtn').innerText = "💾 حفظ التعديلات وتحديث الخبر";
+        document.getElementById('submitBtn').className = "btn btn-warning btn-block";
+        document.getElementById('cancelEditBtn').style.display = "block";
+        window.scrollTo({ top: 200, behavior: 'smooth' });
+    }
+
+    function resetFormToNormal() {
+        document.getElementById('newsForm').reset();
+        document.getElementById('editDocId').value = '';
+        document.getElementById('imgPreview').style.display = 'none';
+        compressedImageBase64 = "";
+        document.getElementById('newsDate').valueAsDate = new Date();
+        document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد";
+        document.getElementById('submitBtn').innerText = "🚀 نشر الخبر العائلي";
+        document.getElementById('submitBtn').className = "btn btn-primary btn-block";
+        document.getElementById('cancelEditBtn').style.display = "none";
+    }
+    
+    document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
 </script>
 </body>
 </html>
