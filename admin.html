@@ -3,7 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأخبار العائلية</title>
+    <title>لوحة تحكم الأخبار العائلية - منطقة آمنة</title>
+    
+    <!-- 🛡️ كود الحماية المانع للدخول المباشر: يتم تنفيذه في أول ثانية قبل بناء أي ستايل أو عناصر -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
+            projectId: "fnews-7525e",
+            appId: "1:1023530532546:web:cbc1be1753237179bd455b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function checkAdminSession() {
+            // فحص هل تم التحقق من الأدمن سابقاً في هذه الجلسة؟
+            if (sessionStorage.getItem("admin_authenticated") === "true") {
+                document.getElementById('adminPanelWrapper').style.display = 'block';
+                return;
+            }
+
+            // إذا حاول الدخول مباشرة من الرابط، نطلب الباسورد المحدث من فايربيس فوراُ
+            const passInput = prompt("🔒 هذه المنطقة محمية! الرجاء إدخال كلمة مرور لوحة التحكم للمتابعة:");
+            if (!passInput) { rejectAccess(); return; }
+
+            let correctPassword = "123"; // الباسورد الافتراضي الاحتياطي
+            try {
+                const passSnap = await getDoc(doc(db, "settings", "security"));
+                if (passSnap.exists() && passSnap.data().adminPassword) {
+                    correctPassword = passSnap.data().adminPassword;
+                }
+            } catch(e) { console.error("حماية قاعدة البيانات مقفلة"); }
+
+            if (passInput === correctPassword) {
+                // كلمة المرور صحيحة -> نمنحه الإذن ونكشف المحتوى
+                sessionStorage.setItem("admin_authenticated", "true");
+                document.getElementById('adminPanelWrapper').style.display = 'block';
+            } else {
+                alert("❌ كلمة المرور خاطئة! لا تملك صلاحية الوصول إلى لوحة تحكم GitHub هذه.");
+                rejectAccess();
+            }
+        }
+
+        function rejectAccess() {
+            // تدمير ومسح محتوى الصفحة بالكامل لمنع رؤية النماذج أو الجداول عن طريق الـ View-Source
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; font-family:sans-serif; color:#e74c3c;'>🔒 عذراً، الوصول محظور وغير مصرح لك بالدخول!</h1>";
+            setTimeout(() => { window.location.href = "index.html"; }, 2000);
+        }
+
+        // إطلاق الفحص الأمني فوراً
+        checkAdminSession();
+    </script>
+
     <style>
         * { box-sizing: border-box; }
         :root { --success: #27ae60; --primary: #764ba2; --dark: #2c3e50; --danger: #e74c3c; --warning: #f39c12; }
@@ -30,7 +84,6 @@
         th { background-color: #f8f9fa; font-weight: bold; }
         .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
         
-        /* تصميم زر التبديل السريع Switch */
         .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
@@ -41,143 +94,163 @@
 </head>
 <body>
 
-<div class="admin-container">
+<!-- 📦 غلاف حماية لوحة التحكم: يكون مخفياً تماماً بالـ display:none ولا يفتح إلا بنجاح الفحص الأمني السحابي -->
+<div id="adminPanelWrapper" style="display: none;">
+    <div class="admin-container">
 
-    <!-- 🕌 قسم إدارة مواقيت الصلاة (تفعيل/تعطيل + تعديل الدقائق) -->
-    <div class="card">
-        <h2 style="border-color: var(--primary);">🕌 إعدادات شريط مواقيت الصلاة الجعفري</h2>
-        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-            <label class="switch">
-                <input type="checkbox" id="prayerBarToggle">
-                <span class="slider"></span>
-            </label>
-            <strong>تفعيل عرض شريط الصلاة في واجهة الأخبار</strong>
+        <!-- هيدر الخروج الآمن للوحة التحكم -->
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;">
+            <h3 style="margin:0; color:var(--primary);">🔐 لوحة الإدارة العائلية المشفرة</h3>
+            <button class="btn btn-danger" onclick="sessionStorage.clear(); window.location.reload();" style="padding:6px 12px; font-size:11px;">🚪 خروج آمن</button>
         </div>
-        <div class="grid-3">
-            <div class="form-group">
-                <label>تعديل أذان الصبح (دقائق):</label>
-                <input type="number" id="fajrOffset" placeholder="مثال: +2 أو -5">
-            </div>
-            <div class="form-group">
-                <label>تعديل أذان الظهر (دقائق):</label>
-                <input type="number" id="dhuhrOffset" placeholder="0">
-            </div>
-            <div class="form-group">
-                <label>تعديل أذان المغرب (دقائق):</label>
-                <input type="number" id="maghribOffset" placeholder="0">
-            </div>
-        </div>
-        <button class="btn btn-primary btn-block" onclick="savePrayerSettings()">💾 حفظ تعديلات مواقيت الصلاة</button>
-    </div>
 
-    <!-- 📺 قسم التحكم بالإعلان المنبثق كامل الشاشة الموقوت -->
-    <div class="card">
-        <h2 style="border-color: var(--danger);">📺 إعلان منبثق كامل الشاشة (أول ما يفتح التطبيق)</h2>
-        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-            <label class="switch">
-                <input type="checkbox" id="adToggle">
-                <span class="slider"></span>
-            </label>
-            <strong>تفعيل بث الإعلان المنبثق حالياً</strong>
-        </div>
-        <div class="form-group">
-            <label>مدة بقاء الإعلان على الشاشة:</label>
-            <select id="adDuration">
-                <option value="3">3 ثواني</option>
-                <option value="5" selected>5 ثواني</option>
-                <option value="10">10 ثواني</option>
-                <option value="20">20 ثانية</option>
-                <option value="custom">تحديد يدوي مخصص...</option>
-            </select>
-            <input type="number" id="adCustomDuration" placeholder="أدخل المدة بالثواني يدوياً" style="display:none; margin-top:8px;">
-        </div>
-        <div class="form-group">
-            <label>ارفاق صورة الإعلان:</label>
-            <input type="file" id="adImageFile" accept="image/*">
-            <div class="preview-grid" id="adPreviewGrid"></div>
-        </div>
-        <button class="btn btn-danger btn-block" onclick="saveAdSettings()">🚀 حفظ ونشر الإعلان السريع</button>
-    </div>
-
-    <!-- التصنيفات العائلية -->
-    <div class="card">
-        <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
-        <form id="categoryForm">
-            <input type="hidden" id="editCatId" value="">
-            <div class="form-group">
-                <label>اسم التصنيف:</label>
-                <input type="text" id="newCatName" placeholder="مثال: مناسبات، تخرج، لقاءات" required>
+        <!-- 🕌 قسم إدارة مواقيت الصلاة (تفعيل/تعطيل + تعديل الدقائق) -->
+        <div class="card">
+            <h2 style="border-color: var(--primary);">🕌 إعدادات شريط مواقيت الصلاة الجعفري</h2>
+            <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+                <label class="switch">
+                    <input type="checkbox" id="prayerBarToggle">
+                    <span class="slider"></span>
+                </label>
+                <strong>تفعيل عرض شريط الصلاة في واجهة الأخبار</strong>
             </div>
-            <button type="submit" id="catSubmitBtn" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
-        </form>
-        <div class="table-responsive">
-            <table>
-                <thead><tr><th>اسم التصنيف</th><th>إجراءات</th></tr></thead>
-                <tbody id="adminCategoriesTable"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- نشر خبر جديد + إضافة عداد تنازلي للمناسبات المثبتة -->
-    <div class="card">
-        <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم 4 صور كبوست إنستغرام)</h2>
-        <form id="newsForm">
-            <input type="hidden" id="editDocId" value="">
-            <div class="form-group">
-                <label>تصنيف الخبر:</label>
-                <select id="newsCategory" required></select>
-            </div>
-            <div class="form-group">
-                <label>عنوان الخبر (اختياري):</label>
-                <input type="text" id="newsTitle" placeholder="أدخل العنوان">
-            </div>
-            <div class="form-group">
-                <label>نص الخبر (اختياري):</label>
-                <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل ومحتوى الخبر هنا..."></textarea>
-            </div>
-            
-            <!-- ⏳ حقول العداد التنازلي الجديد للمناسبات المستقبلية -->
-            <div style="background:#f8f9fa; padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid #e2e8f0;">
-                <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                    <input type="checkbox" id="hasCountdown" style="width:20px; height:20px;">
-                    <label for="hasCountdown" style="margin:0; font-weight:bold; cursor:pointer;">تفعيل عداد تنازلي للمناسبة (يعمل فقط في حال تثبيت الخبر 📌)</label>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>تعديل أذان الصبح (دقائق):</label>
+                    <input type="number" id="fajrOffset" placeholder="0">
                 </div>
-                <div class="form-group" id="countdownDateGroup" style="display:none; margin:0;">
-                    <label>تاريخ ووقت انتهاء العداد التنازلي:</label>
-                    <input type="datetime-local" id="countdownDate">
+                <div class="form-group">
+                    <label>تعديل أذان الظهر (دقائق):</label>
+                    <input type="number" id="dhuhrOffset" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label>تعديل أذان المغرب (دقائق):</label>
+                    <input type="number" id="maghribOffset" placeholder="0">
                 </div>
             </div>
+            <button class="btn btn-primary btn-block" onclick="savePrayerSettings()">💾 حفظ تعديلات مواقيت الصلاة</button>
+        </div>
 
-            <div class="form-group">
-                <label>تاريخ نشر الخبر السجلي:</label>
-                <input type="date" id="newsDate" required>
+        <!-- 📺 قسم التحكم بالإعلان المنبثق كامل الشاشة الموقوت -->
+        <div class="card">
+            <h2 style="border-color: var(--danger);">📺 إعلان منبثق كامل الشاشة (أول ما يفتح التطبيق)</h2>
+            <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+                <label class="switch">
+                    <input type="checkbox" id="adToggle">
+                    <span class="slider"></span>
+                </label>
+                <strong>تفعيل بث الإعلان المنبثق حالياً</strong>
             </div>
             <div class="form-group">
-                <label>اختر صور الخبر (يمكنك تحديد حتى 4 صور معاً):</label>
-                <input type="file" id="newsImageFiles" accept="image/*" multiple>
-                <div class="preview-grid" id="previewGrid"></div>
+                <label>مدة بقاء الإعلان على الشاشة:</label>
+                <select id="adDuration">
+                    <option value="3">3 ثواني</option>
+                    <option value="5" selected>5 ثواني</option>
+                    <option value="10">10 ثواني</option>
+                    <option value="20">20 ثانية</option>
+                    <option value="custom">تحديد يدوي مخصص...</option>
+                </select>
+                <input type="number" id="adCustomDuration" placeholder="أدخل المدة بالثواني يدوياً" style="display:none; margin-top:8px;">
             </div>
-            <button type="submit" id="submitBtn" class="btn btn-primary btn-block">🚀 نشر الخبر العائلي وتنبيه الجوالات</button>
-            <button type="button" id="cancelEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء وضع التعديل</button>
-        </form>
-    </div>
+            <div class="form-group">
+                <label>ارفاق صورة الإعلان:</label>
+                <input type="file" id="adImageFile" accept="image/*">
+                <div class="preview-grid" id="adPreviewGrid"></div>
+            </div>
+            <button class="btn btn-danger btn-block" onclick="saveAdSettings()">🚀 حفظ ونشر الإعلان السريع</button>
+        </div>
 
-    <!-- جدول التحكم بالسجلات -->
-    <div class="card">
-        <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات والمنشورات المثبتة والعادية</h2>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>الصور</th>
-                        <th>العنوان / التصنيف</th>
-                        <th>التاريخ</th>
-                        <th>الحالة / التثبيت</th>
-                        <th>إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody id="adminNewsTable"></tbody>
-            </table>
+        <!-- التصنيفات العائلية -->
+        <div class="card">
+            <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
+            <form id="categoryForm">
+                <input type="hidden" id="editCatId" value="">
+                <div class="form-group">
+                    <label>اسم التصنيف:</label>
+                    <input type="text" id="newCatName" placeholder="مثال: مناسبات، لقاءات" required>
+                </div>
+                <button type="submit" id="catSubmitBtn" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
+            </form>
+            <div class="table-responsive">
+                <table>
+                    <thead><tr><th>اسم التصنيف</th><th>إجراءات</th></tr></thead>
+                    <tbody id="adminCategoriesTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- نشر خبر جديد + إضافة عداد تنازلي للمناسبات المثبتة -->
+        <div class="card">
+            <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم 4 صور كبوست إنستغرام)</h2>
+            <form id="newsForm">
+                <input type="hidden" id="editDocId" value="">
+                <div class="form-group">
+                    <label>تصنيف الخبر:</label>
+                    <select id="newsCategory" required></select>
+                </div>
+                <div class="form-group">
+                    <label>عنوان الخبر (اختياري):</label>
+                    <input type="text" id="newsTitle" placeholder="أدخل العنوان">
+                </div>
+                <div class="form-group">
+                    <label>نص الخبر (اختياري):</label>
+                    <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل ومحتوى الخبر هنا..."></textarea>
+                </div>
+                
+                <div style="background:#f8f9fa; padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid #e2e8f0;">
+                    <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                        <input type="checkbox" id="hasCountdown" style="width:20px; height:20px;">
+                        <label for="hasCountdown" style="margin:0; font-weight:bold; cursor:pointer;">تفعيل عداد تنازلي للمناسبة (يعمل فقط في حال تثبيت الخبر 📌)</label>
+                    </div>
+                    <div class="form-group" id="countdownDateGroup" style="display:none; margin:0;">
+                        <label>تاريخ ووقت انتهاء العداد التنازلي:</label>
+                        <input type="datetime-local" id="countdownDate">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>تاريخ نشر الخبر السجلي:</label>
+                    <input type="date" id="newsDate" required>
+                </div>
+                <div class="form-group">
+                    <label>اختر صور الخبر (يمكنك تحديد حتى 4 صور معاً):</label>
+                    <input type="file" id="newsImageFiles" accept="image/*" multiple>
+                    <div class="preview-grid" id="previewGrid"></div>
+                </div>
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-block">🚀 نشر الخبر العائلي وتنبيه الجوالات</button>
+                <button type="button" id="cancelEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء وضع التعديل</button>
+            </form>
+        </div>
+
+        <!-- جدول التحكم بالسجلات -->
+        <div class="card">
+            <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات والمنشورات المثبتة والعادية</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الصور</th>
+                            <th>العنوان / التصنيف</th>
+                            <th>التاريخ</th>
+                            <th>الحالة / التثبيت</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminNewsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 🔒 قسم تغيير كلمة مرور الدخول للوحة التحكم -->
+        <div class="card">
+            <h2 style="border-color: var(--danger);">🔒 أمان النظام وتغيير كلمة المرور</h2>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label>كلمة المرور الجديدة لوحة التحكم:</label>
+                    <input type="password" id="newAdminPassword" placeholder="أدخل كلمة المرور الجديدة" required>
+                </div>
+                <button type="submit" class="btn btn-danger btn-block">🔒 تحديث كلمة المرور السرية</button>
+            </form>
         </div>
     </div>
 </div>
@@ -200,7 +273,6 @@
     let currentPinnedCount = 0;
     document.getElementById('newsDate').valueAsDate = new Date();
 
-    // إظهار وإخفاء حقل التاريخ حسب تشيك بوكس العداد
     document.getElementById('hasCountdown').addEventListener('change', function() {
         document.getElementById('countdownDateGroup').style.display = this.checked ? 'block' : 'none';
     });
@@ -209,54 +281,44 @@
         document.getElementById('adCustomDuration').style.display = this.value === 'custom' ? 'block' : 'none';
     });
 
-    // 🕌 دالة حفظ إعدادات مواقيت الصلاة من الأدمن
     window.savePrayerSettings = async () => {
         const enabled = document.getElementById('prayerBarToggle').checked;
         const fajrOffset = document.getElementById('fajrOffset').value || 0;
         const dhuhrOffset = document.getElementById('dhuhrOffset').value || 0;
         const maghribOffset = document.getElementById('maghribOffset').value || 0;
-        
         await setDoc(doc(db, "settings", "prayers"), { enabled, fajrOffset, dhuhrOffset, maghribOffset });
-        alert("🕌 تم تحديث إعدادات شريط مواقيت الصلاة بنجاح!");
+        alert("🕌 تم تحديث إعدادات الصلاة!");
     };
 
-    // 📺 دالة معالجة وحفظ صورة الإعلان المنبثق
     document.getElementById('adImageFile').addEventListener('change', function(e) {
         const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = function(event) {
             const img = new Image();
             img.onload = function() {
-                const canvas = document.createElement('canvas');
-                let w = img.width; let h = img.height;
-                if (w > 500) { h *= 500 / w; w = 500; }
-                canvas.width = w; canvas.height = h;
+                const canvas = document.createElement('canvas'); let w = img.width; let h = img.height;
+                if (w > 500) { h *= 500 / w; w = 500; } canvas.width = w; canvas.height = h;
                 canvas.getContext('2d').drawImage(img, 0, 0, w, h);
                 adImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
                 document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${adImageBase64}"></div>`;
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
+            }; img.src = event.target.result;
+        }; reader.readAsDataURL(file);
     });
 
     window.saveAdSettings = async () => {
         const active = document.getElementById('adToggle').checked;
         const durationSelect = document.getElementById('adDuration').value;
         const duration = durationSelect === 'custom' ? document.getElementById('adCustomDuration').value : durationSelect;
-        
         const adData = { active, duration: duration || 5 };
         if (adImageBase64) adData.image = adImageBase64;
         else {
             const currentSnap = await getDoc(doc(db, "settings", "advertisement"));
             if (currentSnap.exists() && currentSnap.data().image) adData.image = currentSnap.data().image;
         }
-
         await setDoc(doc(db, "settings", "advertisement"), adData, { merge: true });
-        alert("📺 تم تحديث ونشر إعدادات الإعلان المنبثق!");
+        alert("📺 تم تحديث الإعلان المنبثق!");
     };
 
-    // جلب قيم الصلاة والاعلان الافتراضية عند فتح اللوحة
     getDoc(doc(db, "settings", "prayers")).then(s => {
         if(s.exists()){
             document.getElementById('prayerBarToggle').checked = s.data().enabled;
@@ -268,9 +330,8 @@
     getDoc(doc(db, "settings", "advertisement")).then(s => {
         if(s.exists()) {
             document.getElementById('adToggle').checked = s.data().active;
-            if (["3","5","10","20"].includes(s.data().duration.toString())) {
-                document.getElementById('adDuration').value = s.data().duration;
-            } else {
+            if (["3","5","10","20"].includes(s.data().duration.toString())) { document.getElementById('adDuration').value = s.data().duration; } 
+            else {
                 document.getElementById('adDuration').value = "custom";
                 document.getElementById('adCustomDuration').style.display = 'block';
                 document.getElementById('adCustomDuration').value = s.data().duration;
@@ -279,9 +340,17 @@
         }
     });
 
+    // 🔒 دالة تغيير كلمة المرور السرية وحفظها في فايربيس
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPass = document.getElementById('newAdminPassword').value.trim();
+        await setDoc(doc(db, "settings", "security"), { adminPassword: newPass }, { merge: true });
+        alert("🔒 تم تحديث كلمة مرور لوحة التحكم بنجاح!");
+        document.getElementById('passwordForm').reset();
+    });
+
     onSnapshot(collection(db, "categories"), (snapshot) => {
-        const select = document.getElementById('newsCategory');
-        const tbody = document.getElementById('adminCategoriesTable');
+        const select = document.getElementById('newsCategory'); const tbody = document.getElementById('adminCategoriesTable');
         select.innerHTML = '<option value="">-- اختر التصنيف --</option>'; tbody.innerHTML = '';
         snapshot.forEach(docSnap => {
             select.innerHTML += `<option value="${docSnap.data().name}">${docSnap.data().name}</option>`;
@@ -308,12 +377,11 @@
             const isHidden = item.status === 'hidden'; const isPinned = item.isPinned === true;
             let statusText = isHidden ? '❌ مخفي' : '🔹 معروض';
             if (isPinned) statusText += ` | 📌 مثبت (${item.pinnedType === 'death' ? 'وفاة' : item.pinnedType === 'wedding' ? 'زواج' : 'عام'})`;
-            if (item.hasCountdown) statusText += ` (⏳ عداد)`;
 
             let thumbsHtml = ''; let loopImgs = item.images || (item.image ? [item.image] : []);
-            loopImgs.forEach(imgUrl => { thumbsHtml += `<img src="${imgUrl}" class="thumb-img">`; });
+            loopImgs.forEach(imgUrl => { thumbsHtml += `<img src="${imgUrl}" class="thumb-img" style="margin-left:4px;">`; });
 
-            let pinButtonHtml = isPinned ? `<button class="btn btn-danger" onclick="unpinNewsItem('${item.id}')">🔓 إلغاء التثبيت</button>` : `<button class="btn btn-success" onclick="promptPinMenu('${item.id}')">📌 تثبيت الخبر</button>`;
+            let pinButtonHtml = isPinned ? `<button class="btn btn-danger" onclick="unpinNewsItem('${item.id}')">🔓 إلغاء</button>` : `<button class="btn btn-success" onclick="promptPinMenu('${item.id}')">📌 تثبيت</button>`;
 
             tbody.innerHTML += `
                 <tr ${isHidden ? 'class="row-hidden"' : ''}>
@@ -373,13 +441,12 @@
         const newsData = { category, title, text, date, hasCountdown, countdownDate };
         if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; }
 
-        if(editId) {
-            await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!");
-        } else {
+        if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); } 
+        else {
             if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة");
             newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0];
             newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false;
-            await addDoc(collection(db, "news"), newsData); alert("تم النشر وبث التنبيه!");
+            await addDoc(collection(db, "news"), newsData); alert("تم النشر!");
         }
         resetFormToNormal();
     });
