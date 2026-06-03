@@ -12,6 +12,7 @@
         .card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         h2 { margin-top: 0; font-size: 1.25rem; border-right: 4px solid var(--primary); padding-right: 10px; }
         .form-group { margin-bottom: 14px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
         input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: inherit; }
         .btn { padding: 10px 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
@@ -27,14 +28,78 @@
         table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; margin-bottom: 15px; }
         th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
         th { background-color: #f8f9fa; font-weight: bold; }
-        .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; margin-left: 4px; }
-        .flex-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+        .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+        
+        /* تصميم زر التبديل السريع Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
     </style>
 </head>
 <body>
 
 <div class="admin-container">
-    <!-- إدارة التصنيفات -->
+
+    <!-- 🕌 قسم إدارة مواقيت الصلاة (تفعيل/تعطيل + تعديل الدقائق) -->
+    <div class="card">
+        <h2 style="border-color: var(--primary);">🕌 إعدادات شريط مواقيت الصلاة الجعفري</h2>
+        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+            <label class="switch">
+                <input type="checkbox" id="prayerBarToggle">
+                <span class="slider"></span>
+            </label>
+            <strong>تفعيل عرض شريط الصلاة في واجهة الأخبار</strong>
+        </div>
+        <div class="grid-3">
+            <div class="form-group">
+                <label>تعديل أذان الصبح (دقائق):</label>
+                <input type="number" id="fajrOffset" placeholder="مثال: +2 أو -5">
+            </div>
+            <div class="form-group">
+                <label>تعديل أذان الظهر (دقائق):</label>
+                <input type="number" id="dhuhrOffset" placeholder="0">
+            </div>
+            <div class="form-group">
+                <label>تعديل أذان المغرب (دقائق):</label>
+                <input type="number" id="maghribOffset" placeholder="0">
+            </div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="savePrayerSettings()">💾 حفظ تعديلات مواقيت الصلاة</button>
+    </div>
+
+    <!-- 📺 قسم التحكم بالإعلان المنبثق كامل الشاشة الموقوت -->
+    <div class="card">
+        <h2 style="border-color: var(--danger);">📺 إعلان منبثق كامل الشاشة (أول ما يفتح التطبيق)</h2>
+        <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+            <label class="switch">
+                <input type="checkbox" id="adToggle">
+                <span class="slider"></span>
+            </label>
+            <strong>تفعيل بث الإعلان المنبثق حالياً</strong>
+        </div>
+        <div class="form-group">
+            <label>مدة بقاء الإعلان على الشاشة:</label>
+            <select id="adDuration">
+                <option value="3">3 ثواني</option>
+                <option value="5" selected>5 ثواني</option>
+                <option value="10">10 ثواني</option>
+                <option value="20">20 ثانية</option>
+                <option value="custom">تحديد يدوي مخصص...</option>
+            </select>
+            <input type="number" id="adCustomDuration" placeholder="أدخل المدة بالثواني يدوياً" style="display:none; margin-top:8px;">
+        </div>
+        <div class="form-group">
+            <label>ارفاق صورة الإعلان:</label>
+            <input type="file" id="adImageFile" accept="image/*">
+            <div class="preview-grid" id="adPreviewGrid"></div>
+        </div>
+        <button class="btn btn-danger btn-block" onclick="saveAdSettings()">🚀 حفظ ونشر الإعلان السريع</button>
+    </div>
+
+    <!-- التصنيفات العائلية -->
     <div class="card">
         <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
         <form id="categoryForm">
@@ -44,19 +109,18 @@
                 <input type="text" id="newCatName" placeholder="مثال: مناسبات، تخرج، لقاءات" required>
             </div>
             <button type="submit" id="catSubmitBtn" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
-            <button type="button" id="cancelCatEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء التعديل</button>
         </form>
         <div class="table-responsive">
             <table>
-                <thead><tr><th>اسم التصنيف</th><th>الإجراءات للتحكم</th></tr></thead>
+                <thead><tr><th>اسم التصنيف</th><th>إجراءات</th></tr></thead>
                 <tbody id="adminCategoriesTable"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- نشر خبر جديد -->
+    <!-- نشر خبر جديد + إضافة عداد تنازلي للمناسبات المثبتة -->
     <div class="card">
-        <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم حتى 4 صور كبوست إنستغرام)</h2>
+        <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم 4 صور كبوست إنستغرام)</h2>
         <form id="newsForm">
             <input type="hidden" id="editDocId" value="">
             <div class="form-group">
@@ -71,8 +135,21 @@
                 <label>نص الخبر (اختياري):</label>
                 <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل ومحتوى الخبر هنا..."></textarea>
             </div>
+            
+            <!-- ⏳ حقول العداد التنازلي الجديد للمناسبات المستقبلية -->
+            <div style="background:#f8f9fa; padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid #e2e8f0;">
+                <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <input type="checkbox" id="hasCountdown" style="width:20px; height:20px;">
+                    <label for="hasCountdown" style="margin:0; font-weight:bold; cursor:pointer;">تفعيل عداد تنازلي للمناسبة (يعمل فقط في حال تثبيت الخبر 📌)</label>
+                </div>
+                <div class="form-group" id="countdownDateGroup" style="display:none; margin:0;">
+                    <label>تاريخ ووقت انتهاء العداد التنازلي:</label>
+                    <input type="datetime-local" id="countdownDate">
+                </div>
+            </div>
+
             <div class="form-group">
-                <label>تاريخ الخبر:</label>
+                <label>تاريخ نشر الخبر السجلي:</label>
                 <input type="date" id="newsDate" required>
             </div>
             <div class="form-group">
@@ -85,41 +162,29 @@
         </form>
     </div>
 
-    <!-- ⚙️ جدول السجلات مع إضافة التحكم بالتثبيت -->
+    <!-- جدول التحكم بالسجلات -->
     <div class="card">
         <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات والمنشورات المثبتة والعادية</h2>
         <div class="table-responsive">
             <table>
                 <thead>
                     <tr>
-                        <th>الصور المرفقة</th>
+                        <th>الصور</th>
                         <th>العنوان / التصنيف</th>
                         <th>التاريخ</th>
                         <th>الحالة / التثبيت</th>
-                        <th>إجراءات التحكم السريع</th>
+                        <th>إجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="adminNewsTable"></tbody>
             </table>
         </div>
     </div>
-
-    <!-- أمان النظام -->
-    <div class="card">
-        <h2 style="border-color: var(--danger);">🔒 أمان النظام وتغيير كلمة المرور</h2>
-        <form id="passwordForm">
-            <div class="form-group">
-                <label>كلمة المرور الجديدة لوحة التحكم:</label>
-                <input type="password" id="newAdminPassword" placeholder="أدخل كلمة المرور الجديدة" required>
-            </div>
-            <button type="submit" class="btn btn-danger btn-block">🔒 تحديث كلمة المرور السرية</button>
-        </form>
-    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
@@ -131,84 +196,124 @@
     const db = getFirestore(app);
 
     let compressedImagesArray = [];
+    let adImageBase64 = "";
     let currentPinnedCount = 0;
-    const channel = new BroadcastChannel('news_channel');
     document.getElementById('newsDate').valueAsDate = new Date();
+
+    // إظهار وإخفاء حقل التاريخ حسب تشيك بوكس العداد
+    document.getElementById('hasCountdown').addEventListener('change', function() {
+        document.getElementById('countdownDateGroup').style.display = this.checked ? 'block' : 'none';
+    });
+
+    document.getElementById('adDuration').addEventListener('change', function() {
+        document.getElementById('adCustomDuration').style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+
+    // 🕌 دالة حفظ إعدادات مواقيت الصلاة من الأدمن
+    window.savePrayerSettings = async () => {
+        const enabled = document.getElementById('prayerBarToggle').checked;
+        const fajrOffset = document.getElementById('fajrOffset').value || 0;
+        const dhuhrOffset = document.getElementById('dhuhrOffset').value || 0;
+        const maghribOffset = document.getElementById('maghribOffset').value || 0;
+        
+        await setDoc(doc(db, "settings", "prayers"), { enabled, fajrOffset, dhuhrOffset, maghribOffset });
+        alert("🕌 تم تحديث إعدادات شريط مواقيت الصلاة بنجاح!");
+    };
+
+    // 📺 دالة معالجة وحفظ صورة الإعلان المنبثق
+    document.getElementById('adImageFile').addEventListener('change', function(e) {
+        const file = e.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let w = img.width; let h = img.height;
+                if (w > 500) { h *= 500 / w; w = 500; }
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                adImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${adImageBase64}"></div>`;
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    window.saveAdSettings = async () => {
+        const active = document.getElementById('adToggle').checked;
+        const durationSelect = document.getElementById('adDuration').value;
+        const duration = durationSelect === 'custom' ? document.getElementById('adCustomDuration').value : durationSelect;
+        
+        const adData = { active, duration: duration || 5 };
+        if (adImageBase64) adData.image = adImageBase64;
+        else {
+            const currentSnap = await getDoc(doc(db, "settings", "advertisement"));
+            if (currentSnap.exists() && currentSnap.data().image) adData.image = currentSnap.data().image;
+        }
+
+        await setDoc(doc(db, "settings", "advertisement"), adData, { merge: true });
+        alert("📺 تم تحديث ونشر إعدادات الإعلان المنبثق!");
+    };
+
+    // جلب قيم الصلاة والاعلان الافتراضية عند فتح اللوحة
+    getDoc(doc(db, "settings", "prayers")).then(s => {
+        if(s.exists()){
+            document.getElementById('prayerBarToggle').checked = s.data().enabled;
+            document.getElementById('fajrOffset').value = s.data().fajrOffset;
+            document.getElementById('dhuhrOffset').value = s.data().dhuhrOffset;
+            document.getElementById('maghribOffset').value = s.data().maghribOffset;
+        }
+    });
+    getDoc(doc(db, "settings", "advertisement")).then(s => {
+        if(s.exists()) {
+            document.getElementById('adToggle').checked = s.data().active;
+            if (["3","5","10","20"].includes(s.data().duration.toString())) {
+                document.getElementById('adDuration').value = s.data().duration;
+            } else {
+                document.getElementById('adDuration').value = "custom";
+                document.getElementById('adCustomDuration').style.display = 'block';
+                document.getElementById('adCustomDuration').value = s.data().duration;
+            }
+            if(s.data().image) document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${s.data().image}"></div>`;
+        }
+    });
 
     onSnapshot(collection(db, "categories"), (snapshot) => {
         const select = document.getElementById('newsCategory');
         const tbody = document.getElementById('adminCategoriesTable');
-        select.innerHTML = '<option value="">-- اختر التصنيف --</option>';
-        tbody.innerHTML = '';
+        select.innerHTML = '<option value="">-- اختر التصنيف --</option>'; tbody.innerHTML = '';
         snapshot.forEach(docSnap => {
             select.innerHTML += `<option value="${docSnap.data().name}">${docSnap.data().name}</option>`;
-            tbody.innerHTML += `<tr><td><strong>📁 ${docSnap.data().name}</strong></td><td><button class="btn btn-primary" onclick="startEditCategory('${docSnap.id}', '${docSnap.data().name}')">✏️</button> <button class="btn btn-danger" onclick="deleteCategoryItem('${docSnap.id}')">🗑️</button></td></tr>`;
+            tbody.innerHTML += `<tr><td><strong>📁 ${docSnap.data().name}</strong></td><td><button class="btn btn-danger" onclick="deleteCategoryItem('${docSnap.id}')">🗑️</button></td></tr>`;
         });
     });
 
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const catId = document.getElementById('editCatId').value;
-        const name = document.getElementById('newCatName').value.trim();
-        if(catId) { await updateDoc(doc(db, "categories", catId), { name }); resetCatForm(); }
-        else { await addDoc(collection(db, "categories"), { name, createdAt: new Date() }); document.getElementById('categoryForm').reset(); }
+        e.preventDefault(); const name = document.getElementById('newCatName').value.trim();
+        await addDoc(collection(db, "categories"), { name, createdAt: new Date() }); document.getElementById('categoryForm').reset();
     });
-
-    window.startEditCategory = (id, name) => {
-        document.getElementById('editCatId').value = id; document.getElementById('newCatName').value = name;
-        document.getElementById('catFormTitle').innerText = "✏️ تعديل اسم التصنيف الحالي";
-        document.getElementById('catSubmitBtn').innerText = "💾 حفظ تعديل التصنيف";
-        document.getElementById('cancelCatEditBtn').style.display = "block";
-    };
     window.deleteCategoryItem = async (id) => { if(confirm("حذف التصنيف؟")) await deleteDoc(doc(db, "categories", id)); };
-    function resetCatForm() { document.getElementById('editCatId').value = ''; document.getElementById('categoryForm').reset(); document.getElementById('cancelCatEditBtn').style.display = "none"; }
-    document.getElementById('cancelCatEditBtn').addEventListener('click', resetCatForm);
 
-    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const newPass = document.getElementById('newAdminPassword').value.trim();
-        await setDoc(doc(db, "settings", "security"), { adminPassword: newPass }, { merge: true });
-        alert("🔒 تم تحديث كلمة المرور!"); document.getElementById('passwordForm').reset();
-    });
-
-    // 🔄 مزامنة وجلب الأخبار المنشورة للتحكم بالتثبيت الفوري
     onSnapshot(collection(db, "news"), (snapshot) => {
-        const tbody = document.getElementById('adminNewsTable');
-        tbody.innerHTML = '';
-        let localItems = [];
-        currentPinnedCount = 0;
-
+        const tbody = document.getElementById('adminNewsTable'); tbody.innerHTML = '';
+        let localItems = []; currentPinnedCount = 0;
         snapshot.forEach(doc => { 
-            const data = doc.data();
-            localItems.push({ id: doc.id, ...data }); 
-            if(data.isPinned === true) currentPinnedCount++; // حساب عدد المثبت حالياً
+            const data = doc.data(); localItems.push({ id: doc.id, ...data }); 
+            if(data.isPinned === true) currentPinnedCount++;
         });
-        
         localItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         localItems.forEach(item => {
-            const isHidden = item.status === 'hidden';
-            const isPinned = item.isPinned === true;
-            
+            const isHidden = item.status === 'hidden'; const isPinned = item.isPinned === true;
             let statusText = isHidden ? '❌ مخفي' : '🔹 معروض';
-            if (isPinned) {
-                let typeL = 'عام';
-                if(item.pinnedType === 'death') typeL = 'وفاة 🏴';
-                else if(item.pinnedType === 'wedding') typeL = 'زواج ✨';
-                statusText += ` | 📌 مثبت (${typeL})`;
-            }
+            if (isPinned) statusText += ` | 📌 مثبت (${item.pinnedType === 'death' ? 'وفاة' : item.pinnedType === 'wedding' ? 'زواج' : 'عام'})`;
+            if (item.hasCountdown) statusText += ` (⏳ عداد)`;
 
-            let thumbsHtml = '';
-            let loopImgs = item.images || (item.image ? [item.image] : []);
+            let thumbsHtml = ''; let loopImgs = item.images || (item.image ? [item.image] : []);
             loopImgs.forEach(imgUrl => { thumbsHtml += `<img src="${imgUrl}" class="thumb-img">`; });
 
-            // إضافة أزرار التثبيت الذكية في الجدول
-            let pinButtonHtml = '';
-            if(isPinned) {
-                pinButtonHtml = `<button class="btn btn-danger" onclick="unpinNewsItem('${item.id}')">🔓 فك التثبيت</button>`;
-            } else {
-                pinButtonHtml = `<button class="btn btn-success" onclick="promptPinMenu('${item.id}')">📌 تثبيت</button>`;
-            }
+            let pinButtonHtml = isPinned ? `<button class="btn btn-danger" onclick="unpinNewsItem('${item.id}')">🔓 إلغاء التثبيت</button>` : `<button class="btn btn-success" onclick="promptPinMenu('${item.id}')">📌 تثبيت الخبر</button>`;
 
             tbody.innerHTML += `
                 <tr ${isHidden ? 'class="row-hidden"' : ''}>
@@ -217,7 +322,7 @@
                     <td>${item.date}</td>
                     <td><strong>${statusText}</strong></td>
                     <td>
-                        <div class="flex-buttons">
+                        <div style="display:flex; gap:4px;">
                             <button class="btn btn-primary" onclick="startEditNews('${item.id}', '${btoa(unescape(encodeURIComponent(JSON.stringify(item))))}')">📝</button>
                             <button class="btn ${isHidden ? 'btn-success' : 'btn-warning'}" onclick="toggleNewsStatus('${item.id}', '${item.status || 'visible'}')">👁️</button>
                             ${pinButtonHtml}
@@ -229,41 +334,16 @@
         });
     });
 
-    // 📌 دالة تفعيل قائمة تثبيت الخبر
     window.promptPinMenu = async (id) => {
-        if(currentPinnedCount >= 3) {
-            alert("⚠️ لا يمكنك تثبيت أكثر من 3 أخبار في أعلى الصفحة! يرجى إلغاء تثبيت خبر قديم أولاً.");
-            return;
-        }
-
-        const choice = prompt("اختر نوع التثبيت المطلوب:\n1 - تثبيت وفاة (كرت رمادي غامق حزين)\n2 - تثبيت زواج (كرت ذهبي فرح)\n3 - تثبيت خبر عام (كرت كلاسيكي)");
-        if(!choice) return;
-
-        let pinnedType = "general";
-        if (choice === "1") pinnedType = "death";
-        else if (choice === "2") pinnedType = "wedding";
-        else if (choice === "3") pinnedType = "general";
-        else { alert("اختيار غير صحيح!"); return; }
-
-        await updateDoc(doc(db, "news", id), {
-            isPinned: true,
-            pinnedType: pinnedType
-        });
-        alert("📌 تم تثبيت الخبر بنجاح في أعلى صفحة الأخبار!");
+        if(currentPinnedCount >= 3) { alert("⚠️ كحد أقصى 3 أخبار مثبتة."); return; }
+        const choice = prompt("اختر نوع التثبيت:\n1 - وفاة 🏴\n2 - زواج ✨\n3 - عام 📌"); if(!choice) return;
+        let pType = choice === "1" ? "death" : choice === "2" ? "wedding" : "general";
+        await updateDoc(doc(db, "news", id), { isPinned: true, pinnedType: pType });
     };
-
-    // 🔓 دالة فك التثبيت وإعادة الخبر لوضعه الطبيعي
-    window.unpinNewsItem = async (id) => {
-        await updateDoc(doc(db, "news", id), {
-            isPinned: false,
-            pinnedType: null
-        });
-        alert("🔓 تم إلغاء تثبيت الخبر وإعادته لترتيبه الطبيعي.");
-    };
+    window.unpinNewsItem = async (id) => { await updateDoc(doc(db, "news", id), { isPinned: false, pinnedType: null }); };
 
     document.getElementById('newsImageFiles').addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        const grid = document.getElementById('previewGrid');
+        const files = Array.from(e.target.files); const grid = document.getElementById('previewGrid');
         grid.innerHTML = ''; compressedImagesArray = [];
         if (files.length > 4) { alert("⚠️ الحد الأقصى 4 صور."); this.value = ''; return; }
         files.forEach(file => {
@@ -271,61 +351,55 @@
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
-                    try {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width; let height = img.height;
-                        if (width > 600) { height *= 600 / width; width = 600; }
-                        canvas.width = width; canvas.height = height;
-                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                        const base64Str = canvas.toDataURL('image/jpeg', 0.5);
-                        compressedImagesArray.push(base64Str);
-                        grid.innerHTML += `<div class="preview-wrapper"><img src="${base64Str}"></div>`;
-                    } catch (err) { console.log(err); }
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
+                    const canvas = document.createElement('canvas'); let w = img.width; let h = img.height;
+                    if (w > 600) { h *= 600 / w; w = 600; } canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const b64 = canvas.toDataURL('image/jpeg', 0.5); compressedImagesArray.push(b64);
+                    grid.innerHTML += `<div class="preview-wrapper"><img src="${b64}"></div>`;
+                }; img.src = event.target.result;
+            }; reader.readAsDataURL(file);
         });
     });
 
     document.getElementById('newsForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const editId = document.getElementById('editDocId').value;
+        e.preventDefault(); const editId = document.getElementById('editDocId').value;
         const category = document.getElementById('newsCategory').value;
         const title = document.getElementById('newsTitle').value.trim();
         const text = document.getElementById('newsText').value.trim();
         const date = document.getElementById('newsDate').value;
+        const hasCountdown = document.getElementById('hasCountdown').checked;
+        const countdownDate = document.getElementById('countdownDate').value;
 
-        const newsData = { category, title, text, date };
+        const newsData = { category, title, text, date, hasCountdown, countdownDate };
         if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; }
 
-        try {
-            if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم تحديث الخبر!"); }
-            else {
-                if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة واحدة على الأقل");
-                newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0];
-                newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false;
-                await addDoc(collection(db, "news"), newsData);
-                channel.postMessage({ title: title || "🏡 خبر عائلي جديد!", body: text || `تم نشر بوست جديد في تصنيف ${category}` });
-                alert("تم نشر بوست الصور وبث التنبيه المباشر!");
-            }
-            resetFormToNormal();
-        } catch (error) { alert("حدث خطأ: " + error.message); }
+        if(editId) {
+            await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!");
+        } else {
+            if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة");
+            newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0];
+            newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false;
+            await addDoc(collection(db, "news"), newsData); alert("تم النشر وبث التنبيه!");
+        }
+        resetFormToNormal();
     });
 
-    window.deleteNewsItem = async (id) => { if(confirm("حذف نهائي للخبر؟")) await deleteDoc(doc(db, "news", id)); };
-    window.toggleNewsStatus = async (id, currentStatus) => { await updateDoc(doc(db, "news", id), { status: currentStatus === 'hidden' ? 'visible' : 'hidden' }); };
+    window.deleteNewsItem = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "news", id)); };
+    window.toggleNewsStatus = async (id, s) => { await updateDoc(doc(db, "news", id), { status: s === 'hidden' ? 'visible' : 'hidden' }); };
 
     window.startEditNews = (id, base64Data) => {
         const item = JSON.parse(decodeURIComponent(escape(atob(base64Data))));
         document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category;
         document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || '';
         document.getElementById('newsDate').value = item.date;
+        document.getElementById('hasCountdown').checked = item.hasCountdown || false;
+        document.getElementById('countdownDate').value = item.countdownDate || '';
+        document.getElementById('countdownDateGroup').style.display = item.hasCountdown ? 'block' : 'none';
+        
         const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
         let loopImgs = item.images || (item.image ? [item.image] : []);
         loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; });
         document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي";
-        document.getElementById('submitBtn').innerText = "💾 حفظ التعديلات وتحديث الخبر";
         document.getElementById('cancelEditBtn').style.display = "block";
     };
 
@@ -333,7 +407,8 @@
         document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = '';
         document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = [];
         document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none";
-        document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد"; document.getElementById('submitBtn').innerText = "🚀 نشر الخبر العائلي وتنبيه الجوالات";
+        document.getElementById('countdownDateGroup').style.display = 'none';
+        document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد";
     }
     document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
 </script>
