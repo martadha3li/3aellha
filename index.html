@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
-    <title>منصة الأخبار العائلية</title>
+    <title>منصة الأخبار العائلية ن4</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
@@ -28,6 +28,7 @@
         .categories-container::-webkit-scrollbar { display: none; }
         .cat-badge { background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 2px solid transparent; transition: all 0.2s; }
         .cat-badge.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
         .pinned-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
         .pinned-title-label { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-right: 6px; display: flex; align-items: center; gap: 4px; }
         .pinned-card { border-radius: 16px; padding: 12px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; border-right: 5px solid transparent; position: relative; }
@@ -42,6 +43,7 @@
         .pinned-body { max-height: 0; opacity: 0; transition: all 0.4s ease; padding-top: 0; }
         .pinned-card.expanded .pinned-body { max-height: 2000px; opacity: 1; padding-top: 14px; }
         .pinned-card.expanded .pinned-icon { transform: rotate(180deg); }
+
         .news-list { display: flex; flex-direction: column; gap: 16px; }
         .news-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
         .carousel-container { width: 100%; aspect-ratio: 1 / 1; position: relative; overflow: hidden; background-color: #f8f9fa; }
@@ -56,14 +58,13 @@
         .news-title { font-size: 1.15rem; margin: 0 0 8px 0; color: inherit; font-weight: bold; }
         .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
-        .no-data { text-align: center; padding: 30px; color: var(--gray); }
         
-        /* شاشة التحميل مئوية */
+        /* ⏳ شاشة التحميل بالنسبة المئوية */
         .loader-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #ffffff; z-index: 99998; display: flex;
             flex-direction: column; align-items: center; justify-content: center;
-            transition: opacity 0.3s ease, visibility 0.3s; display: none;
+            transition: opacity 0.3s ease, visibility 0.3s;
         }
         .loader-content { text-align: center; }
         .loader-logo { width: 65px; height: 65px; object-fit: cover; border-radius: 16px; margin-bottom: 16px; animation: pulse 1.5s infinite ease-in-out; }
@@ -71,7 +72,7 @@
         .loader-text { font-size: 0.9rem; color: var(--gray); font-weight: 500; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); opacity: 0.9; } }
 
-        /* 🔒 شاشة طلب التفعيل والأمان الأولى (Onboarding) */
+        /* 🔒 شاشة طلب التفعيل والأمان الأولى (تظهر لمرة واحدة) */
         .onboarding-screen {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #ffffff; z-index: 99999; display: flex;
@@ -86,11 +87,10 @@
             background: linear-gradient(135deg, var(--primary-light), var(--primary)); color: white;
             border: none; padding: 16px 24px; width: 100%; font-size: 16px; font-weight: bold;
             border-radius: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(118, 75, 162, 0.3);
-            transition: transform 0.2s; margin-bottom: 16px; display: block;
+            margin-bottom: 16px; display: block;
         }
-        .btn-activate-now:active { transform: scale(0.98); }
         
-        /* 🛑 إطار الأمان الأحمر المذكور وثيقة الاطمئنان */
+        /* 🔴 إطار الأمان وثيقة الاطمئنان */
         .safety-note-box {
             border: 2px dashed var(--danger); background-color: #fff5f5;
             padding: 14px; border-radius: 16px; text-align: right;
@@ -101,7 +101,6 @@
 </head>
 <body>
 
-<!-- 🔒 الشاشة الترحيبية المانعة: تطلب تفعيل الإشعارات وتطمئن المستخدم أولاً -->
 <div id="onboardingScreen" class="onboarding-screen" style="display: none;">
     <div class="onboarding-card">
         <img src="logo.png" class="onboarding-logo" alt="Logo" onerror="this.src='🏡'">
@@ -110,7 +109,6 @@
         
         <button class="btn-activate-now" onclick="clickToRequestPermission()">🔔 اضغط هنا لتفعيل إشعارات الجوال</button>
         
-        <!-- 🛑 ملاحظة الأمان بالإطار الأحمر المحددة -->
         <div class="safety-note-box">
             <div class="safety-title">🛡️ إشعار أمان وخصوصية مشفرة:</div>
             <p class="safety-desc">هذا الإجراء آمن ومحمي بنسبة 100%؛ حيث يتم تشغيل وإدارة هذه العملية بالكامل من خلال خوادم سحابية رسمية مشفرة تابعة لشركة جوجل العالمية وهي <b>Google Firestore & FCM</b>. لا نقوم بجمع أي بيانات شخصية، والهدف الوحيد هو إيقاظ شاشة تطبيقك لإظهار إعلانات العائلة فقط.</p>
@@ -118,8 +116,7 @@
     </div>
 </div>
 
-<!-- ⏳ شاشة النسبة المئوية المحدثة (تنطلق بعد الضغط) -->
-<div id="pageLoader" class="loader-overlay">
+<div id="pageLoader" class="loader-overlay" style="display: none;">
     <div class="loader-content">
         <img src="logo.png" class="loader-logo" alt="Logo" onerror="this.src='🏡'">
         <div class="loader-percentage" id="loadPercent">0%</div>
@@ -160,18 +157,17 @@
     const db = getFirestore(app);
     
     let messaging = null;
-    try { messaging = getMessaging(app); } catch (err) { console.log("Bypass messaging active"); }
+    try { messaging = getMessaging(app); } catch (err) { console.log("FCM Bypass initialized"); }
 
     let allNews = [];
     let selectedCategory = 'all';
 
-    // ⏳ شاشة التحميل مئوية
     function runPercentageLoader(onComplete) {
         document.getElementById('pageLoader').style.display = 'flex';
         let count = 0;
         const percentEl = document.getElementById('loadPercent');
         const interval = setInterval(() => {
-            count += Math.floor(Math.random() * 20) + 15;
+            count += Math.floor(Math.random() * 25) + 15;
             if (count >= 100) {
                 count = 100; clearInterval(interval);
                 percentEl.innerText = "100%";
@@ -184,45 +180,38 @@
         }, 30);
     }
 
-    // 🔒 إدارة عرض شاشة الترحيب والأمان (تظهر مرة واحدة فقط)
-    document.addEventListener("DOMContentLoaded", () => {
-        const isNotFirstTime = localStorage.getItem("family_app_onboarded");
-        
-        if (isNotFirstTime) {
-            // مستخدم قديم -> ننتقل مباشرة للتحميل ثم الأخبار
+    // فحص وعرض واجهة المستخدم لمرة واحدة
+    window.addEventListener("load", () => {
+        const onboarded = localStorage.getItem("family_app_onboarded_2026");
+        if (onboarded) {
             startMainAppSync();
         } else {
-            // مستخدم جديد بالكامل -> نكشف شاشة الأمان فوراً
             document.getElementById('onboardingScreen').style.display = 'flex';
         }
     });
 
-    // 🔔 الدالة التي تنطلق عند ضغط زر التفعيل الترحيبي (صريح وتفاعل حقيقي)
     window.clickToRequestPermission = function() {
         if (!('Notification' in window)) {
-            alert("⚠️ هذا المتصفح لا يدعم استقبال إشعارات الجوال السحابية.");
+            alert("⚠️ متصفحك لا يدعم الإشعارات السحابية.");
             closeOnboardingAndContinue();
             return;
         }
 
         Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.ready.then(reg => {
-                        saveDeviceFCMToken(reg);
-                    });
-                }
+            if (permission === 'granted' && 'serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(reg => {
+                    saveDeviceFCMToken(reg);
+                });
             } else {
-                alert("⚠️ لقد قمت برفض أو تجاهل الإذن. يمكنك قراءة الأخبار ولكن لن تصلك تنبيهات الجوال عند النشر.");
                 closeOnboardingAndContinue();
             }
-        }).catch(err => {
+        }).catch(() => {
             closeOnboardingAndContinue();
         });
     };
 
     function closeOnboardingAndContinue() {
-        localStorage.setItem("family_app_onboarded", "true"); // قفل الشاشة للأبد لهذا الجهاز
+        localStorage.setItem("family_app_onboarded_2026", "true");
         document.getElementById('onboardingScreen').style.display = 'none';
         startMainAppSync();
     }
@@ -235,24 +224,18 @@
             vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" 
         }).then(async (currentToken) => {
             if (currentToken) {
-                try {
-                    await setDoc(doc(db, "fcm_tokens", currentToken), {
-                        token: currentToken,
-                        updatedAt: new Date()
-                    });
-                    alert("🎉 ممتاز! تم ربط وإدراج جهازك في خوادم Google بنجاح واستعداد كامل.");
-                } catch (fErr) {
-                    console.log("Firestore table rules closed", fErr);
-                }
+                await setDoc(doc(db, "fcm_tokens", currentToken), {
+                    token: currentToken,
+                    updatedAt: new Date()
+                });
             }
             closeOnboardingAndContinue();
         }).catch((err) => { 
-            console.log("FCM generation skipped", err);
+            console.log("Token error token skipped:", err);
             closeOnboardingAndContinue();
         });
     }
 
-    // تشغيل التطبيق وجلب البيانات الفورية
     function startMainAppSync() {
         runPercentageLoader(() => {
             onSnapshot(collection(db, "news"), (snapshot) => {
@@ -275,7 +258,7 @@
         try {
             const passSnap = await getDoc(doc(db, "settings", "security"));
             if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword;
-        } catch(e) { console.log(e); }
+        } catch(e) {}
         if (pass === correctPassword) window.location.href = "admin.html";
         else alert("❌ كلمة المرور خاطئة!");
     };
