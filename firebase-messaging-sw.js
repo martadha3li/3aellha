@@ -1,4 +1,3 @@
-// استيراد حزم المراسلة المستقلة في ملقم الويب
 importScripts('https://www.gstatic.com/firebasejs/12.14.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/12.14.0/firebase-messaging-compat.js');
 
@@ -10,9 +9,7 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// 🔔 الاستماع المباشر في خلفية النظام لعرض الإشعارات حتى لو كانت الشاشة مغلقة تماماً
 messaging.onBackgroundMessage(function(payload) {
-    console.log('وصل إشعار في الخلفية:', payload);
     const title = payload.notification.title || "🏡 منصة الأخبار العائلية";
     const options = {
         body: payload.notification.body || "هناك تحديث عائلي جديد، اضغط للمشاهدة.",
