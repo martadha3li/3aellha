@@ -8,54 +8,60 @@
         * { box-sizing: border-box; }
         :root { --success: #27ae60; --primary: #764ba2; --dark: #2c3e50; --danger: #e74c3c; --warning: #f39c12; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 16px; background: #f0f2f5; color: var(--dark); }
-        .admin-container { max-width: 700px; margin: 0 auto; }
+        .admin-container { max-width: 750px; margin: 0 auto; }
         .card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         h2 { margin-top: 0; font-size: 1.25rem; border-right: 4px solid var(--primary); padding-right: 10px; }
         .form-group { margin-bottom: 14px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
         input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: inherit; }
-        .btn { padding: 10px 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+        .btn { padding: 10px 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-block { width: 100%; padding: 13px; font-size: 15px; border-radius: 12px; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-success { background: var(--success); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-warning { background: var(--warning); color: white; }
-        
-        /* تصميم مصفوفة معاينة الصور المتعددة المنبثقة */
         .preview-grid { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
         .preview-wrapper { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
         .preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        
         .table-responsive { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; margin-bottom: 15px; }
         th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
         th { background-color: #f8f9fa; font-weight: bold; }
-        .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; margin-left: 4px; border: 1px solid #eee; }
+        .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; margin-left: 4px; }
+        .flex-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
     </style>
 </head>
 <body>
 
 <div class="admin-container">
+    <!-- إدارة التصنيفات -->
     <div class="card">
-        <h2 style="border-color: var(--success);">📁 إدارة التصنيفات العائلية</h2>
+        <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
         <form id="categoryForm">
+            <input type="hidden" id="editCatId" value="">
             <div class="form-group">
-                <label>اسم التصنيف الجديد:</label>
+                <label>اسم التصنيف:</label>
                 <input type="text" id="newCatName" placeholder="مثال: مناسبات، تخرج، لقاءات" required>
             </div>
-            <button type="submit" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
+            <button type="submit" id="catSubmitBtn" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
+            <button type="button" id="cancelCatEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء التعديل</button>
         </form>
+        <div class="table-responsive">
+            <table>
+                <thead><tr><th>اسم التصنيف</th><th>الإجراءات للتحكم</th></tr></thead>
+                <tbody id="adminCategoriesTable"></tbody>
+            </table>
+        </div>
     </div>
 
+    <!-- نشر خبر جديد -->
     <div class="card">
         <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم حتى 4 صور كبوست إنستغرام)</h2>
         <form id="newsForm">
             <input type="hidden" id="editDocId" value="">
             <div class="form-group">
                 <label>تصنيف الخبر:</label>
-                <select id="newsCategory" required>
-                    <option value="">-- اختر التصنيف --</option>
-                </select>
+                <select id="newsCategory" required></select>
             </div>
             <div class="form-group">
                 <label>عنوان الخبر (اختياري):</label>
@@ -79,8 +85,9 @@
         </form>
     </div>
 
+    <!-- ⚙️ جدول السجلات مع إضافة التحكم بالتثبيت -->
     <div class="card">
-        <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات المنشورة</h2>
+        <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات والمنشورات المثبتة والعادية</h2>
         <div class="table-responsive">
             <table>
                 <thead>
@@ -88,21 +95,31 @@
                         <th>الصور المرفقة</th>
                         <th>العنوان / التصنيف</th>
                         <th>التاريخ</th>
-                        <th>الحالة</th>
-                        <th>إجراءات التحكم</th>
+                        <th>الحالة / التثبيت</th>
+                        <th>إجراءات التحكم السريع</th>
                     </tr>
                 </thead>
-                <tbody id="adminNewsTable">
-                    <tr><td colspan="5" style="text-align:center; color:#7f8c8d;">جاري جلب سجلات الأخبار...</td></tr>
-                </tbody>
+                <tbody id="adminNewsTable"></tbody>
             </table>
         </div>
+    </div>
+
+    <!-- أمان النظام -->
+    <div class="card">
+        <h2 style="border-color: var(--danger);">🔒 أمان النظام وتغيير كلمة المرور</h2>
+        <form id="passwordForm">
+            <div class="form-group">
+                <label>كلمة المرور الجديدة لوحة التحكم:</label>
+                <input type="password" id="newAdminPassword" placeholder="أدخل كلمة المرور الجديدة" required>
+            </div>
+            <button type="submit" class="btn btn-danger btn-block">🔒 تحديث كلمة المرور السرية</button>
+        </form>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
@@ -113,54 +130,98 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let compressedImagesArray = []; // مصفوفة لتخزين الـ Base64 للصور الـ 4
+    let compressedImagesArray = [];
+    let currentPinnedCount = 0;
     const channel = new BroadcastChannel('news_channel');
     document.getElementById('newsDate').valueAsDate = new Date();
 
-    async function loadCategoriesIntoSelect() {
-        const snap = await getDocs(collection(db, "categories"));
+    onSnapshot(collection(db, "categories"), (snapshot) => {
         const select = document.getElementById('newsCategory');
+        const tbody = document.getElementById('adminCategoriesTable');
         select.innerHTML = '<option value="">-- اختر التصنيف --</option>';
-        snap.forEach(doc => { select.innerHTML += `<option value="${doc.data().name}">${doc.data().name}</option>`; });
-    }
-    loadCategoriesIntoSelect();
+        tbody.innerHTML = '';
+        snapshot.forEach(docSnap => {
+            select.innerHTML += `<option value="${docSnap.data().name}">${docSnap.data().name}</option>`;
+            tbody.innerHTML += `<tr><td><strong>📁 ${docSnap.data().name}</strong></td><td><button class="btn btn-primary" onclick="startEditCategory('${docSnap.id}', '${docSnap.data().name}')">✏️</button> <button class="btn btn-danger" onclick="deleteCategoryItem('${docSnap.id}')">🗑️</button></td></tr>`;
+        });
+    });
 
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const catId = document.getElementById('editCatId').value;
         const name = document.getElementById('newCatName').value.trim();
-        if(!name) return;
-        await addDoc(collection(db, "categories"), { name, createdAt: new Date() });
-        alert("تم إضافة التصنيف بنجاح!");
-        document.getElementById('categoryForm').reset();
-        loadCategoriesIntoSelect();
+        if(catId) { await updateDoc(doc(db, "categories", catId), { name }); resetCatForm(); }
+        else { await addDoc(collection(db, "categories"), { name, createdAt: new Date() }); document.getElementById('categoryForm').reset(); }
     });
 
+    window.startEditCategory = (id, name) => {
+        document.getElementById('editCatId').value = id; document.getElementById('newCatName').value = name;
+        document.getElementById('catFormTitle').innerText = "✏️ تعديل اسم التصنيف الحالي";
+        document.getElementById('catSubmitBtn').innerText = "💾 حفظ تعديل التصنيف";
+        document.getElementById('cancelCatEditBtn').style.display = "block";
+    };
+    window.deleteCategoryItem = async (id) => { if(confirm("حذف التصنيف؟")) await deleteDoc(doc(db, "categories", id)); };
+    function resetCatForm() { document.getElementById('editCatId').value = ''; document.getElementById('categoryForm').reset(); document.getElementById('cancelCatEditBtn').style.display = "none"; }
+    document.getElementById('cancelCatEditBtn').addEventListener('click', resetCatForm);
+
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPass = document.getElementById('newAdminPassword').value.trim();
+        await setDoc(doc(db, "settings", "security"), { adminPassword: newPass }, { merge: true });
+        alert("🔒 تم تحديث كلمة المرور!"); document.getElementById('passwordForm').reset();
+    });
+
+    // 🔄 مزامنة وجلب الأخبار المنشورة للتحكم بالتثبيت الفوري
     onSnapshot(collection(db, "news"), (snapshot) => {
         const tbody = document.getElementById('adminNewsTable');
         tbody.innerHTML = '';
         let localItems = [];
-        snapshot.forEach(doc => { localItems.push({ id: doc.id, ...doc.data() }); });
+        currentPinnedCount = 0;
+
+        snapshot.forEach(doc => { 
+            const data = doc.data();
+            localItems.push({ id: doc.id, ...data }); 
+            if(data.isPinned === true) currentPinnedCount++; // حساب عدد المثبت حالياً
+        });
+        
         localItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         localItems.forEach(item => {
             const isHidden = item.status === 'hidden';
+            const isPinned = item.isPinned === true;
             
-            // تجميع الصور المصغرة للعرض في جدول الأدمن
+            let statusText = isHidden ? '❌ مخفي' : '🔹 معروض';
+            if (isPinned) {
+                let typeL = 'عام';
+                if(item.pinnedType === 'death') typeL = 'وفاة 🏴';
+                else if(item.pinnedType === 'wedding') typeL = 'زواج ✨';
+                statusText += ` | 📌 مثبت (${typeL})`;
+            }
+
             let thumbsHtml = '';
-            let loopImgs = item.images && Array.isArray(item.images) ? item.images : (item.image ? [item.image] : []);
+            let loopImgs = item.images || (item.image ? [item.image] : []);
             loopImgs.forEach(imgUrl => { thumbsHtml += `<img src="${imgUrl}" class="thumb-img">`; });
+
+            // إضافة أزرار التثبيت الذكية في الجدول
+            let pinButtonHtml = '';
+            if(isPinned) {
+                pinButtonHtml = `<button class="btn btn-danger" onclick="unpinNewsItem('${item.id}')">🔓 فك التثبيت</button>`;
+            } else {
+                pinButtonHtml = `<button class="btn btn-success" onclick="promptPinMenu('${item.id}')">📌 تثبيت</button>`;
+            }
 
             tbody.innerHTML += `
                 <tr ${isHidden ? 'class="row-hidden"' : ''}>
-                    <td><div style="display:flex; max-width:180px; overflow-x:auto;">${thumbsHtml}</div></td>
+                    <td><div style="display:flex; max-width:140px; overflow-x:auto;">${thumbsHtml}</div></td>
                     <td><strong>${item.title || '(بدون عنوان)'}</strong><br><small>📁 ${item.category}</small></td>
                     <td>${item.date}</td>
-                    <td><strong>${isHidden ? '❌ مخفي' : '🔹 معروض'}</strong></td>
+                    <td><strong>${statusText}</strong></td>
                     <td>
-                        <div style="display:flex; gap:4px;">
-                            <button class="btn btn-primary" onclick="startEditNews('${item.id}', '${btoa(unescape(encodeURIComponent(JSON.stringify(item))))}')">📝 تعديل</button>
-                            <button class="btn ${isHidden ? 'btn-success' : 'btn-warning'}" onclick="toggleNewsStatus('${item.id}', '${item.status || 'visible'}')">👁️ ${isHidden ? 'عرض' : 'إيقاف'}</button>
-                            <button class="btn btn-danger" onclick="deleteNewsItem('${item.id}')">🗑️ حذف</button>
+                        <div class="flex-buttons">
+                            <button class="btn btn-primary" onclick="startEditNews('${item.id}', '${btoa(unescape(encodeURIComponent(JSON.stringify(item))))}')">📝</button>
+                            <button class="btn ${isHidden ? 'btn-success' : 'btn-warning'}" onclick="toggleNewsStatus('${item.id}', '${item.status || 'visible'}')">👁️</button>
+                            ${pinButtonHtml}
+                            <button class="btn btn-danger" onclick="deleteNewsItem('${item.id}')">🗑️</button>
                         </div>
                     </td>
                 </tr>
@@ -168,20 +229,43 @@
         });
     });
 
-    // 🛠️ معالجة وضغط الـ 4 صور بالتوازي بشكل فوري وآمن عند الاختيار
-    document.getElementById('newsImageFiles').addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        const grid = document.getElementById('previewGrid');
-        grid.innerHTML = '';
-        compressedImagesArray = [];
-
-        // التأكد من عدم تجاوز الحد الأقصى (4 صور)
-        if (files.length > 4) {
-            alert("⚠️ الحد الأقصى المسموح به هو 4 صور فقط للخبر الواحد.");
-            this.value = '';
+    // 📌 دالة تفعيل قائمة تثبيت الخبر
+    window.promptPinMenu = async (id) => {
+        if(currentPinnedCount >= 3) {
+            alert("⚠️ لا يمكنك تثبيت أكثر من 3 أخبار في أعلى الصفحة! يرجى إلغاء تثبيت خبر قديم أولاً.");
             return;
         }
 
+        const choice = prompt("اختر نوع التثبيت المطلوب:\n1 - تثبيت وفاة (كرت رمادي غامق حزين)\n2 - تثبيت زواج (كرت ذهبي فرح)\n3 - تثبيت خبر عام (كرت كلاسيكي)");
+        if(!choice) return;
+
+        let pinnedType = "general";
+        if (choice === "1") pinnedType = "death";
+        else if (choice === "2") pinnedType = "wedding";
+        else if (choice === "3") pinnedType = "general";
+        else { alert("اختيار غير صحيح!"); return; }
+
+        await updateDoc(doc(db, "news", id), {
+            isPinned: true,
+            pinnedType: pinnedType
+        });
+        alert("📌 تم تثبيت الخبر بنجاح في أعلى صفحة الأخبار!");
+    };
+
+    // 🔓 دالة فك التثبيت وإعادة الخبر لوضعه الطبيعي
+    window.unpinNewsItem = async (id) => {
+        await updateDoc(doc(db, "news", id), {
+            isPinned: false,
+            pinnedType: null
+        });
+        alert("🔓 تم إلغاء تثبيت الخبر وإعادته لترتيبه الطبيعي.");
+    };
+
+    document.getElementById('newsImageFiles').addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        const grid = document.getElementById('previewGrid');
+        grid.innerHTML = ''; compressedImagesArray = [];
+        if (files.length > 4) { alert("⚠️ الحد الأقصى 4 صور."); this.value = ''; return; }
         files.forEach(file => {
             const reader = new FileReader();
             reader.onload = function(event) {
@@ -192,13 +276,9 @@
                         let width = img.width; let height = img.height;
                         if (width > 600) { height *= 600 / width; width = 600; }
                         canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const base64Str = canvas.toDataURL('image/jpeg', 0.5); // ضغط الصورة بنسبة 50% لحفظ قاعدة البيانات
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                        const base64Str = canvas.toDataURL('image/jpeg', 0.5);
                         compressedImagesArray.push(base64Str);
-                        
-                        // إضافة الصورة في شبكة المعاينة
                         grid.innerHTML += `<div class="preview-wrapper"><img src="${base64Str}"></div>`;
                     } catch (err) { console.log(err); }
                 };
@@ -217,66 +297,43 @@
         const date = document.getElementById('newsDate').value;
 
         const newsData = { category, title, text, date };
-        
-        // إرفاق مصفوفة الصور الجديدة في حال تم اختيار ملفات جديدة
-        if(compressedImagesArray.length > 0) {
-            newsData.images = compressedImagesArray;
-            newsData.image = compressedImagesArray[0]; // التوافق مع الحقل القديم الفردي
-        }
+        if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; }
 
         try {
-            if(editId) {
-                await updateDoc(doc(db, "news", editId), newsData);
-                alert("تم تحديث وتعديل الخبر العائلي بنجاح!");
-            } else {
-                if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة واحدة على الأقل للخبر");
-                newsData.images = compressedImagesArray;
-                newsData.image = compressedImagesArray[0];
-                newsData.status = 'visible';
-                newsData.createdAt = new Date();
+            if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم تحديث الخبر!"); }
+            else {
+                if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة واحدة على الأقل");
+                newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0];
+                newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false;
                 await addDoc(collection(db, "news"), newsData);
-                
-                channel.postMessage({
-                    title: title || "🏡 خبر عائلي جديد!",
-                    body: text || `تم نشر بوست عائلي جديد ومميز في تصنيف ${category}`
-                });
-
-                alert("تم نشر بوست الصور وبث التنبيه لكافة الجوالات!");
+                channel.postMessage({ title: title || "🏡 خبر عائلي جديد!", body: text || `تم نشر بوست جديد في تصنيف ${category}` });
+                alert("تم نشر بوست الصور وبث التنبيه المباشر!");
             }
             resetFormToNormal();
         } catch (error) { alert("حدث خطأ: " + error.message); }
     });
 
-    window.deleteNewsItem = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "news", id)); };
+    window.deleteNewsItem = async (id) => { if(confirm("حذف نهائي للخبر؟")) await deleteDoc(doc(db, "news", id)); };
     window.toggleNewsStatus = async (id, currentStatus) => { await updateDoc(doc(db, "news", id), { status: currentStatus === 'hidden' ? 'visible' : 'hidden' }); };
 
     window.startEditNews = (id, base64Data) => {
         const item = JSON.parse(decodeURIComponent(escape(atob(base64Data))));
-        document.getElementById('editDocId').value = id;
-        document.getElementById('newsCategory').value = item.category;
-        document.getElementById('newsTitle').value = item.title || '';
-        document.getElementById('newsText').value = item.text || '';
+        document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category;
+        document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || '';
         document.getElementById('newsDate').value = item.date;
-        
-        const grid = document.getElementById('previewGrid');
-        grid.innerHTML = '';
-        let loopImgs = item.images && Array.isArray(item.images) ? item.images : (item.image ? [item.image] : []);
+        const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
+        let loopImgs = item.images || (item.image ? [item.image] : []);
         loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; });
-
         document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي";
         document.getElementById('submitBtn').innerText = "💾 حفظ التعديلات وتحديث الخبر";
         document.getElementById('cancelEditBtn').style.display = "block";
     };
 
     function resetFormToNormal() {
-        document.getElementById('newsForm').reset();
-        document.getElementById('editDocId').value = '';
-        document.getElementById('previewGrid').innerHTML = '';
-        compressedImagesArray = [];
-        document.getElementById('newsDate').valueAsDate = new Date();
-        document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد";
-        document.getElementById('submitBtn').innerText = "🚀 نشر الخبر العائلي وتنبيه الجوالات";
-        document.getElementById('cancelEditBtn').style.display = "none";
+        document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = '';
+        document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = [];
+        document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none";
+        document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد"; document.getElementById('submitBtn').innerText = "🚀 نشر الخبر العائلي وتنبيه الجوالات";
     }
     document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
 </script>
