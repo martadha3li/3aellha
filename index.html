@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
-    <title> v2- منصة الأخبار العائلية</title>
+    <title>منصة الأخبار العائلية v3</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
@@ -58,7 +58,7 @@
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
         
-        /* شاشة التحميل الاحترافية */
+        /* شاشة التحميل */
         .loader-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #ffffff; z-index: 99999; display: flex;
@@ -129,17 +129,24 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const messaging = getMessaging(app);
+    
+    // حماية سياق استدعاء الـ Messaging لعدم حظر المتصفحات القديمة أو الآيفون
+    let messaging = null;
+    try {
+        messaging = getMessaging(app);
+    } catch (err) {
+        console.log("FCM Messaging غير مدعوم في هذا المتصفح حالياً:", err);
+    }
 
     let allNews = [];
     let selectedCategory = 'all';
 
-    // ⏳ عداد تحميل سريع ومحسن لا يعلق نهائياً
+    // ⏳ شاشة تحميل ذكية تختفي فوراً وتتحرك بسلاسة
     function runPercentageLoader(onComplete) {
         let count = 0;
         const percentEl = document.getElementById('loadPercent');
         const interval = setInterval(() => {
-            count += Math.floor(Math.random() * 20) + 10;
+            count += Math.floor(Math.random() * 25) + 15;
             if (count >= 100) {
                 count = 100; clearInterval(interval);
                 percentEl.innerText = "100%";
@@ -147,9 +154,9 @@
                     document.getElementById('pageLoader').style.opacity = '0';
                     setTimeout(() => { document.getElementById('pageLoader').style.visibility = 'hidden'; }, 300);
                     if(onComplete) onComplete();
-                }, 100);
+                }, 50);
             } else { percentEl.innerText = count + "%"; }
-        }, 30); // تم تسريع الوقت لتجنب أي تعليق من المتصفح
+        }, 25);
     }
 
     window.goToAdminPanel = async () => {
@@ -165,7 +172,7 @@
     };
 
     function saveDeviceFCMToken(serviceWorkerRegistration) {
-        if (!('Notification' in window)) return;
+        if (!messaging || !('Notification' in window)) return;
         if (Notification.permission === 'granted') {
             getToken(messaging, { 
                 serviceWorkerRegistration: serviceWorkerRegistration,
@@ -177,7 +184,7 @@
                         updatedAt: new Date()
                     });
                 }
-            }).catch((err) => { console.error(err); });
+            }).catch((err) => { console.error("خطأ التوكن:", err); });
         }
     }
 
@@ -199,9 +206,10 @@
                 document.getElementById('notificationPrompt').style.display = 'flex';
                 document.getElementById('floatingForceBtn').style.display = 'block';
             } else { document.getElementById('floatingForceBtn').style.display = 'block'; }
-        });
+        }).catch(err => { console.log("SW Error ignored to prevent screen freezing", err); });
     }
 
+    // تشغيل جلب البيانات الفوري بالتزامن التام مع شاشة النسبة المئوية
     runPercentageLoader(() => {
         onSnapshot(collection(db, "news"), (snapshot) => {
             let tempNews = [];
@@ -212,6 +220,8 @@
             allNews = tempNews.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             renderNews();
             loadCategories();
+        }, (error) => {
+            console.error("Firebase Error: ", error);
         });
     });
 
