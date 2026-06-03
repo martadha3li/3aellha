@@ -21,62 +21,29 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #eef2f3 100%); min-height: 100vh; padding-bottom: 90px;
         }
         .main-container { max-width: 500px; margin: 0 auto; position: relative; }
-        
-        .header-bar { 
-            background: white; padding: 16px; border-radius: 24px; 
-            margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
+        .header-bar { background: white; padding: 16px; border-radius: 24px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; display: flex; align-items: center; justify-content: center; }
         .header-bar h1 { margin: 0; font-size: 1.4rem; background: linear-gradient(135deg, var(--primary-light), var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        
-        .admin-login-btn {
-            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-            background: #f8f9fa; border: none; width: 38px; height: 38px; 
-            border-radius: 50%; cursor: pointer; display: flex; align-items: center; 
-            justify-content: center; font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-        }
-
+        .admin-login-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: #f8f9fa; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .categories-container { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px 0; margin-bottom: 12px; scrollbar-width: none; }
         .categories-container::-webkit-scrollbar { display: none; }
         .cat-badge { background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 2px solid transparent; transition: all 0.2s; }
         .cat-badge.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        /* 📌 تصميم قسم الأخبار المثبتة العلوي */
         .pinned-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
         .pinned-title-label { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-right: 6px; display: flex; align-items: center; gap: 4px; }
-        
-        .pinned-card {
-            border-radius: 16px; padding: 12px 16px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden; border-right: 5px solid transparent; position: relative;
-        }
-        
-        /* الأنماط اللونية للأخبار المثبتة حسب طلبك */
+        .pinned-card { border-radius: 16px; padding: 12px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; border-right: 5px solid transparent; position: relative; }
         .pinned-death { background: linear-gradient(135deg, #34495e, #2c3e50); color: #ecf0f1; border-right-color: #1a252f; }
-        .pinned-death .news-text { color: #bdc3c7 !important; }
-        .pinned-death .news-date { color: #95a5a6 !important; }
-        
+        .pinned-death .news-text { color: #bdc3c7 !important; } .pinned-death .news-date { color: #95a5a6 !important; }
         .pinned-wedding { background: linear-gradient(135deg, #fdfbf7, #f5ecd7); color: #786028; border-right-color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.2); }
-        .pinned-wedding .news-title { color: #614c1d; }
-        .pinned-wedding .news-text { color: #7a6639 !important; }
-        
+        .pinned-wedding .news-title { color: #614c1d; } .pinned-wedding .news-text { color: #7a6639 !important; }
         .pinned-general { background: white; color: var(--dark); border-right-color: var(--primary); }
-        
-        /* محاذاة النص المستطيل الصغير قبل التوسع */
         .pinned-header { display: flex; justify-content: space-between; align-items: center; }
         .pinned-headline { font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
         .pinned-icon { font-size: 12px; transition: transform 0.3s; }
-        
-        /* حاوية التوسع المخفية وتظهر عند الضغط */
         .pinned-body { max-height: 0; opacity: 0; transition: all 0.4s ease; padding-top: 0; }
         .pinned-card.expanded .pinned-body { max-height: 2000px; opacity: 1; padding-top: 14px; }
         .pinned-card.expanded .pinned-icon { transform: rotate(180deg); }
-
-        /* تصفح الصور العادي وكروت الأخبار */
         .news-list { display: flex; flex-direction: column; gap: 16px; }
         .news-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
-        
         .carousel-container { width: 100%; aspect-ratio: 1 / 1; position: relative; overflow: hidden; background-color: #f8f9fa; }
         .carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-out; }
         .carousel-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
@@ -85,20 +52,17 @@
         .dot { width: 6px; height: 6px; background: rgba(0, 0, 0, 0.3); border-radius: 50%; transition: all 0.2s; }
         .dot.active { background: var(--primary); transform: scale(1.3); }
         .image-counter { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; z-index: 10; }
-        
         .news-content { padding: 16px; }
         .news-title { font-size: 1.15rem; margin: 0 0 8px 0; color: inherit; font-weight: bold; }
         .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
-        
         .loader-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s; }
         .loader-content { text-align: center; }
         .loader-logo { width: 65px; height: 65px; object-fit: cover; border-radius: 16px; margin-bottom: 16px; animation: pulse 1.5s infinite ease-in-out; }
         .loader-percentage { font-size: 1.8rem; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 8px; }
         .loader-text { font-size: 0.9rem; color: var(--gray); font-weight: 500; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); opacity: 0.9; } }
-
         .noti-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .noti-card { background: white; padding: 32px 24px; border-radius: 32px; width: 100%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
         .btn-noti { background: var(--success); color: white; border: none; padding: 16px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 16px; cursor: pointer; }
@@ -133,9 +97,8 @@
         <h1>🏡 منصة الأخبار العائلية</h1>
     </div>
     
-    <!-- 📌 الحاوية المخصصة لعرض الأخبار الـ 3 المثبتة بالأعلى -->
     <div class="pinned-section" id="pinnedContainer" style="display: none;">
-        <div class="pinned-title-label">📌 إعلانات مثبتة :</div>
+        <div class="pinned-title-label">📌 إعلانات عائلية مثبتة هامة:</div>
         <div id="pinnedNewsItems"></div>
     </div>
     
@@ -148,7 +111,9 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    // 🔔 استدعاء الـ FCM الجديد
+    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-messaging.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
@@ -158,10 +123,10 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const messaging = getMessaging(app);
 
     let allNews = [];
     let selectedCategory = 'all';
-    const channel = new BroadcastChannel('news_channel');
 
     function runPercentageLoader(onComplete) {
         let count = 0;
@@ -177,7 +142,7 @@
                     if(onComplete) onComplete();
                 }, 200);
             } else { percentEl.innerText = count + "%"; }
-        }, 50);
+        }, 400);
     }
 
     window.goToAdminPanel = async () => {
@@ -192,12 +157,54 @@
         else alert("❌ كلمة المرور خاطئة!");
     };
 
+    // 🔔 دالة توليد توكن الجوال FCM وحفظه تلقائياً في السيرفر المفتوح
+    function saveDeviceFCMToken(serviceWorkerRegistration) {
+        if (!('Notification' in window)) return;
+        
+        if (Notification.permission === 'granted') {
+            // دمج الكود الطويل المولد من حسابك هنا VAPID Key
+            getToken(messaging, { 
+                serviceWorkerRegistration: serviceWorkerRegistration,
+                vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" 
+            }).then(async (currentToken) => {
+                if (currentToken) {
+                    console.log("تم توليد التوكن الخاص بجوالك:", currentToken);
+                    // تخزين التوكن في فايربيس داخل كوليكشن مستقل ليسهل إرسال إشعارات سحابية للجميع مجاناً
+                    await setDoc(doc(db, "fcm_tokens", currentToken), {
+                        token: currentToken,
+                        updatedAt: new Date()
+                    });
+                }
+            }).catch((err) => {
+                console.error("خطأ في توليد الـ Token السحابي:", err);
+            });
+        }
+    }
+
+    window.triggerNotificationPermission = function() {
+        if (!('Notification' in window)) return;
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                document.getElementById('notificationPrompt').style.display = 'none';
+                document.getElementById('floatingForceBtn').style.display = 'none';
+                navigator.serviceWorker.ready.then(reg => {
+                    saveDeviceFCMToken(reg);
+                });
+            }
+        });
+    };
+
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(reg => {
-            if (!('Notification' in window)) return;
-            if (Notification.permission === 'default') {
+            // تشغيل دالة التوكن السحابي فور موافقة المستخدم
+            if (Notification.permission === 'granted') {
+                saveDeviceFCMToken(reg);
+            } else if (Notification.permission === 'default') {
                 document.getElementById('notificationPrompt').style.display = 'flex';
                 document.getElementById('floatingForceBtn').style.display = 'block';
+            } else {
+                document.getElementById('floatingForceBtn').style.display = 'block';
+                document.getElementById('floatingForceBtn').innerText = "⚠️ الإشعارات محظورة بجوالك! يرجى السماح بها من الإعدادات";
             }
         });
     }
@@ -234,34 +241,23 @@
         container.innerHTML = '';
         pinnedItemsContainer.innerHTML = '';
 
-        // تصفية وعزل الأخبار المثبتة (Pinned) أولاً
         const pinnedNews = allNews.filter(n => n.isPinned === true).slice(0, 3);
         const regularNews = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
 
-        // 📌 بناء وعرض الأخبار المثبتة المتوسعة
         if (pinnedNews.length > 0) {
             pinnedSection.style.display = 'flex';
             pinnedNews.forEach((news, pIdx) => {
-                let pClass = 'pinned-general';
-                let pLabel = '📌 ';
-                if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 '; }
-                else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨'; }
-
+                let pClass = 'pinned-general'; let pLabel = '📌 إعلان عائلي';
+                if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 تعزية ومواساة'; }
+                else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨ دعوة وفرح تبريك'; }
                 let imgList = news.images || (news.image ? [news.image] : []);
 
-                let pHtml = `
-                    <div class="pinned-card ${pClass}" onclick="this.classList.toggle('expanded')">
-                        <div class="pinned-header">
-                            <div class="pinned-headline"><span>${pLabel}:</span> ${news.title || 'اضغط لعرض تفاصيل الإعلان الحالي'}</div>
-                            <div class="pinned-icon">▼</div>
-                        </div>
-                        <div class="pinned-body">
-                `;
-                
+                let pHtml = `<div class="pinned-card ${pClass}" onclick="this.classList.toggle('expanded')"><div class="pinned-header"><div class="pinned-headline"><span>${pLabel}:</span> ${news.title || 'اضغط لعرض التفاصيل'}</div><div class="pinned-icon">▼</div></div><div class="pinned-body">`;
                 if (imgList.length > 0) {
                     pHtml += `<div class="carousel-container" id="p-carousel-${pIdx}">`;
                     if (imgList.length > 1) pHtml += `<div class="image-counter" id="p-counter-${pIdx}">1 / ${imgList.length}</div>`;
                     pHtml += `<div class="carousel-track" id="p-track-${pIdx}">`;
+                    url => { pHtml += `<div class="carousel-slide"><img src="${url}" class="news-img"></div>`; };
                     imgList.forEach(url => { pHtml += `<div class="carousel-slide"><img src="${url}" class="news-img"></div>`; });
                     pHtml += `</div>`;
                     if (imgList.length > 1) {
@@ -271,35 +267,16 @@
                     }
                     pHtml += `</div>`;
                 }
-
-                pHtml += `
-                            <div style="padding: 10px 0 0 0;">
-                                ${news.text ? `<div class="news-text">${news.text}</div>` : ''}
-                                <div class="news-date">📅 ${news.date}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                pHtml += `<div style="padding: 10px 0 0 0;">${news.text ? `<div class="news-text">${news.text}</div>` : ''}<div class="news-date">📅 ${news.date}</div></div></div></div>`;
                 pinnedItemsContainer.innerHTML += pHtml;
-
-                if (imgList.length > 1) {
-                    setTimeout(() => { setupCarouselTouch(`p-carousel-${pIdx}`, `p-track-${pIdx}`, 'p-', pIdx, imgList.length); }, 100);
-                }
+                if (imgList.length > 1) { setTimeout(() => { setupCarouselTouch(`p-carousel-${pIdx}`, `p-track-${pIdx}`, 'p-', pIdx, imgList.length); }, 100); }
             });
-        } else {
-            pinnedSection.style.display = 'none';
-        }
+        } else { pinnedSection.style.display = 'none'; }
 
-        // 📋 عرض قائمة الأخبار العادية بالأسفل
-        if (regularNews.length === 0) {
-            container.innerHTML = '<div class="no-data">لا توجد أخبار معروضة حالياً.</div>';
-            return;
-        }
-
+        if (regularNews.length === 0) { container.innerHTML = '<div class="no-data">لا توجد أخبار معروضة حالياً.</div>'; return; }
         regularNews.forEach((news, newsIndex) => {
             let imgList = news.images || (news.image ? [news.image] : []);
             let cardHtml = `<div class="news-card">`;
-            
             if (imgList.length > 0) {
                 cardHtml += `<div class="carousel-container" id="carousel-${newsIndex}">`;
                 if (imgList.length > 1) cardHtml += `<div class="image-counter" id="counter-${newsIndex}">1 / ${imgList.length}</div>`;
@@ -313,30 +290,23 @@
                 }
                 cardHtml += `</div>`;
             }
-
             cardHtml += `<div class="news-content">`;
             if (news.title) cardHtml += `<div class="news-title">${news.title}</div>`;
             if (news.text) cardHtml += `<div class="news-text">${news.text}</div>`;
             cardHtml += `<div class="news-date">📅 ${news.date}</div>`;
             cardHtml += `</div></div>`;
-            
             container.innerHTML += cardHtml;
-
-            if (imgList.length > 1) {
-                setTimeout(() => { setupCarouselTouch(`carousel-${newsIndex}`, `track-${newsIndex}`, '', newsIndex, imgList.length); }, 100);
-            }
+            if (imgList.length > 1) { setTimeout(() => { setupCarouselTouch(`carousel-${newsIndex}`, `track-${newsIndex}`, '', newsIndex, imgList.length); }, 100); }
         });
     }
 
     function setupCarouselTouch(containerId, trackId, prefix, newsIndex, totalImages) {
-        const container = document.getElementById(containerId);
-        const track = document.getElementById(trackId);
+        const container = document.getElementById(containerId); const track = document.getElementById(trackId);
         if (!container || !track) return;
         let startX = 0, currentX = 0, currentIndex = 0;
-        container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; e.stopPropagation(); }, { passive: true });
-        container.addEventListener('touchmove', e => { currentX = e.touches[0].clientX; e.stopPropagation(); }, { passive: true });
-        container.addEventListener('touchend', (e) => {
-            e.stopPropagation();
+        container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+        container.addEventListener('touchmove', e => { currentX = e.touches[0].clientX; }, { passive: true });
+        container.addEventListener('touchend', () => {
             const diffX = startX - currentX;
             if (diffX > 40 && currentIndex < totalImages - 1) currentIndex++;
             else if (diffX < -40 && currentIndex > 0) currentIndex--;
@@ -349,7 +319,6 @@
             }
         });
     }
-
     window.filterNews = (cat) => { selectedCategory = cat; renderNews(); loadCategories(); };
 </script>
 </body>
