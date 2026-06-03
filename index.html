@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
-    <title>منصة الأخبار العائلية</title>
+    <title> v2- منصة الأخبار العائلية</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
@@ -57,7 +57,14 @@
         .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
-        .loader-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease, visibility 0.4s; }
+        
+        /* شاشة التحميل الاحترافية */
+        .loader-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #ffffff; z-index: 99999; display: flex;
+            flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
         .loader-content { text-align: center; }
         .loader-logo { width: 65px; height: 65px; object-fit: cover; border-radius: 16px; margin-bottom: 16px; animation: pulse 1.5s infinite ease-in-out; }
         .loader-percentage { font-size: 1.8rem; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 8px; }
@@ -112,7 +119,6 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-    // 🔔 استدعاء الـ FCM الجديد
     import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-messaging.js";
 
     const firebaseConfig = {
@@ -128,21 +134,22 @@
     let allNews = [];
     let selectedCategory = 'all';
 
+    // ⏳ عداد تحميل سريع ومحسن لا يعلق نهائياً
     function runPercentageLoader(onComplete) {
         let count = 0;
         const percentEl = document.getElementById('loadPercent');
         const interval = setInterval(() => {
-            count += Math.floor(Math.random() * 15) + 5;
+            count += Math.floor(Math.random() * 20) + 10;
             if (count >= 100) {
                 count = 100; clearInterval(interval);
                 percentEl.innerText = "100%";
                 setTimeout(() => {
                     document.getElementById('pageLoader').style.opacity = '0';
-                    setTimeout(() => { document.getElementById('pageLoader').style.visibility = 'hidden'; }, 400);
+                    setTimeout(() => { document.getElementById('pageLoader').style.visibility = 'hidden'; }, 300);
                     if(onComplete) onComplete();
-                }, 200);
+                }, 100);
             } else { percentEl.innerText = count + "%"; }
-        }, 400);
+        }, 30); // تم تسريع الوقت لتجنب أي تعليق من المتصفح
     }
 
     window.goToAdminPanel = async () => {
@@ -157,27 +164,20 @@
         else alert("❌ كلمة المرور خاطئة!");
     };
 
-    // 🔔 دالة توليد توكن الجوال FCM وحفظه تلقائياً في السيرفر المفتوح
     function saveDeviceFCMToken(serviceWorkerRegistration) {
         if (!('Notification' in window)) return;
-        
         if (Notification.permission === 'granted') {
-            // دمج الكود الطويل المولد من حسابك هنا VAPID Key
             getToken(messaging, { 
                 serviceWorkerRegistration: serviceWorkerRegistration,
                 vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" 
             }).then(async (currentToken) => {
                 if (currentToken) {
-                    console.log("تم توليد التوكن الخاص بجوالك:", currentToken);
-                    // تخزين التوكن في فايربيس داخل كوليكشن مستقل ليسهل إرسال إشعارات سحابية للجميع مجاناً
                     await setDoc(doc(db, "fcm_tokens", currentToken), {
                         token: currentToken,
                         updatedAt: new Date()
                     });
                 }
-            }).catch((err) => {
-                console.error("خطأ في توليد الـ Token السحابي:", err);
-            });
+            }).catch((err) => { console.error(err); });
         }
     }
 
@@ -187,25 +187,18 @@
             if (permission === 'granted') {
                 document.getElementById('notificationPrompt').style.display = 'none';
                 document.getElementById('floatingForceBtn').style.display = 'none';
-                navigator.serviceWorker.ready.then(reg => {
-                    saveDeviceFCMToken(reg);
-                });
+                navigator.serviceWorker.ready.then(reg => { saveDeviceFCMToken(reg); });
             }
         });
     };
 
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').then(reg => {
-            // تشغيل دالة التوكن السحابي فور موافقة المستخدم
-            if (Notification.permission === 'granted') {
-                saveDeviceFCMToken(reg);
-            } else if (Notification.permission === 'default') {
+            if (Notification.permission === 'granted') { saveDeviceFCMToken(reg); }
+            else if (Notification.permission === 'default') {
                 document.getElementById('notificationPrompt').style.display = 'flex';
                 document.getElementById('floatingForceBtn').style.display = 'block';
-            } else {
-                document.getElementById('floatingForceBtn').style.display = 'block';
-                document.getElementById('floatingForceBtn').innerText = "⚠️ الإشعارات محظورة بجوالك! يرجى السماح بها من الإعدادات";
-            }
+            } else { document.getElementById('floatingForceBtn').style.display = 'block'; }
         });
     }
 
@@ -257,7 +250,6 @@
                     pHtml += `<div class="carousel-container" id="p-carousel-${pIdx}">`;
                     if (imgList.length > 1) pHtml += `<div class="image-counter" id="p-counter-${pIdx}">1 / ${imgList.length}</div>`;
                     pHtml += `<div class="carousel-track" id="p-track-${pIdx}">`;
-                    url => { pHtml += `<div class="carousel-slide"><img src="${url}" class="news-img"></div>`; };
                     imgList.forEach(url => { pHtml += `<div class="carousel-slide"><img src="${url}" class="news-img"></div>`; });
                     pHtml += `</div>`;
                     if (imgList.length > 1) {
