@@ -10,10 +10,6 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
     <title>منصة الأخبار العائلية</title>
-    
-    <!-- استدعاء مكتبة حساب مواقيت الصلاة بدقة -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/adyen-adhoc-prayer-times/1.0.0/prayer-times.min.js" onerror="console.log('مكتبة الحساب مفعّلة داخلياً')"></script>
-    
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
@@ -26,40 +22,29 @@
         }
         .main-container { max-width: 500px; margin: 0 auto; position: relative; }
         
-        /* 🕌 شريط مواقيت الصلاة الشيعي العلوي */
+        /* 🕌 شريط مواقيت الصلاة الجعفري */
         .prayer-times-bar {
-            background: linear-gradient(135deg, #2c3e50, #1a252f);
-            color: #ffffff;
-            padding: 12px 16px;
-            border-radius: 20px;
-            margin-bottom: 14px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            font-size: 0.88rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: linear-gradient(135deg, #2c3e50, #1a252f); color: #ffffff;
+            padding: 12px 16px; border-radius: 20px; margin-bottom: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-size: 0.88rem;
+            display: none; justify-content: space-between; align-items: center;
             border: 1px solid rgba(255,255,255,0.05);
         }
-        .prayer-title { font-weight: bold; color: var(--warning); display: flex; align-items: center; gap: 4px; }
-        .prayer-flex { display: flex; gap: 12px; font-variant-numeric: tabular-nums; }
-        .prayer-item { background: rgba(255,255,255,0.08); padding: 4px 10px; border-radius: 10px; }
-        .prayer-item span { color: #f39c12; font-weight: bold; margin-right: 2px; }
+        .prayer-title { font-weight: bold; color: var(--warning); }
+        .prayer-flex { display: flex; gap: 8px; font-variant-numeric: tabular-nums; }
+        .prayer-item { background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 10px; font-size: 0.8rem; }
+        .prayer-item span { color: #f39c12; font-weight: bold; }
 
         .header-bar { background: white; padding: 16px; border-radius: 24px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; display: flex; align-items: center; justify-content: center; }
         .header-bar h1 { margin: 0; font-size: 1.4rem; background: linear-gradient(135deg, var(--primary-light), var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .admin-login-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: #f8f9fa; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-        .categories-container { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px 0; margin-bottom: 12px; scrollbar-width: none; }
-        .categories-container::-webkit-scrollbar { display: none; }
-        .cat-badge { background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 2px solid transparent; transition: all 0.2s; }
-        .cat-badge.active { background: var(--primary); color: white; border-color: var(--primary); }
         
+        /* 📌 قسم التثبيت والعد التنازلي */
         .pinned-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
         .pinned-title-label { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-right: 6px; display: flex; align-items: center; gap: 4px; }
-        .pinned-card { border-radius: 16px; padding: 12px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; border-right: 5px solid transparent; position: relative; }
+        .pinned-card { border-radius: 16px; padding: 12px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s ease; overflow: hidden; border-right: 5px solid transparent; position: relative; }
         .pinned-death { background: linear-gradient(135deg, #34495e, #2c3e50); color: #ecf0f1; border-right-color: #1a252f; }
-        .pinned-death .news-text { color: #bdc3c7 !important; } .pinned-death .news-date { color: #95a5a6 !important; }
         .pinned-wedding { background: linear-gradient(135deg, #fdfbf7, #f5ecd7); color: #786028; border-right-color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.2); }
-        .pinned-wedding .news-title { color: #614c1d; } .pinned-wedding .news-text { color: #7a6639 !important; }
         .pinned-general { background: white; color: var(--dark); border-right-color: var(--primary); }
         .pinned-header { display: flex; justify-content: space-between; align-items: center; }
         .pinned-headline { font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
@@ -67,7 +52,17 @@
         .pinned-body { max-height: 0; opacity: 0; transition: all 0.4s ease; padding-top: 0; }
         .pinned-card.expanded .pinned-body { max-height: 2000px; opacity: 1; padding-top: 14px; }
         .pinned-card.expanded .pinned-icon { transform: rotate(180deg); }
+        
+        /* شريط العداد التنازلي داخل الكرت المثبت */
+        .countdown-box { background: rgba(0, 0, 0, 0.05); padding: 8px 12px; border-radius: 12px; margin-top: 8px; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; }
+        .pinned-death .countdown-box { background: rgba(255, 255, 255, 0.1); color: #f1c40f; }
+        .pinned-wedding .countdown-box { background: rgba(212, 175, 55, 0.15); color: #8e6f27; }
+        .pinned-general .countdown-box { color: var(--primary); background: #f3f0ff; }
 
+        .categories-container { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px 0; margin-bottom: 12px; scrollbar-width: none; }
+        .categories-container::-webkit-scrollbar { display: none; }
+        .cat-badge { background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 2px solid transparent; transition: all 0.2s; }
+        .cat-badge.active { background: var(--primary); color: white; border-color: var(--primary); }
         .news-list { display: flex; flex-direction: column; gap: 16px; }
         .news-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
         .carousel-container { width: 100%; aspect-ratio: 1 / 1; position: relative; overflow: hidden; background-color: #f8f9fa; }
@@ -99,9 +94,27 @@
         .safety-note-box { border: 2px dashed var(--danger); background-color: #fff5f5; padding: 14px; border-radius: 16px; text-align: right; }
         .safety-title { font-size: 0.9rem; font-weight: bold; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
         .safety-desc { font-size: 0.8rem; color: #5c6b73; line-height: 1.5; margin: 0; }
+
+        /* 📺 تصميم شاشة الإعلان المنبثق كامل الشاشة */
+        .fullscreen-ad-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.95); z-index: 999999;
+            display: flex; align-items: center; justify-content: center; padding: 16px;
+        }
+        .ad-image-container { position: relative; max-width: 450px; width: 100%; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .ad-image-container img { width: 100%; height: auto; display: block; object-fit: contain; max-height: 85vh; }
+        .ad-timer-badge { position: absolute; top: 16px; left: 16px; background: rgba(0, 0, 0, 0.8); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; font-family: monospace; border: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
+
+<!-- 📺 شاشة الإعلان كامل الشاشة الموقوتة -->
+<div id="fullscreenAd" class="fullscreen-ad-overlay" style="display: none;">
+    <div class="ad-image-container">
+        <div class="ad-timer-badge" id="adTimerBadge">تخطي خلال ..</div>
+        <img id="adTargetImage" src="" alt="إعلان عائلي">
+    </div>
+</div>
 
 <div id="onboardingScreen" class="onboarding-screen" style="display: none;">
     <div class="onboarding-card">
@@ -126,7 +139,7 @@
 
 <div class="main-container">
     
-    <!-- 🕌 شاشة عرض أوقات الأذان الشيعية الذكية -->
+    <!-- 🕌 شريط مواقيت الصلاة الجعفري المطور -->
     <div class="prayer-times-bar" id="prayerTimesBar">
         <div class="prayer-title">🕌 مواقيت الأذان:</div>
         <div class="prayer-flex">
@@ -142,7 +155,7 @@
     </div>
     
     <div class="pinned-section" id="pinnedContainer" style="display: none;">
-        <div class="pinned-title-label">📌 إعلانات مثبتة :</div>
+        <div class="pinned-title-label">📌 إعلانات عائلية مثبتة هامة:</div>
         <div id="pinnedNewsItems"></div>
     </div>
     
@@ -153,58 +166,37 @@
     <div class="news-list" id="newsList"></div>
 </div>
 
-<!-- محرك حساب مواقيت الصلاة للمذهب الجعفري الشيعي -->
 <script>
-    // الإعدادات الحسابية الثابتة وفق التوقيت الشيعي (طريقة إيقاع الشيعة الجعفري)
+    // 🕌 محرك حساب الأذان الشيعي مع ميزة الـ Offset (الدقائق المضافة والمخصومة من الأدمن)
+    let prayerOffsets = { fajr: 0, dhuhr: 0, maghrib: 0 };
+    
     const ShiahPrayerCalculator = {
         calculate: function(lat, lng, timezone) {
-            const now = new Date();
-            const days = now.getDate();
-            
-            // معادلة تقريبية لحساب حركة الشمس المباشرة (زاوية الفجر 16، زاوية المغرب 4 تحت الأفق)
-            // لحساب الظهر الفعلي بدقة وفق خط الطول الزمني
             let baseHour = 12 + (timezone - lng / 15);
             
-            // إضافة معادلة التعديل الزمني التقريبي لتتناسب مع خطوط العرض في المنطقة
-            let dhuhrStr = ShiahPrayerCalculator.formatTime(baseHour + 0.05); // وقت صلاة الظهرين
-            let fajrStr = ShiahPrayerCalculator.formatTime(baseHour - 7.1);    // وقت صلاة الصبح
-            let maghribStr = ShiahPrayerCalculator.formatTime(baseHour + 6.35); // وقت صلاة المغرب (غياب الحمرة المشرقية)
+            let fajrBase = (baseHour - 7.1) + (prayerOffsets.fajr / 60);
+            let dhuhrBase = (baseHour + 0.05) + (prayerOffsets.dhuhr / 60);
+            let maghribBase = (baseHour + 6.35) + (prayerOffsets.maghrib / 60);
 
-            document.getElementById('imsakTime').innerText = fajrStr;
-            document.getElementById('dhuhrTime').innerText = dhuhrStr;
-            document.getElementById('maghribTime').innerText = maghribStr;
+            document.getElementById('imsakTime').innerText = ShiahPrayerCalculator.formatTime(fajrBase);
+            document.getElementById('dhuhrTime').innerText = ShiahPrayerCalculator.formatTime(dhuhrBase);
+            document.getElementById('maghribTime').innerText = ShiahPrayerCalculator.formatTime(maghribBase);
         },
         formatTime: function(hrs) {
             if (hrs < 0) hrs += 24; if (hrs >= 24) hrs -= 24;
-            let h = Math.floor(hrs);
-            let m = Math.floor((hrs - h) * 60);
-            let ampm = h >= 12 ? 'م' : 'ص';
-            h = h % 12; h = h ? h : 12; 
+            let h = Math.floor(hrs); let m = Math.floor((hrs - h) * 60);
+            let ampm = h >= 12 ? 'م' : 'ص'; h = h % 12; h = h ? h : 12; 
             return `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
         },
         initLocation: function() {
-            // طلب إحداثيات الـ GPS الفعلية لجوال فرد العائلة
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        let lat = position.coords.latitude;
-                        let lng = position.coords.longitude;
-                        let tz = -(new Date().getTimezoneOffset() / 60);
-                        ShiahPrayerCalculator.calculate(lat, lng, tz);
-                    },
-                    () => {
-                        // إحداثيات افتراضية للمنطقة (المنطقة الشرقية/الرياض) في حال رفض المستخدم مشاركة الموقع
-                        ShiahPrayerCalculator.calculate(24.7136, 46.6753, 3);
-                    }
+                    (p) => { ShiahPrayerCalculator.calculate(p.coords.latitude, p.coords.longitude, -(new Date().getTimezoneOffset() / 60)); },
+                    () => { ShiahPrayerCalculator.calculate(24.7136, 46.6753, 3); }
                 );
-            } else {
-                ShiahPrayerCalculator.calculate(24.7136, 46.6753, 3);
-            }
+            } else { ShiahPrayerCalculator.calculate(24.7136, 46.6753, 3); }
         }
     };
-    
-    // تشغيل الحساب الفوري للأذان الشيعي
-    ShiahPrayerCalculator.initLocation();
 </script>
 
 <script type="module">
@@ -226,6 +218,7 @@
 
     let allNews = [];
     let selectedCategory = 'all';
+    let countdownIntervals = [];
 
     function runPercentageLoader(onComplete) {
         document.getElementById('pageLoader').style.display = 'flex';
@@ -246,6 +239,38 @@
     }
 
     window.addEventListener("load", () => {
+        // 📺 جلب وفحص الإعلان المنبثق الموقوت أولاً
+        getDoc(doc(db, "settings", "advertisement")).then(snap => {
+            if (snap.exists() && snap.data().active && snap.data().image) {
+                const data = snap.data();
+                document.getElementById('adTargetImage').src = data.image;
+                document.getElementById('fullscreenAd').style.display = 'flex';
+                let leftSeconds = parseInt(data.duration || 5);
+                
+                const adInt = setInterval(() => {
+                    leftSeconds--;
+                    document.getElementById('adTimerBadge').innerText = `تخطي خلال ${leftSeconds}ث`;
+                    if (leftSeconds <= 0) {
+                        clearInterval(adInt);
+                        document.getElementById('fullscreenAd').style.opacity = '0';
+                        setTimeout(() => { document.getElementById('fullscreenAd').style.display = 'none'; }, 300);
+                    }
+                }, 1000);
+            }
+        });
+
+        // مزامنة أوقات الصلاة من الفايربيس (الحالة والدقائق المعدلة)
+        onSnapshot(doc(db, "settings", "prayers"), (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('prayerTimesBar').style.display = data.enabled ? 'flex' : 'none';
+                prayerOffsets.fajr = parseInt(data.fajrOffset || 0);
+                prayerOffsets.dhuhr = parseInt(data.dhuhrOffset || 0);
+                prayerOffsets.maghrib = parseInt(data.maghribOffset || 0);
+                ShiahPrayerCalculator.initLocation();
+            }
+        });
+
         const onboarded = localStorage.getItem("family_app_onboarded_2026_v2");
         if (onboarded) { startMainAppSync(); } 
         else { document.getElementById('onboardingScreen').style.display = 'flex'; }
@@ -265,13 +290,8 @@
 
     function saveDeviceFCMToken(serviceWorkerRegistration) {
         if (!messaging) return;
-        getToken(messaging, { 
-            serviceWorkerRegistration: serviceWorkerRegistration,
-            vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" 
-        }).then(async (currentToken) => {
-            if (currentToken) {
-                await setDoc(doc(db, "fcm_tokens", currentToken), { token: currentToken, updatedAt: new Date() });
-            }
+        getToken(messaging, { serviceWorkerRegistration, vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" }).then(async (t) => {
+            if (t) await setDoc(doc(db, "fcm_tokens", t), { token: t, updatedAt: new Date() });
         }).catch(() => {});
     }
 
@@ -312,7 +332,36 @@
         } catch (e) { console.error(e); }
     }
 
+    // ⏳ دالة تشغيل العداد التنازلي الحركي للأخبار المثبتة
+    function startCountdownEngine(targetDateStr, elementId) {
+        const element = document.getElementById(elementId);
+        if(!element) return;
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const target = new Date(targetDateStr).getTime();
+            const diff = target - now;
+
+            if (diff <= 0) {
+                element.innerText = "⏳ الحدث: هذا اليوم";
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            if (days >= 1) {
+                element.innerText = `⏳ متبقي للمناسبة: ${days} يوم`;
+            } else {
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                element.innerText = `⏳ متبقي للمناسبة: ${hours} ساعة`;
+            }
+        }
+        updateTimer();
+        const interval = setInterval(updateTimer, 60000); // تحديث كل دقيقة
+        countdownIntervals.push(interval);
+    }
+
     function renderNews() {
+        countdownIntervals.forEach(clearInterval); countdownIntervals = [];
         const container = document.getElementById('newsList');
         const pinnedItemsContainer = document.getElementById('pinnedNewsItems');
         const pinnedSection = document.getElementById('pinnedContainer');
@@ -343,8 +392,20 @@
                     }
                     pHtml += `</div>`;
                 }
-                pHtml += `<div style="padding: 10px 0 0 0;">${news.text ? `<div class="news-text">${news.text}</div>` : ''}<div class="news-date">📅 ${news.date}</div></div></div></div>`;
+                
+                // إضافة صندوق العداد في حال تفعليه من الأدمن للخبر المثبت
+                let countdownHtml = "";
+                if (news.hasCountdown && news.countdownDate) {
+                    countdownHtml = `<div class="countdown-box" id="pinned-timer-${pIdx}">جاري حساب الوقت...</div>`;
+                }
+
+                pHtml += `<div style="padding: 10px 0 0 0;">${news.text ? `<div class="news-text">${news.text}</div>` : ''}${countdownHtml}<div class="news-date">📅 ${news.date}</div></div></div></div>`;
                 pinnedItemsContainer.innerHTML += pHtml;
+                
+                if (news.hasCountdown && news.countdownDate) {
+                    startCountdownEngine(news.countdownDate, `pinned-timer-${pIdx}`);
+                }
+
                 if (imgList.length > 1) { setTimeout(() => { setupCarouselTouch(`p-carousel-${pIdx}`, `p-track-${pIdx}`, 'p-', pIdx, imgList.length); }, 100); }
             });
         } else { pinnedSection.style.display = 'none'; }
