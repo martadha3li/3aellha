@@ -243,9 +243,9 @@
             pinnedSection.style.display = 'flex';
             pinnedNews.forEach((news, pIdx) => {
                 let pClass = 'pinned-general';
-                let pLabel = '📌 ' news.text;
-                if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 'news.text; }
-                else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨'news.text; }
+                let pLabel = '📌 ';
+                if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 '; }
+                else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨'; }
 
                 let imgList = news.images || (news.image ? [news.image] : []);
 
