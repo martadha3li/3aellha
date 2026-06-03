@@ -2,262 +2,247 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأخبار العائلية - منطقة آمنة</title>
-    
-    <!-- 🛡️ كود الحماية المانع للدخول المباشر: يتم تنفيذه في أول ثانية قبل بناء أي ستايل أو عناصر -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
-            projectId: "fnews-7525e",
-            appId: "1:1023530532546:web:cbc1be1753237179bd455b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        async function checkAdminSession() {
-            // فحص هل تم التحقق من الأدمن سابقاً في هذه الجلسة؟
-            if (sessionStorage.getItem("admin_authenticated") === "true") {
-                document.getElementById('adminPanelWrapper').style.display = 'block';
-                return;
-            }
-
-            // إذا حاول الدخول مباشرة من الرابط، نطلب الباسورد المحدث من فايربيس فوراُ
-            const passInput = prompt("🔒 هذه المنطقة محمية! الرجاء إدخال كلمة مرور لوحة التحكم للمتابعة:");
-            if (!passInput) { rejectAccess(); return; }
-
-            let correctPassword = "123"; // الباسورد الافتراضي الاحتياطي
-            try {
-                const passSnap = await getDoc(doc(db, "settings", "security"));
-                if (passSnap.exists() && passSnap.data().adminPassword) {
-                    correctPassword = passSnap.data().adminPassword;
-                }
-            } catch(e) { console.error("حماية قاعدة البيانات مقفلة"); }
-
-            if (passInput === correctPassword) {
-                // كلمة المرور صحيحة -> نمنحه الإذن ونكشف المحتوى
-                sessionStorage.setItem("admin_authenticated", "true");
-                document.getElementById('adminPanelWrapper').style.display = 'block';
-            } else {
-                alert("❌ كلمة المرور خاطئة! لا تملك صلاحية الوصول إلى لوحة تحكم GitHub هذه.");
-                rejectAccess();
-            }
-        }
-
-        function rejectAccess() {
-            // تدمير ومسح محتوى الصفحة بالكامل لمنع رؤية النماذج أو الجداول عن طريق الـ View-Source
-            document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; font-family:sans-serif; color:#e74c3c;'>🔒 عذراً، الوصول محظور وغير مصرح لك بالدخول!</h1>";
-            setTimeout(() => { window.location.href = "index.html"; }, 2000);
-        }
-
-        // إطلاق الفحص الأمني فوراً
-        checkAdminSession();
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
+    <title>منصة الأخبار العائلية</title>
     <style>
-        * { box-sizing: border-box; }
-        :root { --success: #27ae60; --primary: #764ba2; --dark: #2c3e50; --danger: #e74c3c; --warning: #f39c12; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 16px; background: #f0f2f5; color: var(--dark); }
-        .admin-container { max-width: 750px; margin: 0 auto; }
-        .card { background: white; padding: 20px; border-radius: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        h2 { margin-top: 0; font-size: 1.25rem; border-right: 4px solid var(--primary); padding-right: 10px; }
-        .form-group { margin-bottom: 14px; }
-        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: inherit; }
-        .btn { padding: 10px 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
-        .btn-block { width: 100%; padding: 13px; font-size: 15px; border-radius: 12px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .preview-grid { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-        .preview-wrapper { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; border: 1px solid #ddd; }
-        .preview-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .table-responsive { overflow-x: auto; margin-top: 15px; }
-        table { width: 100%; border-collapse: collapse; text-align: right; font-size: 13px; margin-bottom: 15px; }
-        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: #f8f9fa; font-weight: bold; }
-        .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --primary: #764ba2; --primary-light: #667eea; --dark: #2c3e50; --gray: #7f8c8d;
+            --success: #27ae60; --danger: #e74c3c; --warning: #f1c40f;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 12px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #eef2f3 100%); min-height: 100vh; padding-bottom: 90px;
+        }
+        .main-container { max-width: 500px; margin: 0 auto; position: relative; }
         
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(24px); }
+        /* 🕌 شريط مواقيت الصلاة الجعفري */
+        .prayer-times-bar {
+            background: linear-gradient(135deg, #2c3e50, #1a252f); color: #ffffff;
+            padding: 12px 16px; border-radius: 20px; margin-bottom: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-size: 0.88rem;
+            display: none; justify-content: space-between; align-items: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .prayer-title { font-weight: bold; color: var(--warning); }
+        .prayer-flex { display: flex; gap: 8px; font-variant-numeric: tabular-nums; }
+        .prayer-item { background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 10px; font-size: 0.8rem; }
+        .prayer-item span { color: #f39c12; font-weight: bold; }
+
+        /* الهيدر المطور مع إضافة زر الفرز السري */
+        .header-bar { background: white; padding: 16px; border-radius: 24px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; display: flex; align-items: center; justify-content: center; }
+        .header-bar h1 { margin: 0; font-size: 1.4rem; background: linear-gradient(135deg, var(--primary-light), var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .admin-login-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: #f8f9fa; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        
+        /* 📁 زر أيقونة التصنيفات الصغير الجديد */
+        .category-trigger-btn {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            background: #fcfaff; border: 2px solid #f3effa; width: 38px; height: 38px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; font-size: 16px; box-shadow: 0 2px 6px rgba(118,75,162,0.05);
+            transition: all 0.2s ease;
+        }
+        .category-trigger-btn:active { transform: translateY(-50%) scale(0.92); background: #f3f0ff; }
+
+        /* 🎴 كرت نافذة التصنيفات المنبثقة الذكي */
+        .categories-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
+            z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .categories-popup-card {
+            background: rgba(255, 255, 255, 0.98); width: 100%; max-width: 340px;
+            border-radius: 28px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            animation: cardScaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        @keyframes cardScaleIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .popup-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #edf2f7; padding-bottom: 10px; }
+        .popup-card-header h3 { margin: 0; font-size: 1.1rem; color: var(--dark); display: flex; align-items: center; gap: 6px; }
+        .popup-close-btn { background: #f7fafc; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray); font-weight: bold; }
+        
+        .popup-categories-grid { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; padding-right: 2px; }
+        .popup-cat-item {
+            background: #f8fafc; padding: 12px 16px; border-radius: 14px;
+            font-size: 0.95rem; font-weight: 600; color: #4a5568; cursor: pointer;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.2s ease; border: 1px solid transparent;
+        }
+        .popup-cat-item:active { transform: scale(0.98); }
+        .popup-cat-item.active { background: #f3f0ff; color: var(--primary); border-color: rgba(118,75,162,0.2); }
+        .popup-cat-item.active::after { content: "🔹"; font-size: 11px; }
+
+        /* 📌 قسم التثبيت والعد التنازلي بجانب العنوان */
+        .pinned-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+        .pinned-title-label { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-right: 6px; display: flex; align-items: center; gap: 4px; }
+        .pinned-card { border-radius: 16px; padding: 14px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s ease; overflow: hidden; border-right: 5px solid transparent; position: relative; }
+        .pinned-death { background: linear-gradient(135deg, #34495e, #2c3e50); color: #ecf0f1; border-right-color: #1a252f; }
+        .pinned-wedding { background: linear-gradient(135deg, #fdfbf7, #f5ecd7); color: #786028; border-right-color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.2); }
+        .pinned-general { background: white; color: var(--dark); border-right-color: var(--primary); }
+        
+        .pinned-header { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; }
+        .pinned-headline { font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 4px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        .inline-counter-badge { font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 20px; white-space: nowrap; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; }
+        .pinned-death .inline-counter-badge { background: rgba(255, 255, 255, 0.15); color: #f1c40f; }
+        .pinned-wedding .inline-counter-badge { background: rgba(212, 175, 55, 0.15); color: #8e6f27; }
+        .pinned-general .inline-counter-badge { background: #f3f0ff; color: var(--primary); }
+        
+        .inline-counter-badge.today-active { background: #e74c3c !important; color: #ffffff !important; animation: danger-blink 1s infinite alternate; box-shadow: 0 0 8px rgba(231, 76, 60, 0.5); }
+        @keyframes danger-blink { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0.4; transform: scale(0.96); } }
+
+        .pinned-icon { font-size: 11px; color: var(--gray); margin-right: auto; padding-right: 4px; }
+        .pinned-body { max-height: 0; opacity: 0; transition: all 0.4s ease; padding-top: 0; }
+        .pinned-card.expanded .pinned-body { max-height: 2000px; opacity: 1; padding-top: 14px; }
+
+        .news-list { display: flex; flex-direction: column; gap: 16px; }
+        .news-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
+        .carousel-container { width: 100%; aspect-ratio: 1 / 1; position: relative; overflow: hidden; background-color: #f8f9fa; }
+        .carousel-track { display: flex; width: 100%; height: 100%; transition: transform 0.3s ease-out; }
+        .carousel-slide { min-width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .news-img { width: 100%; height: 100%; object-fit: contain; background: #fafafa; }
+        .carousel-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; z-index: 10; pointer-events: none; }
+        .dot { width: 6px; height: 6px; background: rgba(0, 0, 0, 0.3); border-radius: 50%; transition: all 0.2s; }
+        .dot.active { background: var(--primary); transform: scale(1.3); }
+        .image-counter { position: absolute; top: 12px; left: 12px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; z-index: 10; }
+        .news-content { padding: 16px; }
+        .news-title { font-size: 1.15rem; margin: 0 0 8px 0; color: inherit; font-weight: bold; }
+        .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
+        .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
+        .no-data { text-align: center; padding: 30px; color: var(--gray); font-weight: bold; }
+        
+        .loader-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 99998; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease, visibility 0.3s; }
+        .loader-content { text-align: center; }
+        .loader-logo { width: 65px; height: 65px; object-fit: cover; border-radius: 16px; margin-bottom: 16px; animation: pulse 1.5s infinite ease-in-out; }
+        .loader-percentage { font-size: 1.8rem; font-weight: bold; color: var(--primary); font-family: monospace; margin-bottom: 8px; }
+        .loader-text { font-size: 0.9rem; color: var(--gray); font-weight: 500; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); opacity: 0.9; } }
+
+        .onboarding-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        .onboarding-card { width: 100%; max-width: 420px; text-align: center; background: #fafafa; padding: 24px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .onboarding-logo { width: 85px; height: 85px; object-fit: cover; border-radius: 20px; margin-bottom: 12px; }
+        .onboarding-card h2 { margin: 0 0 10px 0; font-size: 1.4rem; color: var(--dark); }
+        .onboarding-card p { font-size: 0.95rem; color: #4a5568; line-height: 1.6; margin: 0 0 20px 0; }
+        .btn-activate-now { background: linear-gradient(135deg, var(--primary-light), var(--primary)); color: white; border: none; padding: 16px 24px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(118, 75, 162, 0.3); margin-bottom: 16px; display: block; }
+        .safety-note-box { border: 2px dashed var(--danger); background-color: #fff5f5; padding: 14px; border-radius: 16px; text-align: right; }
+        .safety-title { font-size: 0.9rem; font-weight: bold; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .safety-desc { font-size: 0.8rem; color: #5c6b73; line-height: 1.5; margin: 0; }
+
+        .fullscreen-ad-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.95); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .ad-image-container { position: relative; max-width: 450px; width: 100%; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .ad-image-container img { width: 100%; height: auto; display: block; object-fit: contain; max-height: 85vh; }
+        .ad-timer-badge { position: absolute; top: 16px; left: 16px; background: rgba(0, 0, 0, 0.8); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; font-family: monospace; border: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
-<!-- 📦 غلاف حماية لوحة التحكم: يكون مخفياً تماماً بالـ display:none ولا يفتح إلا بنجاح الفحص الأمني السحابي -->
-<div id="adminPanelWrapper" style="display: none;">
-    <div class="admin-container">
+<div id="fullscreenAd" class="fullscreen-ad-overlay" style="display: none;">
+    <div class="ad-image-container">
+        <div class="ad-timer-badge" id="adTimerBadge">تخطي خلال ..</div>
+        <img id="adTargetImage" src="" alt="إعلان عائلي">
+    </div>
+</div>
 
-        <!-- هيدر الخروج الآمن للوحة التحكم -->
-        <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;">
-            <h3 style="margin:0; color:var(--primary);">🔐 لوحة الإدارة العائلية المشفرة</h3>
-            <button class="btn btn-danger" onclick="sessionStorage.clear(); window.location.reload();" style="padding:6px 12px; font-size:11px;">🚪 خروج آمن</button>
+<div id="categoriesModal" class="categories-modal-overlay" onclick="window.closeCategoriesCard()">
+    <div class="categories-popup-card" onclick="event.stopPropagation()">
+        <div class="popup-card-header">
+            <h3>📁 فرز حسب التصنيف العائلي</h3>
+            <button class="popup-close-btn" onclick="window.closeCategoriesCard()">✕</button>
         </div>
-
-        <!-- 🕌 قسم إدارة مواقيت الصلاة (تفعيل/تعطيل + تعديل الدقائق) -->
-        <div class="card">
-            <h2 style="border-color: var(--primary);">🕌 إعدادات شريط مواقيت الصلاة الجعفري</h2>
-            <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-                <label class="switch">
-                    <input type="checkbox" id="prayerBarToggle">
-                    <span class="slider"></span>
-                </label>
-                <strong>تفعيل عرض شريط الصلاة في واجهة الأخبار</strong>
+        <div class="popup-categories-grid" id="popupCategoriesContainer">
             </div>
-            <div class="grid-3">
-                <div class="form-group">
-                    <label>تعديل أذان الصبح (دقائق):</label>
-                    <input type="number" id="fajrOffset" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label>تعديل أذان الظهر (دقائق):</label>
-                    <input type="number" id="dhuhrOffset" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label>تعديل أذان المغرب (دقائق):</label>
-                    <input type="number" id="maghribOffset" placeholder="0">
-                </div>
-            </div>
-            <button class="btn btn-primary btn-block" onclick="savePrayerSettings()">💾 حفظ تعديلات مواقيت الصلاة</button>
-        </div>
+    </div>
+</div>
 
-        <!-- 📺 قسم التحكم بالإعلان المنبثق كامل الشاشة الموقوت -->
-        <div class="card">
-            <h2 style="border-color: var(--danger);">📺 إعلان منبثق كامل الشاشة (أول ما يفتح التطبيق)</h2>
-            <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-                <label class="switch">
-                    <input type="checkbox" id="adToggle">
-                    <span class="slider"></span>
-                </label>
-                <strong>تفعيل بث الإعلان المنبثق حالياً</strong>
-            </div>
-            <div class="form-group">
-                <label>مدة بقاء الإعلان على الشاشة:</label>
-                <select id="adDuration">
-                    <option value="3">3 ثواني</option>
-                    <option value="5" selected>5 ثواني</option>
-                    <option value="10">10 ثواني</option>
-                    <option value="20">20 ثانية</option>
-                    <option value="custom">تحديد يدوي مخصص...</option>
-                </select>
-                <input type="number" id="adCustomDuration" placeholder="أدخل المدة بالثواني يدوياً" style="display:none; margin-top:8px;">
-            </div>
-            <div class="form-group">
-                <label>ارفاق صورة الإعلان:</label>
-                <input type="file" id="adImageFile" accept="image/*">
-                <div class="preview-grid" id="adPreviewGrid"></div>
-            </div>
-            <button class="btn btn-danger btn-block" onclick="saveAdSettings()">🚀 حفظ ونشر الإعلان السريع</button>
-        </div>
-
-        <!-- التصنيفات العائلية -->
-        <div class="card">
-            <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
-            <form id="categoryForm">
-                <input type="hidden" id="editCatId" value="">
-                <div class="form-group">
-                    <label>اسم التصنيف:</label>
-                    <input type="text" id="newCatName" placeholder="مثال: مناسبات، لقاءات" required>
-                </div>
-                <button type="submit" id="catSubmitBtn" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
-            </form>
-            <div class="table-responsive">
-                <table>
-                    <thead><tr><th>اسم التصنيف</th><th>إجراءات</th></tr></thead>
-                    <tbody id="adminCategoriesTable"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- نشر خبر جديد + إضافة عداد تنازلي للمناسبات المثبتة -->
-        <div class="card">
-            <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم 4 صور كبوست إنستغرام)</h2>
-            <form id="newsForm">
-                <input type="hidden" id="editDocId" value="">
-                <div class="form-group">
-                    <label>تصنيف الخبر:</label>
-                    <select id="newsCategory" required></select>
-                </div>
-                <div class="form-group">
-                    <label>عنوان الخبر (اختياري):</label>
-                    <input type="text" id="newsTitle" placeholder="أدخل العنوان">
-                </div>
-                <div class="form-group">
-                    <label>نص الخبر (اختياري):</label>
-                    <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل ومحتوى الخبر هنا..."></textarea>
-                </div>
-                
-                <div style="background:#f8f9fa; padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid #e2e8f0;">
-                    <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                        <input type="checkbox" id="hasCountdown" style="width:20px; height:20px;">
-                        <label for="hasCountdown" style="margin:0; font-weight:bold; cursor:pointer;">تفعيل عداد تنازلي للمناسبة (يعمل فقط في حال تثبيت الخبر 📌)</label>
-                    </div>
-                    <div class="form-group" id="countdownDateGroup" style="display:none; margin:0;">
-                        <label>تاريخ ووقت انتهاء العداد التنازلي:</label>
-                        <input type="datetime-local" id="countdownDate">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>تاريخ نشر الخبر السجلي:</label>
-                    <input type="date" id="newsDate" required>
-                </div>
-                <div class="form-group">
-                    <label>اختر صور الخبر (يمكنك تحديد حتى 4 صور معاً):</label>
-                    <input type="file" id="newsImageFiles" accept="image/*" multiple>
-                    <div class="preview-grid" id="previewGrid"></div>
-                </div>
-                <button type="submit" id="submitBtn" class="btn btn-primary btn-block">🚀 نشر الخبر العائلي وتنبيه الجوالات</button>
-                <button type="button" id="cancelEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء وضع التعديل</button>
-            </form>
-        </div>
-
-        <!-- جدول التحكم بالسجلات -->
-        <div class="card">
-            <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات والمنشورات المثبتة والعادية</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>الصور</th>
-                            <th>العنوان / التصنيف</th>
-                            <th>التاريخ</th>
-                            <th>الحالة / التثبيت</th>
-                            <th>إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminNewsTable"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 🔒 قسم تغيير كلمة مرور الدخول للوحة التحكم -->
-        <div class="card">
-            <h2 style="border-color: var(--danger);">🔒 أمان النظام وتغيير كلمة المرور</h2>
-            <form id="passwordForm">
-                <div class="form-group">
-                    <label>كلمة المرور الجديدة لوحة التحكم:</label>
-                    <input type="password" id="newAdminPassword" placeholder="أدخل كلمة المرور الجديدة" required>
-                </div>
-                <button type="submit" class="btn btn-danger btn-block">🔒 تحديث كلمة المرور السرية</button>
-            </form>
+<div id="onboardingScreen" class="onboarding-screen" style="display: none;">
+    <div class="onboarding-card">
+        <img src="logo.png" class="onboarding-logo" alt="Logo" onerror="this.src='🏡'">
+        <h2>🏡 مرحباً بك في منصة العائلة</h2>
+        <p>لمتابعة وتلقي الأخبار، المناسبات، البوستات، والتعازي العائلية الهامة فور نشرها مباشرة على شاشة جوالك، يرجى الضغط على الزر أدناه لتفعيل جدار التنبيهات السحابي.</p>
+        <button class="btn-activate-now" onclick="clickToRequestPermission()">🔔 اضغط هنا لتفعيل إشعارات الجوال</button>
+        <div class="safety-note-box">
+            <div class="safety-title">🛡️ إشعار أمان وخصوصية مشفرة:</div>
+            <p class="safety-desc">هذا الإجراء آمن ومحمي بنسبة 100%؛ حيث يتم تشغيل وإدارة هذه العملية بالكامل من خلال خوادم سحابية رسمية مشفرة تابعة لشركة جوجل العالمية وهي <b>Google Firestore & FCM</b>.</p>
         </div>
     </div>
 </div>
 
+<div id="pageLoader" class="loader-overlay" style="display: none;">
+    <div class="loader-content">
+        <img src="logo.png" class="loader-logo" alt="Logo" onerror="this.src='🏡'">
+        <div class="loader-percentage" id="loadPercent">0%</div>
+        <div class="loader-text">جاري مزامنة الأخبار العائلية الفورية...</div>
+    </div>
+</div>
+
+<div class="main-container">
+    
+    <div class="prayer-times-bar" id="prayerTimesBar">
+        <div class="prayer-title">🕌 مواقيت الأذان:</div>
+        <div class="prayer-flex">
+            <div class="prayer-item">الصبح: <span id="imsakTime">--:--</span></div>
+            <div class="prayer-item">الظهرين: <span id="dhuhrTime">--:--</span></div>
+            <div class="prayer-item">المغرب: <span id="maghribTime">--:--</span></div>
+        </div>
+    </div>
+
+    <div class="header-bar">
+        <button class="admin-login-btn" onclick="goToAdminPanel()">🔐</button>
+        <h1>🏡 منصة الأخبار العائلية</h1>
+        <button class="category-trigger-btn" onclick="window.openCategoriesCard()" title="فرز التصنيفات">📁</button>
+    </div>
+    
+    <div class="pinned-section" id="pinnedContainer" style="display: none;">
+        <div class="pinned-title-label">📌 إعلانات عائلية مثبتة هامة:</div>
+        <div id="pinnedNewsItems"></div>
+    </div>
+    
+    <div class="news-list" id="newsList"></div>
+</div>
+
+<script>
+    let prayerOffsets = { fajr: 0, dhuhr: 0, maghrib: 0 };
+    const ShiahPrayerCalculator = {
+        calculate: function(lat, lng, timezone) {
+            let baseHour = 12 + (timezone - lng / 15);
+            let fajrBase = (baseHour - 7.1) + (prayerOffsets.fajr / 60);
+            let dhuhrBase = (baseHour + 0.05) + (prayerOffsets.dhuhr / 60);
+            let maghribBase = (baseHour + 6.35) + (prayerOffsets.maghrib / 60);
+            document.getElementById('imsakTime').innerText = ShiahPrayerCalculator.formatTime(fajrBase);
+            document.getElementById('dhuhrTime').innerText = ShiahPrayerCalculator.formatTime(dhuhrBase);
+            document.getElementById('maghribTime').innerText = ShiahPrayerCalculator.formatTime(maghribBase);
+        },
+        formatTime: function(hrs) {
+            if (hrs < 0) hrs += 24; if (hrs >= 24) hrs -= 24;
+            let h = Math.floor(hrs); let m = Math.floor((hrs - h) * 60);
+            let ampm = h >= 12 ? 'م' : 'ص'; h = h % 12; h = h ? h : 12; 
+            return `${h}:${m < 10 ? '0' + m : m} ${ampm}`;
+        },
+        initLocation: function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (p) => { ShiahPrayerCalculator.calculate(p.coords.latitude, p.coords.longitude, -(new Date().getTimezoneOffset() / 60)); },
+                    () => { ShiahPrayerCalculator.calculate(24.7136, 46.6753, 3); }
+                );
+            } else { ShiahPrayerCalculator.calculate(24.7136, 46.6753, 3); }
+        }
+    };
+</script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, onSnapshot, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-messaging.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
@@ -267,217 +252,251 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    
+    let messaging = null;
+    try { messaging = getMessaging(app); } catch (err) {}
 
-    let compressedImagesArray = [];
-    let adImageBase64 = "";
-    let currentPinnedCount = 0;
-    document.getElementById('newsDate').valueAsDate = new Date();
+    let allNews = [];
+    let selectedCategory = 'all';
+    let countdownIntervals = [];
 
-    document.getElementById('hasCountdown').addEventListener('change', function() {
-        document.getElementById('countdownDateGroup').style.display = this.checked ? 'block' : 'none';
-    });
-
-    document.getElementById('adDuration').addEventListener('change', function() {
-        document.getElementById('adCustomDuration').style.display = this.value === 'custom' ? 'block' : 'none';
-    });
-
-    window.savePrayerSettings = async () => {
-        const enabled = document.getElementById('prayerBarToggle').checked;
-        const fajrOffset = document.getElementById('fajrOffset').value || 0;
-        const dhuhrOffset = document.getElementById('dhuhrOffset').value || 0;
-        const maghribOffset = document.getElementById('maghribOffset').value || 0;
-        await setDoc(doc(db, "settings", "prayers"), { enabled, fajrOffset, dhuhrOffset, maghribOffset });
-        alert("🕌 تم تحديث إعدادات الصلاة!");
-    };
-
-    document.getElementById('adImageFile').addEventListener('change', function(e) {
-        const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas'); let w = img.width; let h = img.height;
-                if (w > 500) { h *= 500 / w; w = 500; } canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                adImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${adImageBase64}"></div>`;
-            }; img.src = event.target.result;
-        }; reader.readAsDataURL(file);
-    });
-
-    window.saveAdSettings = async () => {
-        const active = document.getElementById('adToggle').checked;
-        const durationSelect = document.getElementById('adDuration').value;
-        const duration = durationSelect === 'custom' ? document.getElementById('adCustomDuration').value : durationSelect;
-        const adData = { active, duration: duration || 5 };
-        if (adImageBase64) adData.image = adImageBase64;
-        else {
-            const currentSnap = await getDoc(doc(db, "settings", "advertisement"));
-            if (currentSnap.exists() && currentSnap.data().image) adData.image = currentSnap.data().image;
-        }
-        await setDoc(doc(db, "settings", "advertisement"), adData, { merge: true });
-        alert("📺 تم تحديث الإعلان المنبثق!");
-    };
-
-    getDoc(doc(db, "settings", "prayers")).then(s => {
-        if(s.exists()){
-            document.getElementById('prayerBarToggle').checked = s.data().enabled;
-            document.getElementById('fajrOffset').value = s.data().fajrOffset;
-            document.getElementById('dhuhrOffset').value = s.data().dhuhrOffset;
-            document.getElementById('maghribOffset').value = s.data().maghribOffset;
-        }
-    });
-    getDoc(doc(db, "settings", "advertisement")).then(s => {
-        if(s.exists()) {
-            document.getElementById('adToggle').checked = s.data().active;
-            if (["3","5","10","20"].includes(s.data().duration.toString())) { document.getElementById('adDuration').value = s.data().duration; } 
-            else {
-                document.getElementById('adDuration').value = "custom";
-                document.getElementById('adCustomDuration').style.display = 'block';
-                document.getElementById('adCustomDuration').value = s.data().duration;
-            }
-            if(s.data().image) document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${s.data().image}"></div>`;
-        }
-    });
-
-    // 🔒 دالة تغيير كلمة المرور السرية وحفظها في فايربيس
-    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const newPass = document.getElementById('newAdminPassword').value.trim();
-        await setDoc(doc(db, "settings", "security"), { adminPassword: newPass }, { merge: true });
-        alert("🔒 تم تحديث كلمة مرور لوحة التحكم بنجاح!");
-        document.getElementById('passwordForm').reset();
-    });
-
-    onSnapshot(collection(db, "categories"), (snapshot) => {
-        const select = document.getElementById('newsCategory'); const tbody = document.getElementById('adminCategoriesTable');
-        select.innerHTML = '<option value="">-- اختر التصنيف --</option>'; tbody.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            select.innerHTML += `<option value="${docSnap.data().name}">${docSnap.data().name}</option>`;
-            tbody.innerHTML += `<tr><td><strong>📁 ${docSnap.data().name}</strong></td><td><button class="btn btn-danger" onclick="deleteCategoryItem('${docSnap.id}')">🗑️</button></td></tr>`;
-        });
-    });
-
-    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); const name = document.getElementById('newCatName').value.trim();
-        await addDoc(collection(db, "categories"), { name, createdAt: new Date() }); document.getElementById('categoryForm').reset();
-    });
-    window.deleteCategoryItem = async (id) => { if(confirm("حذف التصنيف؟")) await deleteDoc(doc(db, "categories", id)); };
-
-    onSnapshot(collection(db, "news"), (snapshot) => {
-        const tbody = document.getElementById('adminNewsTable'); tbody.innerHTML = '';
-        let localItems = []; currentPinnedCount = 0;
-        snapshot.forEach(doc => { 
-            const data = doc.data(); localItems.push({ id: doc.id, ...data }); 
-            if(data.isPinned === true) currentPinnedCount++;
-        });
-        localItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-        localItems.forEach(item => {
-            const isHidden = item.status === 'hidden'; const isPinned = item.isPinned === true;
-            let statusText = isHidden ? '❌ مخفي' : '🔹 معروض';
-            if (isPinned) statusText += ` | 📌 مثبت (${item.pinnedType === 'death' ? 'وفاة' : item.pinnedType === 'wedding' ? 'زواج' : 'عام'})`;
-
-            let thumbsHtml = ''; let loopImgs = item.images || (item.image ? [item.image] : []);
-            loopImgs.forEach(imgUrl => { thumbsHtml += `<img src="${imgUrl}" class="thumb-img" style="margin-left:4px;">`; });
-
-            let pinButtonHtml = isPinned ? `<button class="btn btn-danger" onclick="unpinNewsItem('${item.id}')">🔓 إلغاء</button>` : `<button class="btn btn-success" onclick="promptPinMenu('${item.id}')">📌 تثبيت</button>`;
-
-            tbody.innerHTML += `
-                <tr ${isHidden ? 'class="row-hidden"' : ''}>
-                    <td><div style="display:flex; max-width:140px; overflow-x:auto;">${thumbsHtml}</div></td>
-                    <td><strong>${item.title || '(بدون عنوان)'}</strong><br><small>📁 ${item.category}</small></td>
-                    <td>${item.date}</td>
-                    <td><strong>${statusText}</strong></td>
-                    <td>
-                        <div style="display:flex; gap:4px;">
-                            <button class="btn btn-primary" onclick="startEditNews('${item.id}', '${btoa(unescape(encodeURIComponent(JSON.stringify(item))))}')">📝</button>
-                            <button class="btn ${isHidden ? 'btn-success' : 'btn-warning'}" onclick="toggleNewsStatus('${item.id}', '${item.status || 'visible'}')">👁️</button>
-                            ${pinButtonHtml}
-                            <button class="btn btn-danger" onclick="deleteNewsItem('${item.id}')">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-    });
-
-    window.promptPinMenu = async (id) => {
-        if(currentPinnedCount >= 3) { alert("⚠️ كحد أقصى 3 أخبار مثبتة."); return; }
-        const choice = prompt("اختر نوع التثبيت:\n1 - وفاة 🏴\n2 - زواج ✨\n3 - عام 📌"); if(!choice) return;
-        let pType = choice === "1" ? "death" : choice === "2" ? "wedding" : "general";
-        await updateDoc(doc(db, "news", id), { isPinned: true, pinnedType: pType });
-    };
-    window.unpinNewsItem = async (id) => { await updateDoc(doc(db, "news", id), { isPinned: false, pinnedType: null }); };
-
-    document.getElementById('newsImageFiles').addEventListener('change', function(e) {
-        const files = Array.from(e.target.files); const grid = document.getElementById('previewGrid');
-        grid.innerHTML = ''; compressedImagesArray = [];
-        if (files.length > 4) { alert("⚠️ الحد الأقصى 4 صور."); this.value = ''; return; }
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas'); let w = img.width; let h = img.height;
-                    if (w > 600) { h *= 600 / w; w = 600; } canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    const b64 = canvas.toDataURL('image/jpeg', 0.5); compressedImagesArray.push(b64);
-                    grid.innerHTML += `<div class="preview-wrapper"><img src="${b64}"></div>`;
-                }; img.src = event.target.result;
-            }; reader.readAsDataURL(file);
-        });
-    });
-
-    document.getElementById('newsForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); const editId = document.getElementById('editDocId').value;
-        const category = document.getElementById('newsCategory').value;
-        const title = document.getElementById('newsTitle').value.trim();
-        const text = document.getElementById('newsText').value.trim();
-        const date = document.getElementById('newsDate').value;
-        const hasCountdown = document.getElementById('hasCountdown').checked;
-        const countdownDate = document.getElementById('countdownDate').value;
-
-        const newsData = { category, title, text, date, hasCountdown, countdownDate };
-        if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; }
-
-        if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); } 
-        else {
-            if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة");
-            newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0];
-            newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false;
-            await addDoc(collection(db, "news"), newsData); alert("تم النشر!");
-        }
-        resetFormToNormal();
-    });
-
-    window.deleteNewsItem = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "news", id)); };
-    window.toggleNewsStatus = async (id, s) => { await updateDoc(doc(db, "news", id), { status: s === 'hidden' ? 'visible' : 'hidden' }); };
-
-    window.startEditNews = (id, base64Data) => {
-        const item = JSON.parse(decodeURIComponent(escape(atob(base64Data))));
-        document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category;
-        document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || '';
-        document.getElementById('newsDate').value = item.date;
-        document.getElementById('hasCountdown').checked = item.hasCountdown || false;
-        document.getElementById('countdownDate').value = item.countdownDate || '';
-        document.getElementById('countdownDateGroup').style.display = item.hasCountdown ? 'block' : 'none';
-        
-        const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
-        let loopImgs = item.images || (item.image ? [item.image] : []);
-        loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; });
-        document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي";
-        document.getElementById('cancelEditBtn').style.display = "block";
-    };
-
-    function resetFormToNormal() {
-        document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = '';
-        document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = [];
-        document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none";
-        document.getElementById('countdownDateGroup').style.display = 'none';
-        document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد";
+    function runPercentageLoader(onComplete) {
+        document.getElementById('pageLoader').style.display = 'flex';
+        let count = 0;
+        const percentEl = document.getElementById('loadPercent');
+        const interval = setInterval(() => {
+            count += Math.floor(Math.random() * 25) + 15;
+            if (count >= 100) {
+                count = 100; clearInterval(interval);
+                percentEl.innerText = "100%";
+                setTimeout(() => {
+                    document.getElementById('pageLoader').style.opacity = '0';
+                    setTimeout(() => { document.getElementById('pageLoader').style.visibility = 'hidden'; }, 300);
+                    if(onComplete) onComplete();
+                }, 50);
+            } else { percentEl.innerText = count + "%"; }
+        }, 20);
     }
-    document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
+
+    window.addEventListener("load", () => {
+        getDoc(doc(db, "settings", "advertisement")).then(snap => {
+            if (snap.exists() && snap.data().active && snap.data().image) {
+                const data = snap.data();
+                document.getElementById('adTargetImage').src = data.image;
+                document.getElementById('fullscreenAd').style.display = 'flex';
+                let leftSeconds = parseInt(data.duration || 5);
+                const adInt = setInterval(() => {
+                    leftSeconds--;
+                    document.getElementById('adTimerBadge').innerText = `تخطي خلال ${leftSeconds}ث`;
+                    if (leftSeconds <= 0) {
+                        clearInterval(adInt);
+                        document.getElementById('fullscreenAd').style.opacity = '0';
+                        setTimeout(() => { document.getElementById('fullscreenAd').style.display = 'none'; }, 300);
+                    }
+                }, 1000);
+            }
+        });
+
+        onSnapshot(doc(db, "settings", "prayers"), (snap) => {
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('prayerTimesBar').style.display = data.enabled ? 'flex' : 'none';
+                prayerOffsets.fajr = parseInt(data.fajrOffset || 0);
+                prayerOffsets.dhuhr = parseInt(data.dhuhrOffset || 0);
+                prayerOffsets.maghrib = parseInt(data.maghribOffset || 0);
+                ShiahPrayerCalculator.initLocation();
+            }
+        });
+
+        const onboarded = localStorage.getItem("family_app_onboarded_2026_v2");
+        if (onboarded) { startMainAppSync(); } 
+        else { document.getElementById('onboardingScreen').style.display = 'flex'; }
+    });
+
+    window.clickToRequestPermission = function() {
+        localStorage.setItem("family_app_onboarded_2026_v2", "true");
+        document.getElementById('onboardingScreen').style.display = 'none';
+        if (!('Notification' in window)) { startMainAppSync(); return; }
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted' && 'serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(reg => { saveDeviceFCMToken(reg); });
+            }
+            startMainAppSync();
+        }).catch(() => { startMainAppSync(); });
+    };
+
+    function startMainAppSync() {
+        runPercentageLoader(() => {
+            onSnapshot(collection(db, "news"), (snapshot) => {
+                let tempNews = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.status !== 'hidden') tempNews.push({ id: doc.id, ...data });
+                });
+                allNews = tempNews.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                renderNews(); loadCategoriesLive();
+            });
+        });
+    }
+
+    // Live جلب التصنيفات وبناء الكرت المنبثق
+    async function loadCategoriesLive() {
+        try {
+            const snap = await getDocs(collection(db, "categories"));
+            const popupContainer = document.getElementById('popupCategoriesContainer');
+            
+            let popupHtml = `<div class="popup-cat-item ${selectedCategory === 'all' ? 'active' : ''}" onclick="window.filterFromPopup('all')">📁 عرض جميع الأخبار (الكل)</div>`;
+            
+            snap.forEach(doc => {
+                const name = doc.data().name;
+                popupHtml += `<div class="popup-cat-item ${selectedCategory === name ? 'active' : ''}" onclick="window.filterFromPopup('${name}')">📄 ${name}</div>`;
+            });
+            popupContainer.innerHTML = popupHtml;
+        } catch (e) { console.error(e); }
+    }
+
+    // فتح وإغلاق كرت التصنيفات المنبثق
+    window.openCategoriesCard = () => { document.getElementById('categoriesModal').style.display = 'flex'; };
+    window.closeCategoriesCard = () => { document.getElementById('categoriesModal').style.display = 'none'; };
+    
+    window.filterFromPopup = (cat) => {
+        selectedCategory = cat;
+        renderNews();
+        loadCategoriesLive();
+        window.closeCategoriesCard(); // إغلاق الكرت تلقائياً بعد الاختيار الفوري
+    };
+
+    function startCountdownEngine(targetDateStr, badgeId) {
+        const badge = document.getElementById(badgeId);
+        if(!badge) return;
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const target = new Date(targetDateStr).getTime();
+            const diff = target - now;
+
+            if (diff <= 0) {
+                badge.innerText = "هذا اليوم"; badge.classList.add('today-active'); return;
+            }
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            if (days >= 1) { badge.innerText = `متبقي: ${days} يوم`; badge.classList.remove('today-active'); } 
+            else {
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                badge.innerText = `متبقي: ${hours}س`; badge.classList.remove('today-active');
+            }
+        }
+        updateTimer();
+        const interval = setInterval(updateTimer, 60000); countdownIntervals.push(interval);
+    }
+
+    function renderNews() {
+        countdownIntervals.forEach(clearInterval); countdownIntervals = [];
+        const container = document.getElementById('newsList');
+        const pinnedItemsContainer = document.getElementById('pinnedNewsItems');
+        const pinnedSection = document.getElementById('pinnedContainer');
+        container.innerHTML = ''; pinnedItemsContainer.innerHTML = '';
+
+        const pinnedNews = allNews.filter(n => n.isPinned === true).slice(0, 3);
+        const regularNews = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
+
+        if (pinnedNews.length > 0) {
+            pinnedSection.style.display = 'flex';
+            pinnedNews.forEach((news, pIdx) => {
+                let pClass = 'pinned-general'; let pLabel = '📌 إعلان عائلي';
+                if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 تعزية'; }
+                else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨ فرح'; }
+                let imgList = news.images || (news.image ? [news.image] : []);
+
+                let inlineCountdownHtml = "";
+                if (news.hasCountdown && news.countdownDate) {
+                    inlineCountdownHtml = `<div class="inline-counter-badge" id="inline-timer-${pIdx}">حساب...</div>`;
+                }
+
+                let pHtml = `
+                    <div class="pinned-card ${pClass}" onclick="if(!event.target.closest('.carousel-container')) this.classList.toggle('expanded')">
+                        <div class="pinned-header">
+                            <div class="pinned-headline"><span>${pLabel}:</span> ${news.title || 'إعلان عائلي هام'}</div>
+                            ${inlineCountdownHtml}
+                            <div class="pinned-icon">▼</div>
+                        </div>
+                        <div class="pinned-body">
+                `;
+                if (imgList.length > 0) {
+                    pHtml += `<div class="carousel-container" id="p-carousel-${pIdx}">`;
+                    if (imgList.length > 1) pHtml += `<div class="image-counter" id="p-counter-${pIdx}">1 / ${imgList.length}</div>`;
+                    pHtml += `<div class="carousel-track" id="p-track-${pIdx}">`;
+                    imgList.forEach(url => { pHtml += `<div class="carousel-slide"><img src="${url}" class="news-img"></div>`; });
+                    pHtml += `</div>`;
+                    if (imgList.length > 1) {
+                        pHtml += `<div class="carousel-dots">`;
+                        imgList.forEach((_, i) => { pHtml += `<div class="dot ${i === 0 ? 'active' : ''}" id="p-dot-${pIdx}-${i}"></div>`; });
+                        pHtml += `</div>`;
+                    }
+                    pHtml += `</div>`;
+                }
+                pHtml += `<div style="padding: 10px 0 0 0;">${news.text ? `<div class="news-text">${news.text}</div>` : ''}<div class="news-date">📅 ${news.date}</div></div></div></div>`;
+                pinnedItemsContainer.innerHTML += pHtml;
+                if (news.hasCountdown && news.countdownDate) { startCountdownEngine(news.countdownDate, `inline-timer-${pIdx}`); }
+                if (imgList.length > 1) { setTimeout(() => { setupCarouselTouch(`p-carousel-${pIdx}`, `p-track-${pIdx}`, 'p-', pIdx, imgList.length); }, 100); }
+            });
+        } else { pinnedSection.style.display = 'none'; }
+
+        if (regularNews.length === 0) { container.innerHTML = '<div class="no-data">لا توجد أخبار معروضة تحت هذا التصنيف حالياً.</div>'; return; }
+        regularNews.forEach((news, newsIndex) => {
+            let imgList = news.images || (news.image ? [news.image] : []);
+            let cardHtml = `<div class="news-card">`;
+            if (imgList.length > 0) {
+                cardHtml += `<div class="carousel-container" id="carousel-${newsIndex}">`;
+                if (imgList.length > 1) cardHtml += `<div class="image-counter" id="counter-${newsIndex}">1 / ${imgList.length}</div>`;
+                cardHtml += `<div class="carousel-track" id="track-${newsIndex}">`;
+                imgList.forEach(imgUrl => { cardHtml += `<div class="carousel-slide"><img src="${imgUrl}" class="news-img" loading="lazy"></div>`; });
+                cardHtml += `</div>`;
+                if (imgList.length > 1) {
+                    cardHtml += `<div class="carousel-dots">`;
+                    imgList.forEach((_, i) => { cardHtml += `<div class="dot ${i === 0 ? 'active' : ''}" id="dot-${newsIndex}-${i}"></div>`; });
+                    cardHtml += `</div>`;
+                }
+                cardHtml += `</div>`;
+            }
+            cardHtml += `<div class="news-content">`;
+            if (news.title) cardHtml += `<div class="news-title">${news.title}</div>`;
+            if (news.text) cardHtml += `<div class="news-text">${news.text}</div>`;
+            cardHtml += `<div class="news-date">📅 ${news.date}</div>`;
+            cardHtml += `</div></div>`;
+            container.innerHTML += cardHtml;
+            if (imgList.length > 1) { setTimeout(() => { setupCarouselTouch(`carousel-${newsIndex}`, `track-${newsIndex}`, '', newsIndex, imgList.length); }, 100); }
+        });
+    }
+
+    function setupCarouselTouch(containerId, trackId, prefix, newsIndex, totalImages) {
+        const container = document.getElementById(containerId); const track = document.getElementById(trackId);
+        if (!container || !track) return;
+        let startX = 0, currentX = 0, currentIndex = 0;
+        container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+        container.addEventListener('touchmove', e => { currentX = e.touches[0].clientX; }, { passive: true });
+        container.addEventListener('touchend', () => {
+            const diffX = startX - currentX;
+            if (diffX > 40 && currentIndex < totalImages - 1) currentIndex++;
+            else if (diffX < -40 && currentIndex > 0) currentIndex--;
+            track.style.transform = `translateX(${currentIndex * 100}%)`;
+            const counter = document.getElementById(`${prefix}counter-${newsIndex}`);
+            if (counter) counter.innerText = `${currentIndex + 1} / ${totalImages}`;
+            for (let i = 0; i < totalImages; i++) {
+                const dot = document.getElementById(`${prefix}dot-${newsIndex}-${i}`);
+                if (dot) { if (i === currentIndex) dot.classList.add('active'); else dot.classList.remove('active'); }
+            }
+        });
+    }
+    window.goToAdminPanel = async () => {
+        const pass = prompt("الرجاء إدخال كلمة مرور لوحة التحكم:");
+        if (!pass) return; let correctPassword = "123";
+        try {
+            const passSnap = await getDoc(doc(db, "settings", "security"));
+            if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword;
+        } catch(e) {}
+        if (pass === correctPassword) window.location.href = "admin.html";
+        else alert("❌ كلمة المرور خاطئة!");
+    };
 </script>
 </body>
 </html>
