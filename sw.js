@@ -1,29 +1,26 @@
-self.addEventListener('install', function(event) {
-    self.skipWaiting();
+// استيراد حزم المراسلة المستقلة في ملقم الويب
+importScripts('https://www.gstatic.com/firebasejs/12.14.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/12.14.0/firebase-messaging-compat.js');
+
+firebase.initializeApp({
+    apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
+    projectId: "fnews-7525e",
+    appId: "1:1023530532546:web:cbc1be1753237179bd455b"
 });
 
-self.addEventListener('activate', function(event) {
-    event.waitUntil(clients.claim());
-});
+const messaging = firebase.messaging();
 
-// الاستماع لحدث التنبيه المباشر الآتي من لوحة تحكم الأدمن
-self.addEventListener('message', function(event) {
-    if (event.data && event.data.type === 'NEW_NEWS') {
-        const title = event.data.title || "🏡 خبر عائلي جديد!";
-        const body = event.data.body || "اضغط لمشاهدة التفاصيل والمناسبة العائلية الجديدة.";
-        
-        const options = {
-            body: body,
-            icon: 'logo.png',
-            badge: 'logo.png',
-            vibrate: [200, 100, 200],
-            data: { url: '.' }
-        };
-
-        event.waitUntil(
-            self.registration.showNotification(title, options)
-        );
-    }
+// 🔔 الاستماع المباشر في خلفية النظام لعرض الإشعارات حتى لو كانت الشاشة مغلقة تماماً
+messaging.onBackgroundMessage(function(payload) {
+    console.log('وصل إشعار في الخلفية:', payload);
+    const title = payload.notification.title || "🏡 منصة الأخبار العائلية";
+    const options = {
+        body: payload.notification.body || "هناك تحديث عائلي جديد، اضغط للمشاهدة.",
+        icon: 'logo.png',
+        badge: 'logo.png',
+        data: { url: '.' }
+    };
+    return self.registration.showNotification(title, options);
 });
 
 self.addEventListener('notificationclick', function(event) {
