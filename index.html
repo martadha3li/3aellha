@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
-    <title> نسخة1 - منصة الأخبار </title>
+    <title> نسخة2 - منصة الأخبار العائلية</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
@@ -58,7 +58,6 @@
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
         
-        /* شاشة التحميل مع الشعار والنسبة المئوية */
         .loader-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #ffffff; z-index: 99999; display: flex;
@@ -130,18 +129,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     
-    // 🛡️ احتواء آمن لمنظومة الـ Messaging لعدم تجميد الكود عند 0% في الهواتف والآيفون
     let messaging = null;
-    try {
-        messaging = getMessaging(app);
-    } catch (err) {
-        console.log("FCM غير مدعوم في بيئة المتصفح الحالية:", err);
-    }
+    try { messaging = getMessaging(app); } catch (err) { console.log("FCM Messaging bypass active"); }
 
     let allNews = [];
     let selectedCategory = 'all';
 
-    // ⏳ شاشة تحميل ذكية ورشيقة مع حماية الاكتمال التلقائي
+    // ⏳ شاشة تحميل سريعة ومحمية لا تعتمد على الإشعارات للفتح
     function runPercentageLoader(onComplete) {
         let count = 0;
         const percentEl = document.getElementById('loadPercent');
@@ -156,7 +150,7 @@
                     if(onComplete) onComplete();
                 }, 50);
             } else { percentEl.innerText = count + "%"; }
-        }, 20);
+        }, 30);
     }
 
     window.goToAdminPanel = async () => {
@@ -171,7 +165,7 @@
         else alert("❌ كلمة المرور خاطئة!");
     };
 
-    // 🔔 دالة توليد توكن الجوال السحابي FCM وحفظه التلقائي مع كاشف منبثق للتحقق
+    // 🔔 توليد وحفظ التوكن في المجلد الجديد fcm_tokens بـ Firestore
     function saveDeviceFCMToken(serviceWorkerRegistration) {
         if (!messaging || !('Notification' in window)) return;
         
@@ -186,16 +180,15 @@
                             token: currentToken,
                             updatedAt: new Date()
                         });
-                        alert("🎉 ممتاز جداً! تم ربط جهازك بنظام استقبال الإشعارات السحابية مجاناً.");
+                        alert("🎉 تم ربط جهازك بنجاح في قاعدة البيانات ومستعد للإشعارات!");
                     } catch (fErr) {
-                        alert("❌ خطأ حماية فايربيس Firestore Rules: " + fErr.message);
+                        alert("❌ خطأ الـ Rules في فايربيس Firestore مغلقة: " + fErr.message);
                     }
                 } else {
-                    alert("⚠️ لم يصدر السيرفر Token للتطبيق، تأكد من ملف sw.js");
+                    alert("⚠️ السيرفر لم يعط كود توكن، تأكد من رفع ملف firebase-messaging-sw.js");
                 }
             }).catch((err) => { 
-                alert("❌ فشل الـ getToken: تأكد من تشفير الرابط HTTPS والـ VAPID Key. تفاصيل: " + err.message);
-                console.error("FCM Error:", err); 
+                alert("❌ فشل الـ Token: " + err.message);
             });
         }
     }
@@ -211,17 +204,17 @@
         });
     };
 
+    // 🔄 استدعاء ملف ملقم الخلفية بالاسم الصحيح والمطلوب لفايربيس
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').then(reg => {
+        navigator.serviceWorker.register('firebase-messaging-sw.js').then(reg => {
             if (Notification.permission === 'granted') { saveDeviceFCMToken(reg); }
             else if (Notification.permission === 'default') {
                 document.getElementById('notificationPrompt').style.display = 'flex';
                 document.getElementById('floatingForceBtn').style.display = 'block';
             } else { document.getElementById('floatingForceBtn').style.display = 'block'; }
-        }).catch(err => { console.log("SW bypass active", err); });
+        }).catch(err => { console.log(err); });
     }
 
-    // تشغيل وإطلاق منظومة جلب البيانات بالتزامن مع انتهاء العداد
     runPercentageLoader(() => {
         onSnapshot(collection(db, "news"), (snapshot) => {
             let tempNews = [];
@@ -232,8 +225,6 @@
             allNews = tempNews.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             renderNews();
             loadCategories();
-        }, (error) => {
-            console.error("Firebase Snapshot Error: ", error);
         });
     });
 
@@ -252,21 +243,17 @@
         const container = document.getElementById('newsList');
         const pinnedItemsContainer = document.getElementById('pinnedNewsItems');
         const pinnedSection = document.getElementById('pinnedContainer');
-        
-        container.innerHTML = '';
-        pinnedItemsContainer.innerHTML = '';
+        container.innerHTML = ''; pinnedItemsContainer.innerHTML = '';
 
         const pinnedNews = allNews.filter(n => n.isPinned === true).slice(0, 3);
         const regularNews = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
 
-        // 📌 بناء السجلات المثبتة مع حماية مصفوفات الصور وتصحيحها
         if (pinnedNews.length > 0) {
             pinnedSection.style.display = 'flex';
             pinnedNews.forEach((news, pIdx) => {
                 let pClass = 'pinned-general'; let pLabel = '📌 إعلان عائلي';
                 if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 تعزية ومواساة'; }
                 else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨ دعوة وفرح تبريك'; }
-                
                 let imgList = news.images || (news.image ? [news.image] : []);
 
                 let pHtml = `<div class="pinned-card ${pClass}" onclick="this.classList.toggle('expanded')"><div class="pinned-header"><div class="pinned-headline"><span>${pLabel}:</span> ${news.title || 'اضغط لعرض التفاصيل'}</div><div class="pinned-icon">▼</div></div><div class="pinned-body">`;
