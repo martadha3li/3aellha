@@ -39,25 +39,42 @@
         .header-bar h1 { margin: 0; font-size: 1.4rem; background: linear-gradient(135deg, var(--primary-light), var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .admin-login-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: #f8f9fa; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         
-        /* 📌 قسم التثبيت والعد التنازلي */
+        /* 📌 قسم التثبيت المعدل ليظهر العداد بجانب العنوان */
         .pinned-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
         .pinned-title-label { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-right: 6px; display: flex; align-items: center; gap: 4px; }
-        .pinned-card { border-radius: 16px; padding: 12px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s ease; overflow: hidden; border-right: 5px solid transparent; position: relative; }
+        .pinned-card { border-radius: 16px; padding: 14px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s ease; overflow: hidden; border-right: 5px solid transparent; position: relative; }
         .pinned-death { background: linear-gradient(135deg, #34495e, #2c3e50); color: #ecf0f1; border-right-color: #1a252f; }
         .pinned-wedding { background: linear-gradient(135deg, #fdfbf7, #f5ecd7); color: #786028; border-right-color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.2); }
         .pinned-general { background: white; color: var(--dark); border-right-color: var(--primary); }
-        .pinned-header { display: flex; justify-content: space-between; align-items: center; }
-        .pinned-headline { font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 6px; }
-        .pinned-icon { font-size: 12px; transition: transform 0.3s; }
+        
+        /* محاذاة الهيدر لتوزيع العنوان والعداد بجانبه مباشرة */
+        .pinned-header { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; }
+        .pinned-headline { font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 4px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* المظهر الجديد والمستقل للعداد بجانب العنوان والخبر مغلق */
+        .inline-counter-badge {
+            font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 20px;
+            white-space: nowrap; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center;
+        }
+        .pinned-death .inline-counter-badge { background: rgba(255, 255, 255, 0.15); color: #f1c40f; }
+        .pinned-wedding .inline-counter-badge { background: rgba(212, 175, 55, 0.15); color: #8e6f27; }
+        .pinned-general .inline-counter-badge { background: #f3f0ff; color: var(--primary); }
+        
+        /* 🚨 تأثير الوميض الحركي الذكي عندما يحل تاريخ (هذا اليوم) */
+        .inline-counter-badge.today-active {
+            background: #e74c3c !important; color: #ffffff !important;
+            animation: danger-blink 1s infinite alternate; box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+        }
+        @keyframes danger-blink {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0.4; transform: scale(0.96); }
+        }
+
+        .pinned-icon { font-size: 11px; color: var(--gray); margin-right: auto; padding-right: 4px; }
+        .pinned-death .pinned-icon { color: #bdc3c7; }
+        
         .pinned-body { max-height: 0; opacity: 0; transition: all 0.4s ease; padding-top: 0; }
         .pinned-card.expanded .pinned-body { max-height: 2000px; opacity: 1; padding-top: 14px; }
-        .pinned-card.expanded .pinned-icon { transform: rotate(180deg); }
-        
-        /* شريط العداد التنازلي داخل الكرت المثبت */
-        .countdown-box { background: rgba(0, 0, 0, 0.05); padding: 8px 12px; border-radius: 12px; margin-top: 8px; font-size: 0.85rem; font-weight: bold; display: inline-flex; align-items: center; gap: 6px; }
-        .pinned-death .countdown-box { background: rgba(255, 255, 255, 0.1); color: #f1c40f; }
-        .pinned-wedding .countdown-box { background: rgba(212, 175, 55, 0.15); color: #8e6f27; }
-        .pinned-general .countdown-box { color: var(--primary); background: #f3f0ff; }
 
         .categories-container { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px 0; margin-bottom: 12px; scrollbar-width: none; }
         .categories-container::-webkit-scrollbar { display: none; }
@@ -95,12 +112,7 @@
         .safety-title { font-size: 0.9rem; font-weight: bold; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
         .safety-desc { font-size: 0.8rem; color: #5c6b73; line-height: 1.5; margin: 0; }
 
-        /* 📺 تصميم شاشة الإعلان المنبثق كامل الشاشة */
-        .fullscreen-ad-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.95); z-index: 999999;
-            display: flex; align-items: center; justify-content: center; padding: 16px;
-        }
+        .fullscreen-ad-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.95); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 16px; }
         .ad-image-container { position: relative; max-width: 450px; width: 100%; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .ad-image-container img { width: 100%; height: auto; display: block; object-fit: contain; max-height: 85vh; }
         .ad-timer-badge { position: absolute; top: 16px; left: 16px; background: rgba(0, 0, 0, 0.8); color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; font-family: monospace; border: 1px solid rgba(255,255,255,0.2); }
@@ -108,7 +120,6 @@
 </head>
 <body>
 
-<!-- 📺 شاشة الإعلان كامل الشاشة الموقوتة -->
 <div id="fullscreenAd" class="fullscreen-ad-overlay" style="display: none;">
     <div class="ad-image-container">
         <div class="ad-timer-badge" id="adTimerBadge">تخطي خلال ..</div>
@@ -139,7 +150,6 @@
 
 <div class="main-container">
     
-    <!-- 🕌 شريط مواقيت الصلاة الجعفري المطور -->
     <div class="prayer-times-bar" id="prayerTimesBar">
         <div class="prayer-title">🕌 مواقيت الأذان:</div>
         <div class="prayer-flex">
@@ -167,17 +177,13 @@
 </div>
 
 <script>
-    // 🕌 محرك حساب الأذان الشيعي مع ميزة الـ Offset (الدقائق المضافة والمخصومة من الأدمن)
     let prayerOffsets = { fajr: 0, dhuhr: 0, maghrib: 0 };
-    
     const ShiahPrayerCalculator = {
         calculate: function(lat, lng, timezone) {
             let baseHour = 12 + (timezone - lng / 15);
-            
             let fajrBase = (baseHour - 7.1) + (prayerOffsets.fajr / 60);
             let dhuhrBase = (baseHour + 0.05) + (prayerOffsets.dhuhr / 60);
             let maghribBase = (baseHour + 6.35) + (prayerOffsets.maghrib / 60);
-
             document.getElementById('imsakTime').innerText = ShiahPrayerCalculator.formatTime(fajrBase);
             document.getElementById('dhuhrTime').innerText = ShiahPrayerCalculator.formatTime(dhuhrBase);
             document.getElementById('maghribTime').innerText = ShiahPrayerCalculator.formatTime(maghribBase);
@@ -239,14 +245,12 @@
     }
 
     window.addEventListener("load", () => {
-        // 📺 جلب وفحص الإعلان المنبثق الموقوت أولاً
         getDoc(doc(db, "settings", "advertisement")).then(snap => {
             if (snap.exists() && snap.data().active && snap.data().image) {
                 const data = snap.data();
                 document.getElementById('adTargetImage').src = data.image;
                 document.getElementById('fullscreenAd').style.display = 'flex';
                 let leftSeconds = parseInt(data.duration || 5);
-                
                 const adInt = setInterval(() => {
                     leftSeconds--;
                     document.getElementById('adTimerBadge').innerText = `تخطي خلال ${leftSeconds}ث`;
@@ -259,7 +263,6 @@
             }
         });
 
-        // مزامنة أوقات الصلاة من الفايربيس (الحالة والدقائق المعدلة)
         onSnapshot(doc(db, "settings", "prayers"), (snap) => {
             if (snap.exists()) {
                 const data = snap.data();
@@ -288,13 +291,6 @@
         }).catch(() => { startMainAppSync(); });
     };
 
-    function saveDeviceFCMToken(serviceWorkerRegistration) {
-        if (!messaging) return;
-        getToken(messaging, { serviceWorkerRegistration, vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" }).then(async (t) => {
-            if (t) await setDoc(doc(db, "fcm_tokens", t), { token: t, updatedAt: new Date() });
-        }).catch(() => {});
-    }
-
     function startMainAppSync() {
         runPercentageLoader(() => {
             onSnapshot(collection(db, "news"), (snapshot) => {
@@ -309,33 +305,10 @@
         });
     }
 
-    window.goToAdminPanel = async () => {
-        const pass = prompt("الرجاء إدخال كلمة مرور لوحة التحكم:");
-        if (!pass) return;
-        let correctPassword = "123";
-        try {
-            const passSnap = await getDoc(doc(db, "settings", "security"));
-            if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword;
-        } catch(e) {}
-        if (pass === correctPassword) window.location.href = "admin.html";
-        else alert("❌ كلمة المرور خاطئة!");
-    };
-
-    async function loadCategories() {
-        try {
-            const snap = await getDocs(collection(db, "categories"));
-            const bar = document.getElementById('categoriesBar');
-            bar.innerHTML = `<div class="cat-badge ${selectedCategory === 'all' ? 'active' : ''}" onclick="window.filterNews('all')">الكل</div>`;
-            snap.forEach(doc => {
-                bar.innerHTML += `<div class="cat-badge ${selectedCategory === doc.data().name ? 'active' : ''}" onclick="window.filterNews('${doc.data().name}')">${doc.data().name}</div>`;
-            });
-        } catch (e) { console.error(e); }
-    }
-
-    // ⏳ دالة تشغيل العداد التنازلي الحركي للأخبار المثبتة
-    function startCountdownEngine(targetDateStr, elementId) {
-        const element = document.getElementById(elementId);
-        if(!element) return;
+    // ⏳ محرك حساب وتقسيم العداد التنازلي التنبيهي بجانب العنوان مباشرة
+    function startCountdownEngine(targetDateStr, badgeId) {
+        const badge = document.getElementById(badgeId);
+        if(!badge) return;
 
         function updateTimer() {
             const now = new Date().getTime();
@@ -343,20 +316,23 @@
             const diff = target - now;
 
             if (diff <= 0) {
-                element.innerText = "⏳ الحدث: هذا اليوم";
+                badge.innerText = "هذا اليوم";
+                badge.classList.add('today-active'); // تفعيل الوميض الأحمر التحذيري
                 return;
             }
 
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             if (days >= 1) {
-                element.innerText = `⏳ متبقي للمناسبة: ${days} يوم`;
+                badge.innerText = `متبقي: ${days} يوم`;
+                badge.classList.remove('today-active');
             } else {
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                element.innerText = `⏳ متبقي للمناسبة: ${hours} ساعة`;
+                badge.innerText = `متبقي: ${hours}س`;
+                badge.classList.remove('today-active');
             }
         }
         updateTimer();
-        const interval = setInterval(updateTimer, 60000); // تحديث كل دقيقة
+        const interval = setInterval(updateTimer, 60000);
         countdownIntervals.push(interval);
     }
 
@@ -374,11 +350,26 @@
             pinnedSection.style.display = 'flex';
             pinnedNews.forEach((news, pIdx) => {
                 let pClass = 'pinned-general'; let pLabel = '📌 إعلان عائلي';
-                if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 تعزية ومواساة'; }
-                else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨ دعوة وفرح تبريك'; }
+                if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 تعزية'; }
+                else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨ فرح'; }
                 let imgList = news.images || (news.image ? [news.image] : []);
 
-                let pHtml = `<div class="pinned-card ${pClass}" onclick="this.classList.toggle('expanded')"><div class="pinned-header"><div class="pinned-headline"><span>${pLabel}:</span> ${news.title || 'اضغط لعرض التفاصيل'}</div><div class="pinned-icon">▼</div></div><div class="pinned-body">`;
+                // إعداد تاج العداد لعرضه فوراً بجانب العنوان والخبر مغلق
+                let inlineCountdownHtml = "";
+                if (news.hasCountdown && news.countdownDate) {
+                    inlineCountdownHtml = `<div class="inline-counter-badge" id="inline-timer-${pIdx}">حساب...</div>`;
+                }
+
+                let pHtml = `
+                    <div class="pinned-card ${pClass}" onclick="if(!event.target.closest('.carousel-container')) this.classList.toggle('expanded')">
+                        <div class="pinned-header">
+                            <div class="pinned-headline"><span>${pLabel}:</span> ${news.title || 'إعلان عائلي هام'}</div>
+                            ${inlineCountdownHtml}
+                            <div class="pinned-icon">▼</div>
+                        </div>
+                        <div class="pinned-body">
+                `;
+                
                 if (imgList.length > 0) {
                     pHtml += `<div class="carousel-container" id="p-carousel-${pIdx}">`;
                     if (imgList.length > 1) pHtml += `<div class="image-counter" id="p-counter-${pIdx}">1 / ${imgList.length}</div>`;
@@ -393,17 +384,11 @@
                     pHtml += `</div>`;
                 }
                 
-                // إضافة صندوق العداد في حال تفعليه من الأدمن للخبر المثبت
-                let countdownHtml = "";
-                if (news.hasCountdown && news.countdownDate) {
-                    countdownHtml = `<div class="countdown-box" id="pinned-timer-${pIdx}">جاري حساب الوقت...</div>`;
-                }
-
-                pHtml += `<div style="padding: 10px 0 0 0;">${news.text ? `<div class="news-text">${news.text}</div>` : ''}${countdownHtml}<div class="news-date">📅 ${news.date}</div></div></div></div>`;
+                pHtml += `<div style="padding: 10px 0 0 0;">${news.text ? `<div class="news-text">${news.text}</div>` : ''}<div class="news-date">📅 ${news.date}</div></div></div></div>`;
                 pinnedItemsContainer.innerHTML += pHtml;
                 
                 if (news.hasCountdown && news.countdownDate) {
-                    startCountdownEngine(news.countdownDate, `pinned-timer-${pIdx}`);
+                    startCountdownEngine(news.countdownDate, `inline-timer-${pIdx}`);
                 }
 
                 if (imgList.length > 1) { setTimeout(() => { setupCarouselTouch(`p-carousel-${pIdx}`, `p-track-${pIdx}`, 'p-', pIdx, imgList.length); }, 100); }
@@ -456,7 +441,18 @@
             }
         });
     }
-    window.filterNews = (cat) => { selectedCategory = cat; renderNews(); loadCategories(); };
+    window.goToAdminPanel = async () => {
+        const pass = prompt("الرجاء إدخال كلمة مرور لوحة التحكم:");
+        if (!pass) return;
+        let correctPassword = "123";
+        try {
+            const passSnap = await getDoc(doc(db, "settings", "security"));
+            if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword;
+        } catch(e) {}
+        if (pass === correctPassword) window.location.href = "admin.html";
+        else alert("❌ كلمة المرور خاطئة!");
+    };
+    window.filterNews = (cat) => { selectedCategory = cat; renderNews(); };
 </script>
 </body>
 </html>
