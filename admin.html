@@ -3,12 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأخبار العائلية - منطقة آمنة</title>
-    
-    <!-- 🛡️ كود الحماية المانع للدخول المباشر: يتم تنفيذه في أول ثانية قبل بناء أي ستايل أو عناصر -->
+    <title>لوحة تحكم الأخبار العائلية - حماية التخزين</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, collection, addDoc, getDocs, deleteDoc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
@@ -19,42 +17,30 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // الحماية وجلسة الأمان الآمنة لـ GitHub
         async function checkAdminSession() {
-            // فحص هل تم التحقق من الأدمن سابقاً في هذه الجلسة؟
             if (sessionStorage.getItem("admin_authenticated") === "true") {
                 document.getElementById('adminPanelWrapper').style.display = 'block';
                 return;
             }
-
-            // إذا حاول الدخول مباشرة من الرابط، نطلب الباسورد المحدث من فايربيس فوراُ
             const passInput = prompt("🔒 هذه المنطقة محمية! الرجاء إدخال كلمة مرور لوحة التحكم للمتابعة:");
             if (!passInput) { rejectAccess(); return; }
-
-            let correctPassword = "123"; // الباسورد الافتراضي الاحتياطي
+            let correctPassword = "123";
             try {
                 const passSnap = await getDoc(doc(db, "settings", "security"));
-                if (passSnap.exists() && passSnap.data().adminPassword) {
-                    correctPassword = passSnap.data().adminPassword;
-                }
-            } catch(e) { console.error("حماية قاعدة البيانات مقفلة"); }
-
+                if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword;
+            } catch(e) {}
             if (passInput === correctPassword) {
-                // كلمة المرور صحيحة -> نمنحه الإذن ونكشف المحتوى
                 sessionStorage.setItem("admin_authenticated", "true");
                 document.getElementById('adminPanelWrapper').style.display = 'block';
             } else {
-                alert("❌ كلمة المرور خاطئة! لا تملك صلاحية الوصول إلى لوحة تحكم GitHub هذه.");
-                rejectAccess();
+                alert("❌ كلمة المرور خاطئة!"); rejectAccess();
             }
         }
-
         function rejectAccess() {
-            // تدمير ومسح محتوى الصفحة بالكامل لمنع رؤية النماذج أو الجداول عن طريق الـ View-Source
-            document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; font-family:sans-serif; color:#e74c3c;'>🔒 عذراً، الوصول محظور وغير مصرح لك بالدخول!</h1>";
+            document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; font-family:sans-serif; color:#e74c3c;'>🔒 عذراً، الوصول محظور!</h1>";
             setTimeout(() => { window.location.href = "index.html"; }, 2000);
         }
-
-        // إطلاق الفحص الأمني فوراً
         checkAdminSession();
     </script>
 
@@ -68,7 +54,7 @@
         .form-group { margin-bottom: 14px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-family: inherit; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; }
         .btn { padding: 10px 14px; border: none; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-block { width: 100%; padding: 13px; font-size: 15px; border-radius: 12px; }
         .btn-primary { background: var(--primary); color: white; }
@@ -90,21 +76,46 @@
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success); }
         input:checked + .slider:before { transform: translateX(24px); }
+
+        /* 🔥 لوحة مراقبة مساحة خوادم فايربيس المضافة */
+        .storage-monitor-card { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border-radius: 24px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .storage-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; }
+        .storage-bar-bg { width: 100%; height: 14px; background: rgba(255,255,255,0.15); border-radius: 10px; overflow: hidden; position: relative; margin-bottom: 8px; }
+        .storage-bar-fill { width: 0%; height: 100%; background: #27ae60; transition: width 0.5s ease; }
+        .storage-footer { font-size: 0.8rem; color: #cbd5e1; display: flex; justify-content: space-between; }
+        .badge-alert { background: var(--danger); padding: 2px 8px; border-radius: 6px; color: white; font-weight: bold; animation: pulseAd 1s infinite alternate; }
+        @keyframes pulseAd { 0% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
 
-<!-- 📦 غلاف حماية لوحة التحكم: يكون مخفياً تماماً بالـ display:none ولا يفتح إلا بنجاح الفحص الأمني السحابي -->
 <div id="adminPanelWrapper" style="display: none;">
     <div class="admin-container">
 
-        <!-- هيدر الخروج الآمن للوحة التحكم -->
+        <!-- لوحة عرض حجم البيانات والتحكم الذكي الفوري بمساحة Firebase -->
+        <div class="storage-monitor-card">
+            <div class="storage-header">
+                <div>📊 حجم بيانات قاعدة بيانات Firebase (المساحة الحرة)</div>
+                <div id="storagePercentText">0% ممتلئ</div>
+            </div>
+            <div class="storage-bar-bg">
+                <div class="storage-bar-fill" id="storageBarFill"></div>
+            </div>
+            <div class="storage-footer">
+                <div>المستهلك الحالي للأخبار: <span id="usedStorageText" style="color:#fff; font-weight:bold;">0.00 MB</span></div>
+                <div>الحد الأقصى المجاني الفعلي: <b>1024.00 MB</b></div>
+            </div>
+            <div id="autoPurgeAlert" style="margin-top:10px; font-size:0.8rem; display:none;">
+                <span class="badge-alert">⚠️ نظام الدفاع النشط:</span> مساحة الخادم تخطت 98%! يقوم النظام حالياً بتصفية وحذف الأخبار القديمة تلقائياً للوصول إلى 75%.
+            </div>
+        </div>
+
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;">
             <h3 style="margin:0; color:var(--primary);">🔐 لوحة الإدارة العائلية المشفرة</h3>
             <button class="btn btn-danger" onclick="sessionStorage.clear(); window.location.reload();" style="padding:6px 12px; font-size:11px;">🚪 خروج آمن</button>
         </div>
 
-        <!-- 🕌 قسم إدارة مواقيت الصلاة (تفعيل/تعطيل + تعديل الدقائق) -->
+        <!-- 🕌 قسم إدارة مواقيت الصلاة الجعفري -->
         <div class="card">
             <h2 style="border-color: var(--primary);">🕌 إعدادات شريط مواقيت الصلاة الجعفري</h2>
             <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
@@ -131,7 +142,7 @@
             <button class="btn btn-primary btn-block" onclick="savePrayerSettings()">💾 حفظ تعديلات مواقيت الصلاة</button>
         </div>
 
-        <!-- 📺 قسم التحكم بالإعلان المنبثق كامل الشاشة الموقوت -->
+        <!-- 📺 إعلان منبثق كامل الشاشة ملوقوت -->
         <div class="card">
             <h2 style="border-color: var(--danger);">📺 إعلان منبثق كامل الشاشة (أول ما يفتح التطبيق)</h2>
             <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
@@ -160,7 +171,7 @@
             <button class="btn btn-danger btn-block" onclick="saveAdSettings()">🚀 حفظ ونشر الإعلان السريع</button>
         </div>
 
-        <!-- التصنيفات العائلية -->
+        <!-- 📁 إدارة وتحرير التصنيفات العائلية -->
         <div class="card">
             <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
             <form id="categoryForm">
@@ -179,7 +190,7 @@
             </div>
         </div>
 
-        <!-- نشر خبر جديد + إضافة عداد تنازلي للمناسبات المثبتة -->
+        <!-- نشر خبر عائلي جديد -->
         <div class="card">
             <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم 4 صور كبوست إنستغرام)</h2>
             <form id="newsForm">
@@ -241,7 +252,26 @@
             </div>
         </div>
 
-        <!-- 🔒 قسم تغيير كلمة مرور الدخول للوحة التحكم -->
+        <!-- 📜 جدول عرض سجلات الحذف التلقائي للمساحة (Purge Logs) -->
+        <div class="card">
+            <h2 style="border-color: #7f8c8d;">📜 أرشيف سجلات الحذف التلقائي والدفاع عن المساحة</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>تاريخ ووقت التنظيف</th>
+                            <th>الأخبار المحذوفة</th>
+                            <th>حجم الحجم المحرر</th>
+                        </tr>
+                    </thead>
+                    <tbody id="purgeLogsTableBody">
+                        <tr><td colspan="3" style="text-align:center; color:var(--gray);">لا توجد عمليات حذف تلقائية سابقة، الخادم مستقر وآمن.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- أمان النظام وتغيير كلمة المرور -->
         <div class="card">
             <h2 style="border-color: var(--danger);">🔒 أمان النظام وتغيير كلمة المرور</h2>
             <form id="passwordForm">
@@ -279,6 +309,99 @@
 
     document.getElementById('adDuration').addEventListener('change', function() {
         document.getElementById('adCustomDuration').style.display = this.value === 'custom' ? 'block' : 'none';
+    });
+
+    // 📊 دالة تقدير وحساب حجم مصفوفة الأخبار بدقة وحماية السيرفر من الامتلاء 98%
+    async function monitorAndCheckStorageSafety(newsList) {
+        let totalBytes = 0;
+        
+        // حساب حجم النصوص والصور المشفرة لكل خبر
+        newsList.forEach(item => {
+            let str = JSON.stringify(item);
+            totalBytes += str.length * 2; // تقدير الـ Bytes بنظام تشفير UTF-16
+        });
+
+        const totalMegabytes = totalBytes / (1024 * 1024);
+        const freeLimitMB = 1024; // الحد الأقصى المجاني لفايربيس
+        const usedPercentage = (totalMegabytes / freeLimitMB) * 100;
+
+        // تحديث واجهة المستخدم والعداد التنازلي للمساحة في شريط الأدمن
+        document.getElementById('usedStorageText').innerText = `${totalMegabytes.toFixed(2)} MB`;
+        document.getElementById('storagePercentText').innerText = `${usedPercentage.toFixed(2)}% ممتلئ`;
+        
+        const bar = document.getElementById('storageBarFill');
+        bar.style.width = `${Math.min(usedPercentage, 100)}%`;
+        
+        if (usedPercentage >= 85) bar.style.backgroundColor = '#e67e22';
+        if (usedPercentage >= 95) bar.style.backgroundColor = '#e74c3c';
+
+        // 🚨 إطلاق خطة الدفاع التلقائي والحذف الذكي فوراً عند الوصول لـ 98%
+        if (usedPercentage >= 98.0) {
+            document.getElementById('autoPurgeAlert').style.display = 'block';
+            await runAutomaticDatabasePurge(newsList, totalMegabytes, freeLimitMB);
+        } else {
+            document.getElementById('autoPurgeAlert').style.display = 'none';
+        }
+    }
+
+    // 🔥 المحرك التلقائي لحذف السجلات القديمة تدريجياً للوصول لمساحة 75%
+    async function runAutomaticDatabasePurge(newsList, currentSizeMB, limitMB) {
+        // ترتيب الأخبار من الأقدم للأحدث (بناءً على تاريخ الإنشاء)
+        let oldestFirstNews = [...newsList].sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+        
+        let deletedCount = 0;
+        let dataFreedBytes = 0;
+        let targetSizeMB = limitMB * 0.75; // المساحة المستهدفة الآمنة 75%
+        let bytesToFree = (currentSizeMB - targetSizeMB) * 1024 * 1024;
+
+        for (let item of oldestFirstNews) {
+            if (dataFreedBytes >= bytesToFree) break;
+            
+            // حساب حجم البيانات المحذوفة حالياً
+            let itemSize = JSON.stringify(item).length * 2;
+            
+            // تنفيذ الحذف الفعلي من سيرفر جوجل فايربيس مجاناً
+            try {
+                await deleteDoc(doc(db, "news", item.id));
+                deletedCount++;
+                dataFreedBytes += itemSize;
+            } catch (err) {
+                console.error("خطأ حماية أثناء تنظيف السجل:", err);
+            }
+        }
+
+        const totalFreedMB = dataFreedBytes / (1024 * 1024);
+
+        // 📜 تسجيل تقرير الحذف تلقائياً في جدول الـ Purge Logs ليسهل على الأدمن مطالعته
+        if (deletedCount > 0) {
+            await addDoc(collection(db, "purge_logs"), {
+                deletedCount: deletedCount,
+                freedSizeMB: totalFreedMB.toFixed(2),
+                timestamp: new Date(),
+                formattedDate: new Date().toLocaleString('ar-SA')
+            });
+            alert(`🚨 نظام الدفاع السحابي نشط: تم تلقائياً مسح ${deletedCount} خبر قديم لتفريغ مساحة قدرها ${totalFreedMB.toFixed(2)} MB وحماية قاعدة البيانات.`);
+        }
+    }
+
+    // مراقبة وعرض سجلات الأرشفة للحذف بجدول اللوحة
+    onSnapshot(collection(db, "purge_logs"), (snapshot) => {
+        const tbody = document.getElementById('purgeLogsTableBody');
+        if (snapshot.empty) return;
+        tbody.innerHTML = '';
+        let logs = [];
+        snapshot.forEach(doc => logs.push(doc.data()));
+        logs.sort((a,b) => b.timestamp?.seconds - a.timestamp?.seconds);
+        
+        logs.forEach(log => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>📅 ${log.formattedDate || new Date(log.timestamp.seconds * 1000).toLocaleString('ar-SA')}</td>
+                    <td style="color:var(--danger); font-weight:bold;">🗑️ تم حذف ${log.deletedCount} خبر قديم</td>
+                    <td style="color:var(--success); font-weight:bold;">📉 تم تحرير ${log.freedSizeMB} MB</td>
+                </tr>
+            `;
+        });
     });
 
     window.savePrayerSettings = async () => {
@@ -340,7 +463,6 @@
         }
     });
 
-    // 🔒 دالة تغيير كلمة المرور السرية وحفظها في فايربيس
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const newPass = document.getElementById('newAdminPassword').value.trim();
@@ -364,6 +486,7 @@
     });
     window.deleteCategoryItem = async (id) => { if(confirm("حذف التصنيف؟")) await deleteDoc(doc(db, "categories", id)); };
 
+    // مراقبة الأخبار الحية وحساب حجم البيانات في السيرفر فوراُ
     onSnapshot(collection(db, "news"), (snapshot) => {
         const tbody = document.getElementById('adminNewsTable'); tbody.innerHTML = '';
         let localItems = []; currentPinnedCount = 0;
@@ -371,6 +494,10 @@
             const data = doc.data(); localItems.push({ id: doc.id, ...data }); 
             if(data.isPinned === true) currentPinnedCount++;
         });
+
+        // تشغيل محرك حساب وحماية المساحة حياً
+        monitorAndCheckStorageSafety(localItems);
+
         localItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
         localItems.forEach(item => {
