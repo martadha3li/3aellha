@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
-    <title>منصة الأخبار العائلية ن4</title>
+    <title>منصة الأخبار العائلية</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
@@ -59,7 +59,6 @@
         .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         
-        /* ⏳ شاشة التحميل بالنسبة المئوية */
         .loader-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #ffffff; z-index: 99998; display: flex;
@@ -72,7 +71,6 @@
         .loader-text { font-size: 0.9rem; color: var(--gray); font-weight: 500; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); opacity: 0.9; } }
 
-        /* 🔒 شاشة طلب التفعيل والأمان الأولى (تظهر لمرة واحدة) */
         .onboarding-screen {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #ffffff; z-index: 99999; display: flex;
@@ -90,7 +88,6 @@
             margin-bottom: 16px; display: block;
         }
         
-        /* 🔴 إطار الأمان وثيقة الاطمئنان */
         .safety-note-box {
             border: 2px dashed var(--danger); background-color: #fff5f5;
             padding: 14px; border-radius: 16px; text-align: right;
@@ -157,7 +154,7 @@
     const db = getFirestore(app);
     
     let messaging = null;
-    try { messaging = getMessaging(app); } catch (err) { console.log("FCM Bypass initialized"); }
+    try { messaging = getMessaging(app); } catch (err) { console.log("FCM Bypass active"); }
 
     let allNews = [];
     let selectedCategory = 'all';
@@ -177,12 +174,11 @@
                     if(onComplete) onComplete();
                 }, 50);
             } else { percentEl.innerText = count + "%"; }
-        }, 30);
+        }, 20);
     }
 
-    // فحص وعرض واجهة المستخدم لمرة واحدة
     window.addEventListener("load", () => {
-        const onboarded = localStorage.getItem("family_app_onboarded_2026");
+        const onboarded = localStorage.getItem("family_app_onboarded_2026_v2");
         if (onboarded) {
             startMainAppSync();
         } else {
@@ -190,10 +186,13 @@
         }
     });
 
+    // 🚀 تحديث جذري: الانتقال فوري ومباشر دون تعليق مع محاولة جلب التوكن في الخلفية
     window.clickToRequestPermission = function() {
+        localStorage.setItem("family_app_onboarded_2026_v2", "true");
+        document.getElementById('onboardingScreen').style.display = 'none';
+        
         if (!('Notification' in window)) {
-            alert("⚠️ متصفحك لا يدعم الإشعارات السحابية.");
-            closeOnboardingAndContinue();
+            startMainAppSync();
             return;
         }
 
@@ -202,22 +201,15 @@
                 navigator.serviceWorker.ready.then(reg => {
                     saveDeviceFCMToken(reg);
                 });
-            } else {
-                closeOnboardingAndContinue();
             }
+            startMainAppSync();
         }).catch(() => {
-            closeOnboardingAndContinue();
+            startMainAppSync();
         });
     };
 
-    function closeOnboardingAndContinue() {
-        localStorage.setItem("family_app_onboarded_2026", "true");
-        document.getElementById('onboardingScreen').style.display = 'none';
-        startMainAppSync();
-    }
-
     function saveDeviceFCMToken(serviceWorkerRegistration) {
-        if (!messaging) { closeOnboardingAndContinue(); return; }
+        if (!messaging) return;
         
         getToken(messaging, { 
             serviceWorkerRegistration: serviceWorkerRegistration,
@@ -229,10 +221,8 @@
                     updatedAt: new Date()
                 });
             }
-            closeOnboardingAndContinue();
         }).catch((err) => { 
-            console.log("Token error token skipped:", err);
-            closeOnboardingAndContinue();
+            console.log("FCM Background skip:", err);
         });
     }
 
@@ -252,7 +242,7 @@
     }
 
     window.goToAdminPanel = async () => {
-        const pass = prompt("الرجاء إدخال كلمة مرور لوحة التحكم للمتابعة:");
+        const pass = prompt("الرجاء إدخل كلمة مرور لوحة التحكم:");
         if (!pass) return;
         let correctPassword = "123";
         try {
