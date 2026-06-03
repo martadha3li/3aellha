@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="أخبار العائلة">
-    <title>منصة الأخبار العائلية v3</title>
+    <title>منصة الأخبار العائلية</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         :root {
@@ -58,7 +58,7 @@
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
         .no-data { text-align: center; padding: 30px; color: var(--gray); }
         
-        /* شاشة التحميل */
+        /* شاشة التحميل مع الشعار والنسبة المئوية */
         .loader-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #ffffff; z-index: 99999; display: flex;
@@ -130,23 +130,23 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     
-    // حماية سياق استدعاء الـ Messaging لعدم حظر المتصفحات القديمة أو الآيفون
+    // 🛡️ احتواء آمن لمنظومة الـ Messaging لعدم تجميد الكود عند 0% في الهواتف والآيفون
     let messaging = null;
     try {
         messaging = getMessaging(app);
     } catch (err) {
-        console.log("FCM Messaging غير مدعوم في هذا المتصفح حالياً:", err);
+        console.log("FCM غير مدعوم في بيئة المتصفح الحالية:", err);
     }
 
     let allNews = [];
     let selectedCategory = 'all';
 
-    // ⏳ شاشة تحميل ذكية تختفي فوراً وتتحرك بسلاسة
+    // ⏳ شاشة تحميل ذكية ورشيقة مع حماية الاكتمال التلقائي
     function runPercentageLoader(onComplete) {
         let count = 0;
         const percentEl = document.getElementById('loadPercent');
         const interval = setInterval(() => {
-            count += Math.floor(Math.random() * 25) + 15;
+            count += Math.floor(Math.random() * 20) + 15;
             if (count >= 100) {
                 count = 100; clearInterval(interval);
                 percentEl.innerText = "100%";
@@ -156,7 +156,7 @@
                     if(onComplete) onComplete();
                 }, 50);
             } else { percentEl.innerText = count + "%"; }
-        }, 25);
+        }, 20);
     }
 
     window.goToAdminPanel = async () => {
@@ -171,20 +171,32 @@
         else alert("❌ كلمة المرور خاطئة!");
     };
 
+    // 🔔 دالة توليد توكن الجوال السحابي FCM وحفظه التلقائي مع كاشف منبثق للتحقق
     function saveDeviceFCMToken(serviceWorkerRegistration) {
         if (!messaging || !('Notification' in window)) return;
+        
         if (Notification.permission === 'granted') {
             getToken(messaging, { 
                 serviceWorkerRegistration: serviceWorkerRegistration,
                 vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" 
             }).then(async (currentToken) => {
                 if (currentToken) {
-                    await setDoc(doc(db, "fcm_tokens", currentToken), {
-                        token: currentToken,
-                        updatedAt: new Date()
-                    });
+                    try {
+                        await setDoc(doc(db, "fcm_tokens", currentToken), {
+                            token: currentToken,
+                            updatedAt: new Date()
+                        });
+                        alert("🎉 ممتاز جداً! تم ربط جهازك بنظام استقبال الإشعارات السحابية مجاناً.");
+                    } catch (fErr) {
+                        alert("❌ خطأ حماية فايربيس Firestore Rules: " + fErr.message);
+                    }
+                } else {
+                    alert("⚠️ لم يصدر السيرفر Token للتطبيق، تأكد من ملف sw.js");
                 }
-            }).catch((err) => { console.error("خطأ التوكن:", err); });
+            }).catch((err) => { 
+                alert("❌ فشل الـ getToken: تأكد من تشفير الرابط HTTPS والـ VAPID Key. تفاصيل: " + err.message);
+                console.error("FCM Error:", err); 
+            });
         }
     }
 
@@ -206,10 +218,10 @@
                 document.getElementById('notificationPrompt').style.display = 'flex';
                 document.getElementById('floatingForceBtn').style.display = 'block';
             } else { document.getElementById('floatingForceBtn').style.display = 'block'; }
-        }).catch(err => { console.log("SW Error ignored to prevent screen freezing", err); });
+        }).catch(err => { console.log("SW bypass active", err); });
     }
 
-    // تشغيل جلب البيانات الفوري بالتزامن التام مع شاشة النسبة المئوية
+    // تشغيل وإطلاق منظومة جلب البيانات بالتزامن مع انتهاء العداد
     runPercentageLoader(() => {
         onSnapshot(collection(db, "news"), (snapshot) => {
             let tempNews = [];
@@ -221,7 +233,7 @@
             renderNews();
             loadCategories();
         }, (error) => {
-            console.error("Firebase Error: ", error);
+            console.error("Firebase Snapshot Error: ", error);
         });
     });
 
@@ -247,12 +259,14 @@
         const pinnedNews = allNews.filter(n => n.isPinned === true).slice(0, 3);
         const regularNews = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
 
+        // 📌 بناء السجلات المثبتة مع حماية مصفوفات الصور وتصحيحها
         if (pinnedNews.length > 0) {
             pinnedSection.style.display = 'flex';
             pinnedNews.forEach((news, pIdx) => {
                 let pClass = 'pinned-general'; let pLabel = '📌 إعلان عائلي';
                 if (news.pinnedType === 'death') { pClass = 'pinned-death'; pLabel = '🏴 تعزية ومواساة'; }
                 else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨ دعوة وفرح تبريك'; }
+                
                 let imgList = news.images || (news.image ? [news.image] : []);
 
                 let pHtml = `<div class="pinned-card ${pClass}" onclick="this.classList.toggle('expanded')"><div class="pinned-header"><div class="pinned-headline"><span>${pLabel}:</span> ${news.title || 'اضغط لعرض التفاصيل'}</div><div class="pinned-icon">▼</div></div><div class="pinned-body">`;
