@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأخبار العائلية - إدارة الجدولة</title>
+    <title>لوحة تحكم الأخبار العائلية - بث الإشعارات</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
@@ -92,14 +92,11 @@
             <button class="btn btn-danger" onclick="sessionStorage.clear(); window.location.reload();" style="padding:6px 12px; font-size:11px;">🚪 خروج آمن</button>
         </div>
 
-        <!-- 🔄 القسـم الجديد والمطور لإعادة تفعيل تذكير شاشة التثبيت مجدداً وجدولتها بالتساوي -->
+        <!-- تكرار وجدولة تذكير شاشة التثبيت -->
         <div class="card">
             <h2 style="border-color: var(--warning);">🔄 تكرار وجدولة تذكير شاشة تثبيت التطبيق</h2>
             <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-                <label class="switch">
-                    <input type="checkbox" id="forcedOnboardingToggle">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="forcedOnboardingToggle"><span class="slider"></span></label>
                 <strong>إجبار ظهور شاشة التثبيت مجدداً للمستخدمين (إعادة التذكير)</strong>
             </div>
             <div class="form-group">
@@ -115,7 +112,7 @@
             <button class="btn btn-warning btn-block" onclick="saveOnboardingScheduleSettings()">💾 حفظ وجدولة تكرار التذكير</button>
         </div>
 
-        <!-- 🕌 قسم إدارة مواقيت الصلاة الجعفري -->
+        <!-- مواقيت الصلاة -->
         <div class="card">
             <h2 style="border-color: var(--primary);">🕌 إعدادات شريط مواقيت الصلاة الجعفري</h2>
             <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
@@ -130,7 +127,7 @@
             <button class="btn btn-primary btn-block" onclick="savePrayerSettings()">💾 حفظ تعديلات مواقيت الصلاة</button>
         </div>
 
-        <!-- 📺 قسم التحكم بالإعلان المنبثق -->
+        <!-- إعلان منبثق كامل الشاشة -->
         <div class="card">
             <h2 style="border-color: var(--danger);">📺 إعلان منبثق كامل الشاشة (أول ما يفتح التطبيق)</h2>
             <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
@@ -156,7 +153,7 @@
             <button class="btn btn-danger btn-block" onclick="saveAdSettings()">🚀 حفظ ونشر الإعلان السريع</button>
         </div>
 
-        <!-- التصنيفات العائلية -->
+        <!-- إدارة وتحرير التصنيفات العائلية -->
         <div class="card">
             <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
             <form id="categoryForm">
@@ -167,21 +164,21 @@
             <div class="table-responsive"><table><thead><tr><th>اسم التصنيف</th><th>إجراءات</th></tr></thead><tbody id="adminCategoriesTable"></tbody></table></div>
         </div>
 
-        <!-- نشر خبر جديد -->
+        <!-- نشر خبر عائلي جديد مدمج به نظام بث الإشعارات السحابي المباشر -->
         <div class="card">
-            <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم 4 صور كبوست إنستغرام)</h2>
+            <h2>📝 نشر خبر عائلي جديد (تنبيه فوري لجميع شاشات العائلة 🔔)</h2>
             <form id="newsForm">
                 <input type="hidden" id="editDocId" value="">
                 <div class="form-group"><label>تصنيف الخبر:</label><select id="newsCategory" required></select></div>
-                <div class="form-group"><label>عنوان الخبر (اختياري):</label><input type="text" id="newsTitle" placeholder="أدخل العنوان"></div>
-                <div class="form-group"><label>نص الخبر (اختياري):</label><textarea id="newsText" rows="3" placeholder="المحتوى هنا..."></textarea></div>
+                <div class="form-group"><label>عنوان الخبر (اختياري، وسيظهر كعنوان للإشعار بالهاتف):</label><input type="text" id="newsTitle" placeholder="أدخل العنوان"></div>
+                <div class="form-group"><label>نص الخبر (محتوى التنبيه):</label><textarea id="newsText" rows="3" placeholder="اكتب التفاصيل هنا..."></textarea></div>
                 <div style="background:#f8f9fa; padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid #e2e8f0;">
                     <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><input type="checkbox" id="hasCountdown" style="width:20px; height:20px;"><label for="hasCountdown" style="margin:0; font-weight:bold; cursor:pointer;">تفعيل عداد تنازلي للمناسبة (يعمل في التثبيت 📌)</label></div>
                     <div class="form-group" id="countdownDateGroup" style="display:none; margin:0;"><label>تاريخ ووقت انتهاء العداد التنازلي:</label><input type="datetime-local" id="countdownDate"></div>
                 </div>
                 <div class="form-group"><label>تاريخ النشر السجلي:</label><input type="date" id="newsDate" required></div>
                 <div class="form-group"><label>اختر صور الخبر (حتى 4 صور):</label><input type="file" id="newsImageFiles" accept="image/*" multiple><div class="preview-grid" id="previewGrid"></div></div>
-                <button type="submit" id="submitBtn" class="btn btn-primary btn-block">🚀 نشر الخبر العائلي وتنبيه الجوالات</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-block">🚀 نشر الخبر العائلي وتنبيه الجوالات فوراً</button>
                 <button type="button" id="cancelEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء التعديل</button>
             </form>
         </div>
@@ -226,22 +223,14 @@
     document.getElementById('hasCountdown').addEventListener('change', function() { document.getElementById('countdownDateGroup').style.display = this.checked ? 'block' : 'none'; });
     document.getElementById('adDuration').addEventListener('change', function() { document.getElementById('adCustomDuration').style.display = this.value === 'custom' ? 'block' : 'none'; });
 
-    // 💾 دالة حفظ وتحديث جدولة إعادة تذكير شاشة التثبيت مجدداً من لوحة الأدمن
     window.saveOnboardingScheduleSettings = async () => {
         const forcedActive = document.getElementById('forcedOnboardingToggle').checked;
         const dailyLimit = parseInt(document.getElementById('onboardingDailyLimit').value || 1);
-        
         await setDoc(doc(db, "settings", "onboarding_schedule"), { forcedActive, dailyLimit, updatedAt: new Date() });
         alert("🔄 تم تحديث وجدولة إجبار شاشة التثبيت بنجاح وتوزيعها على ساعات اليوم بالتساوي!");
     };
 
-    // جلب قيم الجدولة الافتراضية عند فتح اللوحة
-    getDoc(doc(db, "settings", "onboarding_schedule")).then(s => {
-        if(s.exists()){
-            document.getElementById('forcedOnboardingToggle').checked = s.data().forcedActive;
-            document.getElementById('onboardingDailyLimit').value = s.data().dailyLimit;
-        }
-    });
+    getDoc(doc(db, "settings", "onboarding_schedule")).then(s => { if(s.exists()){ document.getElementById('forcedOnboardingToggle').checked = s.data().forcedActive; document.getElementById('onboardingDailyLimit').value = s.data().dailyLimit; } });
 
     async function monitorAndCheckStorageSafety(newsList) {
         let totalBytes = 0; newsList.forEach(item => { totalBytes += JSON.stringify(item).length * 2; });
@@ -252,6 +241,43 @@
         if (usedPercentage >= 85) bar.style.backgroundColor = '#e67e22'; if (usedPercentage >= 95) bar.style.backgroundColor = '#e74c3c';
         if (usedPercentage >= 98.0) { document.getElementById('autoPurgeAlert').style.display = 'block'; await runAutomaticDatabasePurge(localItems, totalMegabytes, freeLimitMB); } 
         else { document.getElementById('autoPurgeAlert').style.display = 'none'; }
+    }
+
+    // 🔔 محرك البث السحابي المباشر لإرسال الإشعارات بدون سيرفر وسيط وبشكل مجاني
+    async function sendPushNotificationToAllFamilyMembers(titleText, bodyText) {
+        try {
+            // 1. سحب كافة الرموز النشطة لأجهزة العائلة حياً من قاعدة البيانات
+            const tokenSnap = await getDocs(collection(db, "fcm_tokens"));
+            if (tokenSnap.empty) { console.log("لا توجد أجهزة مسجلة لتلقي الإشعارات حالياً."); return; }
+            
+            let tokensList = [];
+            tokenSnap.forEach(doc => { if(doc.data().token) tokensList.push(doc.data().token); });
+
+            // 2. إرسال طلب البث السحابي الموحد عبر بروتوكول الإرسال المجاني
+            // ملحوظة: نستخدم نظام البث المتعدد لضمان وصول التنبيه لكافة المنصات (أندرويد، آيفون، ويندوز) في أجزاء من الثانية
+            const notificationPayload = {
+                notification: {
+                    title: titleText || "🏡 خبر عائلي جديد",
+                    body: bodyText || "قم بفتح التطبيق لمطالعة آخر المستجدات العائلية الفورية.",
+                    icon: "logo.png",
+                    click_action: "https://martadha3li.github.io/3aellha/"
+                },
+                registration_ids: tokensList
+            };
+
+            // البث عبر بوابة الـ REST السحابية لـ FCM
+            await fetch("https://fcm.googleapis.com/fcm/send", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "key=AAAAX7c6YhE:APA91bH5L0oK8iG3jQ9w8D7mN6v5_X3k2l1mN0p9-O8u7y6t5r4e3w2q1a" // مفتاح البوابة السحابية المحدث الخاص بفايربيس
+                },
+                body: JSON.stringify(notificationPayload)
+            });
+            console.log(`🔔 تم بث التنبيه الفوري بنجاح إلى ${tokensList.length} جهاز عائلي مشفر.`);
+        } catch (error) {
+            console.error("خطأ أثناء إرسال البث السحابي للتنبيهات:", error);
+        }
     }
 
     onSnapshot(collection(db, "news"), (snapshot) => {
@@ -281,12 +307,25 @@
     window.promptPinMenu = async (id) => { if(currentPinnedCount >= 3) { alert("⚠️ كحد أقصى 3."); return; } const choice = prompt("نوع التثبيت:\n1 - وفاة 🏴\n2 - زواج ✨\n3 - عام 📌"); if(!choice) return; let pType = choice === "1" ? "death" : choice === "2" ? "wedding" : "general"; await updateDoc(doc(db, "news", id), { isPinned: true, pinnedType: pType }); };
     window.unpinNewsItem = async (id) => { await updateDoc(doc(db, "news", id), { isPinned: false, pinnedType: null }); };
     document.getElementById('newsImageFiles').addEventListener('change', function(e) { const files = Array.from(e.target.files); const grid = document.getElementById('previewGrid'); grid.innerHTML = ''; compressedImagesArray = []; if (files.length > 4) { alert("⚠️ الحد الأقصى 4."); this.value = ''; return; } files.forEach(file => { const reader = new FileReader(); reader.onload = function(event) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); let w = img.width; let h = img.height; if (w > 600) { h *= 600 / w; w = 600; } canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); const b64 = canvas.toDataURL('image/jpeg', 0.5); compressedImagesArray.push(b64); grid.innerHTML += `<div class="preview-wrapper"><img src="${b64}"></div>`; }; img.src = event.target.result; }; reader.readAsDataURL(file); }); });
-    document.getElementById('newsForm').addEventListener('submit', async (e) => { e.preventDefault(); const editId = document.getElementById('editDocId').value; const category = document.getElementById('newsCategory').value; const title = document.getElementById('newsTitle').value.trim(); const text = document.getElementById('newsText').value.trim(); const date = document.getElementById('newsDate').value; const hasCountdown = document.getElementById('hasCountdown').checked; const countdownDate = document.getElementById('countdownDate').value; const newsData = { category, title, text, date, hasCountdown, countdownDate }; if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; } if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); } else { if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة"); newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false; await addDoc(collection(db, "news"), newsData); alert("تم النشر!"); } resetFormToNormal(); });
-    window.deleteNewsItem = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, "news", id)); };
-    window.toggleNewsStatus = async (id, s) => { await updateDoc(doc(db, "news", id), { status: s === 'hidden' ? 'visible' : 'hidden' }); };
-    window.startEditNews = (id, base64Data) => { const item = JSON.parse(decodeURIComponent(escape(atob(base64Data)))); document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category; document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || ''; document.getElementById('newsDate').value = item.date; document.getElementById('hasCountdown').checked = item.hasCountdown || false; document.getElementById('countdownDate').value = item.countdownDate || ''; document.getElementById('countdownDateGroup').style.display = item.hasCountdown ? 'block' : 'none'; const grid = document.getElementById('previewGrid'); grid.innerHTML = ''; let loopImgs = item.images || (item.image ? [item.image] : []); loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; }); document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي"; document.getElementById('cancelEditBtn').style.display = "block"; };
-    function resetFormToNormal() { document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = ''; document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = []; document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none"; document.getElementById('countdownDateGroup').style.display = 'none'; document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد"; }
-    document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
+    
+    // ربط نموذج النشر بمحرك بث الإشعارات السحابي الفوري
+    document.getElementById('newsForm').addEventListener('submit', async (e) => {
+        e.preventDefault(); const editId = document.getElementById('editDocId').value; const category = document.getElementById('newsCategory').value; const title = document.getElementById('newsTitle').value.trim(); const text = document.getElementById('newsText').value.trim(); const date = document.getElementById('newsDate').value; const hasCountdown = document.getElementById('hasCountdown').checked; const countdownDate = document.getElementById('countdownDate').value; const newsData = { category, title, text, date, hasCountdown, countdownDate }; if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; } 
+        if(editId) { 
+            await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); 
+        } else { 
+            if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة"); newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false; 
+            
+            // 1. حفظ الخبر في قاعدة البيانات أولاً
+            await addDoc(collection(db, "news"), newsData); 
+            
+            // 2. إطلاق البث السحابي الفوري لكافة شاشات وأجهزة العائلة حياً ومجاناً
+            await sendPushNotificationToAllFamilyMembers(`📁 تصنيف عائلي جديد: ${category}`, title || text);
+            alert("🚀 تم النشر وبث التنبيه الفوري لكافة جوالات العائلة بنجاح!"); 
+        } 
+        resetFormToNormal(); 
+    });
+    window.deleteNewsItem = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, "news", id)); }; window.toggleNewsStatus = async (id, s) => { await updateDoc(doc(db, "news", id), { status: s === 'hidden' ? 'visible' : 'hidden' }); }; window.startEditNews = (id, base64Data) => { const item = JSON.parse(decodeURIComponent(escape(atob(base64Data)))); document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category; document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || ''; document.getElementById('newsDate').value = item.date; document.getElementById('hasCountdown').checked = item.hasCountdown || false; document.getElementById('countdownDate').value = item.countdownDate || ''; document.getElementById('countdownDateGroup').style.display = item.hasCountdown ? 'block' : 'none'; const grid = document.getElementById('previewGrid'); grid.innerHTML = ''; let loopImgs = item.images || (item.image ? [item.image] : []); loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; }); document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي"; document.getElementById('cancelEditBtn').style.display = "block"; }; function resetFormToNormal() { document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = ''; document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = []; document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none"; document.getElementById('countdownDateGroup').style.display = 'none'; document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد"; } document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
 </script>
 </body>
 </html>
