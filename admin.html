@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأخبار العائلية - بث الإشعارات المطور</title>
+    <title>لوحة تحكم الأخبار العائلية - النسخة المستقلة</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
@@ -92,8 +92,7 @@
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;">
             <div class="admin-title-flex">
                 <h3 style="margin:0; color:var(--primary);">🔐 لوحة الإدارة العائلية المشفرة</h3>
-                <!-- تحديث رقم الإصدار بداخل الصفحة -->
-                <div class="admin-version-badge">النسخة: 2026-02</div>
+                <div class="admin-version-badge">النسخة: 2026-03</div>
             </div>
             <button class="btn btn-danger" onclick="sessionStorage.clear(); window.location.reload();" style="padding:6px 12px; font-size:11px; margin-right: 10px;">🚪 خروج</button>
         </div>
@@ -215,6 +214,8 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    // استدعاء ملف بث الإشعارات المنفصل والخفيف الجديد
+    import { broadcastNotification } from "./fcm-broadcaster.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
@@ -233,7 +234,7 @@
         const forcedActive = document.getElementById('forcedOnboardingToggle').checked;
         const dailyLimit = parseInt(document.getElementById('onboardingDailyLimit').value || 1);
         await setDoc(doc(db, "settings", "onboarding_schedule"), { forcedActive, dailyLimit, updatedAt: new Date() });
-        alert("🔄 تم تحديث وجدولة إجبار شاشة التثبيت بنجاح وتوزيعها على ساعات اليوم بالتساوي!");
+        alert("🔄 تم تحديث وجدولة التذكير بنجاح!");
     };
 
     getDoc(doc(db, "settings", "onboarding_schedule")).then(s => { if(s.exists()){ document.getElementById('forcedOnboardingToggle').checked = s.data().forcedActive; document.getElementById('onboardingDailyLimit').value = s.data().dailyLimit; } });
@@ -245,39 +246,6 @@
         document.getElementById('storagePercentText').innerText = `${usedPercentage.toFixed(2)}% ممتلئ`;
         const bar = document.getElementById('storageBarFill'); bar.style.width = `${Math.min(usedPercentage, 100)}%`;
         if (usedPercentage >= 85) bar.style.backgroundColor = '#e67e22'; if (usedPercentage >= 95) bar.style.backgroundColor = '#e74c3c';
-        if (usedPercentage >= 98.0) { document.getElementById('autoPurgeAlert').style.display = 'block'; await runAutomaticDatabasePurge(localItems, totalMegabytes, freeLimitMB); } 
-        else { document.getElementById('autoPurgeAlert').style.display = 'none'; }
-    }
-
-    // 🔔 محرك البث المطور المتوافق مع شروط حظر الاستضافة الاستاتيكية لـ FCM v1
-    async function sendPushNotificationToAllFamilyMembers(titleText, bodyText) {
-        try {
-            const tokenSnap = await getDocs(collection(db, "fcm_tokens"));
-            if (tokenSnap.empty) return;
-            
-            let tokensList = [];
-            tokenSnap.forEach(doc => { if(doc.data().token) tokensList.push(doc.data().token); });
-
-            // استخدام بروتوكول البث النظيف (Web-Push Multi-Cast Gateway)
-            // نمرر البيانات بصيغة مشفرة ومباشرة لتخطي جدار الحماية الاستاتيكي
-            const payload = {
-                title: titleText || "🏡 خبر عائلي جديد",
-                body: bodyText || "قم بفتح التطبيق لمطالعة آخر المستجدات العائلية الفورية.",
-                icon: "https://martadha3li.github.io/3aellha/logo.png",
-                link: "https://martadha3li.github.io/3aellha/",
-                tokens: tokensList
-            };
-
-            // الإرسال عبر البوابة المحدثة المتوافقة 100% مع حساب Firebase المجاني لمشروعك
-            await fetch("https://fcm-pwa-gateway.vercel.app/api/broadcast", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            console.log("🔔 تم تمرير طلب البث السحابي المطور للأجهزة النشطة.");
-        } catch (error) {
-            console.error("خطأ بث سحابي:", error);
-        }
     }
 
     onSnapshot(collection(db, "news"), (snapshot) => {
@@ -299,7 +267,7 @@
     function b64EncodeUnicode(str) { return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) { return String.fromCharCode('0x' + p1); })); }
     window.savePrayerSettings = async () => { const enabled = document.getElementById('prayerBarToggle').checked; const fajrOffset = document.getElementById('fajrOffset').value || 0; const dhuhrOffset = document.getElementById('dhuhrOffset').value || 0; const maghribOffset = document.getElementById('maghribOffset').value || 0; await setDoc(doc(db, "settings", "prayers"), { enabled, fajrOffset, dhuhrOffset, maghribOffset }); alert("🕌 تم الحفظ!"); };
     document.getElementById('adImageFile').addEventListener('change', function(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(event) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); let w = img.width; let h = img.height; if (w > 500) { h *= 500 / w; w = 500; } canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); adImageBase64 = canvas.toDataURL('image/jpeg', 0.6); document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${adImageBase64}"></div>`; }; img.src = event.target.result; }; reader.readAsDataURL(file); });
-    window.saveAdSettings = async () => { const active = document.getElementById('adToggle').checked; const durationSelect = document.getElementById('adDuration').value; const duration = durationSelect === 'custom' ? document.getElementById('adCustomDuration').value : durationSelect; const adData = { active, duration: duration || 5 }; if (adImageBase64) adData.image = adData.image = adImageBase64; else { const currentSnap = await getDoc(doc(db, "settings", "advertisement")); if (currentSnap.exists() && currentSnap.data().image) adData.image = currentSnap.data().image; } await setDoc(doc(db, "settings", "advertisement"), adData, { merge: true }); alert("📺 تم التحديث!"); };
+    window.saveAdSettings = async () => { const active = document.getElementById('adToggle').checked; const durationSelect = document.getElementById('adDuration').value; const duration = durationSelect === 'custom' ? document.getElementById('adCustomDuration').value : durationSelect; const adData = { active, duration: duration || 5 }; if (adImageBase64) adData.image = adImageBase64; else { const currentSnap = await getDoc(doc(db, "settings", "advertisement")); if (currentSnap.exists() && currentSnap.data().image) adData.image = currentSnap.data().image; } await setDoc(doc(db, "settings", "advertisement"), adData, { merge: true }); alert("📺 تم التحديث!"); };
     document.getElementById('passwordForm').addEventListener('submit', async (e) => { e.preventDefault(); const newPass = document.getElementById('newAdminPassword').value.trim(); await setDoc(doc(db, "settings", "security"), { adminPassword: newPass }, { merge: true }); alert("🔒 تم التحديث!"); document.getElementById('passwordForm').reset(); });
     onSnapshot(collection(db, "categories"), (snap) => { const select = document.getElementById('newsCategory'); const tbody = document.getElementById('adminCategoriesTable'); select.innerHTML = '<option value="">-- اختر التصنيف --</option>'; tbody.innerHTML = ''; snap.forEach(docSnap => { select.innerHTML += `<option value="${docSnap.data().name}">${docSnap.data().name}</option>`; tbody.innerHTML += `<tr><td><strong>📁 ${docSnap.data().name}</strong></td><td><button class="btn btn-danger" onclick="deleteCategoryItem('${docSnap.id}')">🗑️</button></td></tr>`; }); });
     document.getElementById('categoryForm').addEventListener('submit', async (e) => { e.preventDefault(); const name = document.getElementById('newCatName').value.trim(); await addDoc(collection(db, "categories"), { name, createdAt: new Date() }); document.getElementById('categoryForm').reset(); });
@@ -310,14 +278,18 @@
     
     document.getElementById('newsForm').addEventListener('submit', async (e) => {
         e.preventDefault(); const editId = document.getElementById('editDocId').value; const category = document.getElementById('newsCategory').value; const title = document.getElementById('newsTitle').value.trim(); const text = document.getElementById('newsText').value.trim(); const date = document.getElementById('newsDate').value; const hasCountdown = document.getElementById('hasCountdown').checked; const countdownDate = document.getElementById('countdownDate').value; const newsData = { category, title, text, date, hasCountdown, countdownDate }; if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; } 
-        if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); } 
-        else { 
+        if(editId) { 
+            await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); 
+        } else { 
             if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة"); newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false; 
+            
+            // 1. الحفظ السريع في قاعدة بيانات Firebase
             await addDoc(collection(db, "news"), newsData); 
             
-            // بث الإشعارات عبر المحرك البديل المطور
-            await sendPushNotificationToAllFamilyMembers(`📁 تصنيف عائلي جديد: ${category}`, title || text);
-            alert("🚀 تم النشر وبث التنبيه الفوري لكافة جوالات العائلة بنجاح!"); 
+            // 2. ترحيل البيانات واستدعاء الموزع السحابي المستقل في الخلفية بشكل خفيف وآمن
+            await broadcastNotification(db, category, title, text);
+            
+            alert("🚀 تم النشر وتمرير بث التنبيه الفوري لكافة أجهزة العائلة!"); 
         } resetFormToNormal(); 
     });
     window.deleteNewsItem = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, "news", id)); }; window.toggleNewsStatus = async (id, s) => { await updateDoc(doc(db, "news", id), { status: s === 'hidden' ? 'visible' : 'hidden' }); }; window.startEditNews = (id, base64Data) => { const item = JSON.parse(decodeURIComponent(escape(atob(base64Data)))); document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category; document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || ''; document.getElementById('newsDate').value = item.date; document.getElementById('hasCountdown').checked = item.hasCountdown || false; document.getElementById('countdownDate').value = item.countdownDate || ''; document.getElementById('countdownDateGroup').style.display = item.hasCountdown ? 'block' : 'none'; const grid = document.getElementById('previewGrid'); grid.innerHTML = ''; let loopImgs = item.images || (item.image ? [item.image] : []); loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; }); document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي"; document.getElementById('cancelEditBtn').style.display = "block"; }; function resetFormToNormal() { document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = ''; document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = []; document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none"; document.getElementById('countdownDateGroup').style.display = 'none'; document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد"; } document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
