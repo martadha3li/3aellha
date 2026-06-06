@@ -3,44 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم الأخبار العائلية - حماية التخزين</title>
+    <title>لوحة تحكم الأخبار العائلية - إدارة الجدولة</title>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, collection, addDoc, getDocs, deleteDoc, onSnapshot, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATSMFKx4jUo_Duw0FtD5HO_M69O7A55o0",
             projectId: "fnews-7525e",
             appId: "1:1023530532546:web:cbc1be1753237179bd455b"
         };
+        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // الحماية وجلسة الأمان الآمنة لـ GitHub
         async function checkAdminSession() {
-            if (sessionStorage.getItem("admin_authenticated") === "true") {
-                document.getElementById('adminPanelWrapper').style.display = 'block';
-                return;
-            }
-            const passInput = prompt("🔒 هذه المنطقة محمية! الرجاء إدخال كلمة مرور لوحة التحكم للمتابعة:");
+            if (sessionStorage.getItem("admin_authenticated") === "true") { document.getElementById('adminPanelWrapper').style.display = 'block'; return; }
+            const passInput = prompt("🔒 كلمة مرور لوحة التحكم للمتابعة:");
             if (!passInput) { rejectAccess(); return; }
             let correctPassword = "123";
             try {
                 const passSnap = await getDoc(doc(db, "settings", "security"));
                 if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword;
             } catch(e) {}
-            if (passInput === correctPassword) {
-                sessionStorage.setItem("admin_authenticated", "true");
-                document.getElementById('adminPanelWrapper').style.display = 'block';
-            } else {
-                alert("❌ كلمة المرور خاطئة!"); rejectAccess();
-            }
+            if (passInput === correctPassword) { sessionStorage.setItem("admin_authenticated", "true"); document.getElementById('adminPanelWrapper').style.display = 'block'; } 
+            else { alert("❌ خاطئة!"); rejectAccess(); }
         }
-        function rejectAccess() {
-            document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; font-family:sans-serif; color:#e74c3c;'>🔒 عذراً، الوصول محظور!</h1>";
-            setTimeout(() => { window.location.href = "index.html"; }, 2000);
-        }
+        function rejectAccess() { document.body.innerHTML = "<h1 style='text-align:center; margin-top:100px; color:#e74c3c;'>🔒 الوصول محظور!</h1>"; setTimeout(() => { window.location.href = "index.html"; }, 2000); }
         checkAdminSession();
     </script>
 
@@ -69,22 +56,17 @@
         th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
         th { background-color: #f8f9fa; font-weight: bold; }
         .thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; }
-        
         .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success); }
         input:checked + .slider:before { transform: translateX(24px); }
-
-        /* 🔥 لوحة مراقبة مساحة خوادم فايربيس المضافة */
         .storage-monitor-card { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; border-radius: 24px; padding: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .storage-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; font-weight: bold; margin-bottom: 10px; }
         .storage-bar-bg { width: 100%; height: 14px; background: rgba(255,255,255,0.15); border-radius: 10px; overflow: hidden; position: relative; margin-bottom: 8px; }
         .storage-bar-fill { width: 0%; height: 100%; background: #27ae60; transition: width 0.5s ease; }
         .storage-footer { font-size: 0.8rem; color: #cbd5e1; display: flex; justify-content: space-between; }
-        .badge-alert { background: var(--danger); padding: 2px 8px; border-radius: 6px; color: white; font-weight: bold; animation: pulseAd 1s infinite alternate; }
-        @keyframes pulseAd { 0% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -92,22 +74,17 @@
 <div id="adminPanelWrapper" style="display: none;">
     <div class="admin-container">
 
-        <!-- لوحة عرض حجم البيانات والتحكم الذكي الفوري بمساحة Firebase -->
         <div class="storage-monitor-card">
             <div class="storage-header">
                 <div>📊 حجم بيانات قاعدة بيانات Firebase (المساحة الحرة)</div>
                 <div id="storagePercentText">0% ممتلئ</div>
             </div>
-            <div class="storage-bar-bg">
-                <div class="storage-bar-fill" id="storageBarFill"></div>
-            </div>
+            <div class="storage-bar-bg"><div class="storage-bar-fill" id="storageBarFill"></div></div>
             <div class="storage-footer">
                 <div>المستهلك الحالي للأخبار: <span id="usedStorageText" style="color:#fff; font-weight:bold;">0.00 MB</span></div>
                 <div>الحد الأقصى المجاني الفعلي: <b>1024.00 MB</b></div>
             </div>
-            <div id="autoPurgeAlert" style="margin-top:10px; font-size:0.8rem; display:none;">
-                <span class="badge-alert">⚠️ نظام الدفاع النشط:</span> مساحة الخادم تخطت 98%! يقوم النظام حالياً بتصفية وحذف الأخبار القديمة تلقائياً للوصول إلى 75%.
-            </div>
+            <div id="autoPurgeAlert" style="margin-top:10px; font-size:0.8rem; display:none;"><span style="background:var(--danger); padding:2px 8px; border-radius:6px;">⚠️ نظام الدفاع النشط:</span> مساحة الخادم تخطت 98%! يتم التطهير تلقائياً إلى 75%.</div>
         </div>
 
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px;">
@@ -115,41 +92,49 @@
             <button class="btn btn-danger" onclick="sessionStorage.clear(); window.location.reload();" style="padding:6px 12px; font-size:11px;">🚪 خروج آمن</button>
         </div>
 
+        <!-- 🔄 القسـم الجديد والمطور لإعادة تفعيل تذكير شاشة التثبيت مجدداً وجدولتها بالتساوي -->
+        <div class="card">
+            <h2 style="border-color: var(--warning);">🔄 تكرار وجدولة تذكير شاشة تثبيت التطبيق</h2>
+            <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+                <label class="switch">
+                    <input type="checkbox" id="forcedOnboardingToggle">
+                    <span class="slider"></span>
+                </label>
+                <strong>إجبار ظهور شاشة التثبيت مجدداً للمستخدمين (إعادة التذكير)</strong>
+            </div>
+            <div class="form-group">
+                <label>عدد مرات تكرار التذكير وظهور الشاشة خلال اليوم الواحد للمستخدم (مقسم بالتساوي):</label>
+                <select id="onboardingDailyLimit">
+                    <option value="1">مرة واحدة في اليوم (كل 24 ساعة)</option>
+                    <option value="2">مرتين في اليوم (مقسمة بالتساوي كل 12 ساعة)</option>
+                    <option value="3">3 مرات في اليوم (مقسمة بالتساوي كل 8 ساعات)</option>
+                    <option value="4">4 مرات في اليوم (مقسمة بالتساوي كل 6 ساعات)</option>
+                    <option value="6">6 مرات في اليوم (مقسمة بالتساوي كل 4 ساعات)</option>
+                </select>
+            </div>
+            <button class="btn btn-warning btn-block" onclick="saveOnboardingScheduleSettings()">💾 حفظ وجدولة تكرار التذكير</button>
+        </div>
+
         <!-- 🕌 قسم إدارة مواقيت الصلاة الجعفري -->
         <div class="card">
             <h2 style="border-color: var(--primary);">🕌 إعدادات شريط مواقيت الصلاة الجعفري</h2>
             <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-                <label class="switch">
-                    <input type="checkbox" id="prayerBarToggle">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="prayerBarToggle"><span class="slider"></span></label>
                 <strong>تفعيل عرض شريط الصلاة في واجهة الأخبار</strong>
             </div>
             <div class="grid-3">
-                <div class="form-group">
-                    <label>تعديل أذان الصبح (دقائق):</label>
-                    <input type="number" id="fajrOffset" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label>تعديل أذان الظهر (دقائق):</label>
-                    <input type="number" id="dhuhrOffset" placeholder="0">
-                </div>
-                <div class="form-group">
-                    <label>تعديل أذان المغرب (دقائق):</label>
-                    <input type="number" id="maghribOffset" placeholder="0">
-                </div>
+                <div class="form-group"><label>أذان الصبح:</label><input type="number" id="fajrOffset" placeholder="0"></div>
+                <div class="form-group"><label>أذان الظهر:</label><input type="number" id="dhuhrOffset" placeholder="0"></div>
+                <div class="form-group"><label>أذان المغرب:</label><input type="number" id="maghribOffset" placeholder="0"></div>
             </div>
             <button class="btn btn-primary btn-block" onclick="savePrayerSettings()">💾 حفظ تعديلات مواقيت الصلاة</button>
         </div>
 
-        <!-- 📺 إعلان منبثق كامل الشاشة ملوقوت -->
+        <!-- 📺 قسم التحكم بالإعلان المنبثق -->
         <div class="card">
             <h2 style="border-color: var(--danger);">📺 إعلان منبثق كامل الشاشة (أول ما يفتح التطبيق)</h2>
             <div class="form-group" style="display:flex; align-items:center; gap:12px; margin-top:10px;">
-                <label class="switch">
-                    <input type="checkbox" id="adToggle">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="adToggle"><span class="slider"></span></label>
                 <strong>تفعيل بث الإعلان المنبثق حالياً</strong>
             </div>
             <div class="form-group">
@@ -164,121 +149,60 @@
                 <input type="number" id="adCustomDuration" placeholder="أدخل المدة بالثواني يدوياً" style="display:none; margin-top:8px;">
             </div>
             <div class="form-group">
-                <label>ارفاق صورة الإعلان:</label>
+                <label>أرفاق صورة الإعلان:</label>
                 <input type="file" id="adImageFile" accept="image/*">
                 <div class="preview-grid" id="adPreviewGrid"></div>
             </div>
             <button class="btn btn-danger btn-block" onclick="saveAdSettings()">🚀 حفظ ونشر الإعلان السريع</button>
         </div>
 
-        <!-- 📁 إدارة وتحرير التصنيفات العائلية -->
+        <!-- التصنيفات العائلية -->
         <div class="card">
             <h2 style="border-color: var(--success);" id="catFormTitle">📁 إدارة وتحرير التصنيفات العائلية</h2>
             <form id="categoryForm">
                 <input type="hidden" id="editCatId" value="">
-                <div class="form-group">
-                    <label>اسم التصنيف:</label>
-                    <input type="text" id="newCatName" placeholder="مثال: مناسبات، لقاءات" required>
-                </div>
+                <div class="form-group"><label>اسم التصنيف:</label><input type="text" id="newCatName" placeholder="التصنيف الجديد" required></div>
                 <button type="submit" id="catSubmitBtn" class="btn btn-success btn-block">➕ حفظ التصنيف الجديد</button>
             </form>
-            <div class="table-responsive">
-                <table>
-                    <thead><tr><th>اسم التصنيف</th><th>إجراءات</th></tr></thead>
-                    <tbody id="adminCategoriesTable"></tbody>
-                </table>
-            </div>
+            <div class="table-responsive"><table><thead><tr><th>اسم التصنيف</th><th>إجراءات</th></tr></thead><tbody id="adminCategoriesTable"></tbody></table></div>
         </div>
 
-        <!-- نشر خبر عائلي جديد -->
+        <!-- نشر خبر جديد -->
         <div class="card">
             <h2 id="formTitle">📝 نشر خبر عائلي جديد (يدعم 4 صور كبوست إنستغرام)</h2>
             <form id="newsForm">
                 <input type="hidden" id="editDocId" value="">
-                <div class="form-group">
-                    <label>تصنيف الخبر:</label>
-                    <select id="newsCategory" required></select>
-                </div>
-                <div class="form-group">
-                    <label>عنوان الخبر (اختياري):</label>
-                    <input type="text" id="newsTitle" placeholder="أدخل العنوان">
-                </div>
-                <div class="form-group">
-                    <label>نص الخبر (اختياري):</label>
-                    <textarea id="newsText" rows="3" placeholder="اكتب تفاصيل ومحتوى الخبر هنا..."></textarea>
-                </div>
-                
+                <div class="form-group"><label>تصنيف الخبر:</label><select id="newsCategory" required></select></div>
+                <div class="form-group"><label>عنوان الخبر (اختياري):</label><input type="text" id="newsTitle" placeholder="أدخل العنوان"></div>
+                <div class="form-group"><label>نص الخبر (اختياري):</label><textarea id="newsText" rows="3" placeholder="المحتوى هنا..."></textarea></div>
                 <div style="background:#f8f9fa; padding:12px; border-radius:14px; margin-bottom:14px; border:1px solid #e2e8f0;">
-                    <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                        <input type="checkbox" id="hasCountdown" style="width:20px; height:20px;">
-                        <label for="hasCountdown" style="margin:0; font-weight:bold; cursor:pointer;">تفعيل عداد تنازلي للمناسبة (يعمل فقط في حال تثبيت الخبر 📌)</label>
-                    </div>
-                    <div class="form-group" id="countdownDateGroup" style="display:none; margin:0;">
-                        <label>تاريخ ووقت انتهاء العداد التنازلي:</label>
-                        <input type="datetime-local" id="countdownDate">
-                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-bottom:6px;"><input type="checkbox" id="hasCountdown" style="width:20px; height:20px;"><label for="hasCountdown" style="margin:0; font-weight:bold; cursor:pointer;">تفعيل عداد تنازلي للمناسبة (يعمل في التثبيت 📌)</label></div>
+                    <div class="form-group" id="countdownDateGroup" style="display:none; margin:0;"><label>تاريخ ووقت انتهاء العداد التنازلي:</label><input type="datetime-local" id="countdownDate"></div>
                 </div>
-
-                <div class="form-group">
-                    <label>تاريخ نشر الخبر السجلي:</label>
-                    <input type="date" id="newsDate" required>
-                </div>
-                <div class="form-group">
-                    <label>اختر صور الخبر (يمكنك تحديد حتى 4 صور معاً):</label>
-                    <input type="file" id="newsImageFiles" accept="image/*" multiple>
-                    <div class="preview-grid" id="previewGrid"></div>
-                </div>
+                <div class="form-group"><label>تاريخ النشر السجلي:</label><input type="date" id="newsDate" required></div>
+                <div class="form-group"><label>اختر صور الخبر (حتى 4 صور):</label><input type="file" id="newsImageFiles" accept="image/*" multiple><div class="preview-grid" id="previewGrid"></div></div>
                 <button type="submit" id="submitBtn" class="btn btn-primary btn-block">🚀 نشر الخبر العائلي وتنبيه الجوالات</button>
-                <button type="button" id="cancelEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء وضع التعديل</button>
+                <button type="button" id="cancelEditBtn" class="btn btn-danger btn-block" style="display:none; margin-top:8px;">إلغاء التعديل</button>
             </form>
         </div>
 
         <!-- جدول التحكم بالسجلات -->
         <div class="card">
             <h2 style="border-color: var(--warning);">⚙️ التحكم في السجلات والمنشورات المثبتة والعادية</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>الصور</th>
-                            <th>العنوان / التصنيف</th>
-                            <th>التاريخ</th>
-                            <th>الحالة / التثبيت</th>
-                            <th>إجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminNewsTable"></tbody>
-                </table>
-            </div>
+            <div class="table-responsive"><table><thead><tr><th>الصور</th><th>العنوان / التصنيف</th><th>التاريخ</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="adminNewsTable"></tbody></table></div>
         </div>
 
-        <!-- 📜 جدول عرض سجلات الحذف التلقائي للمساحة (Purge Logs) -->
+        <!-- سجلات الحذف التلقائي -->
         <div class="card">
             <h2 style="border-color: #7f8c8d;">📜 أرشيف سجلات الحذف التلقائي والدفاع عن المساحة</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>تاريخ ووقت التنظيف</th>
-                            <th>الأخبار المحذوفة</th>
-                            <th>حجم الحجم المحرر</th>
-                        </tr>
-                    </thead>
-                    <tbody id="purgeLogsTableBody">
-                        <tr><td colspan="3" style="text-align:center; color:var(--gray);">لا توجد عمليات حذف تلقائية سابقة، الخادم مستقر وآمن.</td></tr>
-                    </tbody>
-                </table>
-            </div>
+            <div class="table-responsive"><table><thead><tr><th>تاريخ التنظيف</th><th>الأخبار المحذوفة</th><th>المساحة المحررة</th></tr></thead><tbody id="purgeLogsTableBody"></tbody></table></div>
         </div>
 
-        <!-- أمان النظام وتغيير كلمة المرور -->
+        <!-- أمان النظام -->
         <div class="card">
             <h2 style="border-color: var(--danger);">🔒 أمان النظام وتغيير كلمة المرور</h2>
             <form id="passwordForm">
-                <div class="form-group">
-                    <label>كلمة المرور الجديدة لوحة التحكم:</label>
-                    <input type="password" id="newAdminPassword" placeholder="أدخل كلمة المرور الجديدة" required>
-                </div>
+                <div class="form-group"><label>كلمة المرور الجديدة:</label><input type="password" id="newAdminPassword" placeholder="أدخل الباسورد الجديد" required></div>
                 <button type="submit" class="btn btn-danger btn-block">🔒 تحديث كلمة المرور السرية</button>
             </form>
         </div>
@@ -294,316 +218,74 @@
         projectId: "fnews-7525e",
         appId: "1:1023530532546:web:cbc1be1753237179bd455b"
     };
+    const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    let compressedImagesArray = [];
-    let adImageBase64 = "";
-    let currentPinnedCount = 0;
+    let compressedImagesArray = []; let adImageBase64 = ""; let currentPinnedCount = 0;
     document.getElementById('newsDate').valueAsDate = new Date();
 
-    document.getElementById('hasCountdown').addEventListener('change', function() {
-        document.getElementById('countdownDateGroup').style.display = this.checked ? 'block' : 'none';
-    });
+    document.getElementById('hasCountdown').addEventListener('change', function() { document.getElementById('countdownDateGroup').style.display = this.checked ? 'block' : 'none'; });
+    document.getElementById('adDuration').addEventListener('change', function() { document.getElementById('adCustomDuration').style.display = this.value === 'custom' ? 'block' : 'none'; });
 
-    document.getElementById('adDuration').addEventListener('change', function() {
-        document.getElementById('adCustomDuration').style.display = this.value === 'custom' ? 'block' : 'none';
-    });
-
-    // 📊 دالة تقدير وحساب حجم مصفوفة الأخبار بدقة وحماية السيرفر من الامتلاء 98%
-    async function monitorAndCheckStorageSafety(newsList) {
-        let totalBytes = 0;
+    // 💾 دالة حفظ وتحديث جدولة إعادة تذكير شاشة التثبيت مجدداً من لوحة الأدمن
+    window.saveOnboardingScheduleSettings = async () => {
+        const forcedActive = document.getElementById('forcedOnboardingToggle').checked;
+        const dailyLimit = parseInt(document.getElementById('onboardingDailyLimit').value || 1);
         
-        // حساب حجم النصوص والصور المشفرة لكل خبر
-        newsList.forEach(item => {
-            let str = JSON.stringify(item);
-            totalBytes += str.length * 2; // تقدير الـ Bytes بنظام تشفير UTF-16
-        });
+        await setDoc(doc(db, "settings", "onboarding_schedule"), { forcedActive, dailyLimit, updatedAt: new Date() });
+        alert("🔄 تم تحديث وجدولة إجبار شاشة التثبيت بنجاح وتوزيعها على ساعات اليوم بالتساوي!");
+    };
 
-        const totalMegabytes = totalBytes / (1024 * 1024);
-        const freeLimitMB = 1024; // الحد الأقصى المجاني لفايربيس
-        const usedPercentage = (totalMegabytes / freeLimitMB) * 100;
+    // جلب قيم الجدولة الافتراضية عند فتح اللوحة
+    getDoc(doc(db, "settings", "onboarding_schedule")).then(s => {
+        if(s.exists()){
+            document.getElementById('forcedOnboardingToggle').checked = s.data().forcedActive;
+            document.getElementById('onboardingDailyLimit').value = s.data().dailyLimit;
+        }
+    });
 
-        // تحديث واجهة المستخدم والعداد التنازلي للمساحة في شريط الأدمن
+    async function monitorAndCheckStorageSafety(newsList) {
+        let totalBytes = 0; newsList.forEach(item => { totalBytes += JSON.stringify(item).length * 2; });
+        const totalMegabytes = totalBytes / (1024 * 1024); const freeLimitMB = 1024; const usedPercentage = (totalMegabytes / freeLimitMB) * 100;
         document.getElementById('usedStorageText').innerText = `${totalMegabytes.toFixed(2)} MB`;
         document.getElementById('storagePercentText').innerText = `${usedPercentage.toFixed(2)}% ممتلئ`;
-        
-        const bar = document.getElementById('storageBarFill');
-        bar.style.width = `${Math.min(usedPercentage, 100)}%`;
-        
-        if (usedPercentage >= 85) bar.style.backgroundColor = '#e67e22';
-        if (usedPercentage >= 95) bar.style.backgroundColor = '#e74c3c';
-
-        // 🚨 إطلاق خطة الدفاع التلقائي والحذف الذكي فوراً عند الوصول لـ 98%
-        if (usedPercentage >= 98.0) {
-            document.getElementById('autoPurgeAlert').style.display = 'block';
-            await runAutomaticDatabasePurge(newsList, totalMegabytes, freeLimitMB);
-        } else {
-            document.getElementById('autoPurgeAlert').style.display = 'none';
-        }
+        const bar = document.getElementById('storageBarFill'); bar.style.width = `${Math.min(usedPercentage, 100)}%`;
+        if (usedPercentage >= 85) bar.style.backgroundColor = '#e67e22'; if (usedPercentage >= 95) bar.style.backgroundColor = '#e74c3c';
+        if (usedPercentage >= 98.0) { document.getElementById('autoPurgeAlert').style.display = 'block'; await runAutomaticDatabasePurge(localItems, totalMegabytes, freeLimitMB); } 
+        else { document.getElementById('autoPurgeAlert').style.display = 'none'; }
     }
 
-    // 🔥 المحرك التلقائي لحذف السجلات القديمة تدريجياً للوصول لمساحة 75%
-    async function runAutomaticDatabasePurge(newsList, currentSizeMB, limitMB) {
-        // ترتيب الأخبار من الأقدم للأحدث (بناءً على تاريخ الإنشاء)
-        let oldestFirstNews = [...newsList].sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-        
-        let deletedCount = 0;
-        let dataFreedBytes = 0;
-        let targetSizeMB = limitMB * 0.75; // المساحة المستهدفة الآمنة 75%
-        let bytesToFree = (currentSizeMB - targetSizeMB) * 1024 * 1024;
-
-        for (let item of oldestFirstNews) {
-            if (dataFreedBytes >= bytesToFree) break;
-            
-            // حساب حجم البيانات المحذوفة حالياً
-            let itemSize = JSON.stringify(item).length * 2;
-            
-            // تنفيذ الحذف الفعلي من سيرفر جوجل فايربيس مجاناً
-            try {
-                await deleteDoc(doc(db, "news", item.id));
-                deletedCount++;
-                dataFreedBytes += itemSize;
-            } catch (err) {
-                console.error("خطأ حماية أثناء تنظيف السجل:", err);
-            }
-        }
-
-        const totalFreedMB = dataFreedBytes / (1024 * 1024);
-
-        // 📜 تسجيل تقرير الحذف تلقائياً في جدول الـ Purge Logs ليسهل على الأدمن مطالعته
-        if (deletedCount > 0) {
-            await addDoc(collection(db, "purge_logs"), {
-                deletedCount: deletedCount,
-                freedSizeMB: totalFreedMB.toFixed(2),
-                timestamp: new Date(),
-                formattedDate: new Date().toLocaleString('ar-SA')
-            });
-            alert(`🚨 نظام الدفاع السحابي نشط: تم تلقائياً مسح ${deletedCount} خبر قديم لتفريغ مساحة قدرها ${totalFreedMB.toFixed(2)} MB وحماية قاعدة البيانات.`);
-        }
-    }
-
-    // مراقبة وعرض سجلات الأرشفة للحذف بجدول اللوحة
-    onSnapshot(collection(db, "purge_logs"), (snapshot) => {
-        const tbody = document.getElementById('purgeLogsTableBody');
-        if (snapshot.empty) return;
-        tbody.innerHTML = '';
-        let logs = [];
-        snapshot.forEach(doc => logs.push(doc.data()));
-        logs.sort((a,b) => b.timestamp?.seconds - a.timestamp?.seconds);
-        
-        logs.forEach(log => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>📅 ${log.formattedDate || new Date(log.timestamp.seconds * 1000).toLocaleString('ar-SA')}</td>
-                    <td style="color:var(--danger); font-weight:bold;">🗑️ تم حذف ${log.deletedCount} خبر قديم</td>
-                    <td style="color:var(--success); font-weight:bold;">📉 تم تحرير ${log.freedSizeMB} MB</td>
-                </tr>
-            `;
-        });
-    });
-
-    window.savePrayerSettings = async () => {
-        const enabled = document.getElementById('prayerBarToggle').checked;
-        const fajrOffset = document.getElementById('fajrOffset').value || 0;
-        const dhuhrOffset = document.getElementById('dhuhrOffset').value || 0;
-        const maghribOffset = document.getElementById('maghribOffset').value || 0;
-        await setDoc(doc(db, "settings", "prayers"), { enabled, fajrOffset, dhuhrOffset, maghribOffset });
-        alert("🕌 تم تحديث إعدادات الصلاة!");
-    };
-
-    document.getElementById('adImageFile').addEventListener('change', function(e) {
-        const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                const canvas = document.createElement('canvas'); let w = img.width; let h = img.height;
-                if (w > 500) { h *= 500 / w; w = 500; } canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                adImageBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${adImageBase64}"></div>`;
-            }; img.src = event.target.result;
-        }; reader.readAsDataURL(file);
-    });
-
-    window.saveAdSettings = async () => {
-        const active = document.getElementById('adToggle').checked;
-        const durationSelect = document.getElementById('adDuration').value;
-        const duration = durationSelect === 'custom' ? document.getElementById('adCustomDuration').value : durationSelect;
-        const adData = { active, duration: duration || 5 };
-        if (adImageBase64) adData.image = adImageBase64;
-        else {
-            const currentSnap = await getDoc(doc(db, "settings", "advertisement"));
-            if (currentSnap.exists() && currentSnap.data().image) adData.image = currentSnap.data().image;
-        }
-        await setDoc(doc(db, "settings", "advertisement"), adData, { merge: true });
-        alert("📺 تم تحديث الإعلان المنبثق!");
-    };
-
-    getDoc(doc(db, "settings", "prayers")).then(s => {
-        if(s.exists()){
-            document.getElementById('prayerBarToggle').checked = s.data().enabled;
-            document.getElementById('fajrOffset').value = s.data().fajrOffset;
-            document.getElementById('dhuhrOffset').value = s.data().dhuhrOffset;
-            document.getElementById('maghribOffset').value = s.data().maghribOffset;
-        }
-    });
-    getDoc(doc(db, "settings", "advertisement")).then(s => {
-        if(s.exists()) {
-            document.getElementById('adToggle').checked = s.data().active;
-            if (["3","5","10","20"].includes(s.data().duration.toString())) { document.getElementById('adDuration').value = s.data().duration; } 
-            else {
-                document.getElementById('adDuration').value = "custom";
-                document.getElementById('adCustomDuration').style.display = 'block';
-                document.getElementById('adCustomDuration').value = s.data().duration;
-            }
-            if(s.data().image) document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${s.data().image}"></div>`;
-        }
-    });
-
-    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const newPass = document.getElementById('newAdminPassword').value.trim();
-        await setDoc(doc(db, "settings", "security"), { adminPassword: newPass }, { merge: true });
-        alert("🔒 تم تحديث كلمة مرور لوحة التحكم بنجاح!");
-        document.getElementById('passwordForm').reset();
-    });
-
-    onSnapshot(collection(db, "categories"), (snapshot) => {
-        const select = document.getElementById('newsCategory'); const tbody = document.getElementById('adminCategoriesTable');
-        select.innerHTML = '<option value="">-- اختر التصنيف --</option>'; tbody.innerHTML = '';
-        snapshot.forEach(docSnap => {
-            select.innerHTML += `<option value="${docSnap.data().name}">${docSnap.data().name}</option>`;
-            tbody.innerHTML += `<tr><td><strong>📁 ${docSnap.data().name}</strong></td><td><button class="btn btn-danger" onclick="deleteCategoryItem('${docSnap.id}')">🗑️</button></td></tr>`;
-        });
-    });
-
-    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); const name = document.getElementById('newCatName').value.trim();
-        await addDoc(collection(db, "categories"), { name, createdAt: new Date() }); document.getElementById('categoryForm').reset();
-    });
-    window.deleteCategoryItem = async (id) => { if(confirm("حذف التصنيف؟")) await deleteDoc(doc(db, "categories", id)); };
-
-    // مراقبة الأخبار الحية وحساب حجم البيانات في السيرفر فوراُ
     onSnapshot(collection(db, "news"), (snapshot) => {
         const tbody = document.getElementById('adminNewsTable'); tbody.innerHTML = '';
         let localItems = []; currentPinnedCount = 0;
-        snapshot.forEach(doc => { 
-            const data = doc.data(); localItems.push({ id: doc.id, ...data }); 
-            if(data.isPinned === true) currentPinnedCount++;
-        });
-
-        // تشغيل محرك حساب وحماية المساحة حياً
+        snapshot.forEach(doc => { const data = doc.data(); localItems.push({ id: doc.id, ...data }); if(data.isPinned === true) currentPinnedCount++; });
         monitorAndCheckStorageSafety(localItems);
-
         localItems.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
         localItems.forEach(item => {
             const isHidden = item.status === 'hidden'; const isPinned = item.isPinned === true;
-            let statusText = isHidden ? '❌ مخفي' : '🔹 معروض';
-            if (isPinned) statusText += ` | 📌 مثبت (${item.pinnedType === 'death' ? 'وفاة' : item.pinnedType === 'wedding' ? 'زواج' : 'عام'})`;
-
+            let statusText = isHidden ? '❌ مخفي' : '🔹 معروض'; if (isPinned) statusText += ` | 📌 مثبت (${item.pinnedType === 'death' ? 'وفاة' : item.pinnedType === 'wedding' ? 'زواج' : 'عام'})`;
             let thumbsHtml = ''; let loopImgs = item.images || (item.image ? [item.image] : []);
             loopImgs.forEach(imgUrl => { thumbsHtml += `<img src="${imgUrl}" class="thumb-img" style="margin-left:4px;">`; });
-
             let pinButtonHtml = isPinned ? `<button class="btn btn-danger" onclick="unpinNewsItem('${item.id}')">🔓 إلغاء</button>` : `<button class="btn btn-success" onclick="promptPinMenu('${item.id}')">📌 تثبيت</button>`;
-
-            tbody.innerHTML += `
-                <tr ${isHidden ? 'class="row-hidden"' : ''}>
-                    <td><div style="display:flex; max-width:140px; overflow-x:auto;">${thumbsHtml}</div></td>
-                    <td><strong>${item.title || '(بدون عنوان)'}</strong><br><small>📁 ${item.category}</small></td>
-                    <td>${item.date}</td>
-                    <td><strong>${statusText}</strong></td>
-                    <td>
-                        <div style="display:flex; gap:4px;">
-                            <button class="btn btn-primary" onclick="startEditNews('${item.id}', '${btoa(unescape(encodeURIComponent(JSON.stringify(item))))}')">📝</button>
-                            <button class="btn ${isHidden ? 'btn-success' : 'btn-warning'}" onclick="toggleNewsStatus('${item.id}', '${item.status || 'visible'}')">👁️</button>
-                            ${pinButtonHtml}
-                            <button class="btn btn-danger" onclick="deleteNewsItem('${item.id}')">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+            tbody.innerHTML += `<tr><td><div style="display:flex; max-width:140px; overflow-x:auto;">${thumbsHtml}</div></td><td><strong>${item.title || '(بدون عنوان)'}</strong><br><small>📁 ${item.category}</small></td><td>${item.date}</td><td><strong>${statusText}</strong></td><td><div style="display:flex; gap:4px;"><button class="btn btn-primary" onclick="startEditNews('${item.id}', '${b64EncodeUnicode(JSON.stringify(item))}')">📝</button><button class="btn ${isHidden ? 'btn-success' : 'btn-warning'}" onclick="toggleNewsStatus('${item.id}', '${item.status || 'visible'}')">👁️</button>${pinButtonHtml}<button class="btn btn-danger" onclick="deleteNewsItem('${item.id}')">🗑️</button></div></td></tr>`;
         });
     });
 
-    window.promptPinMenu = async (id) => {
-        if(currentPinnedCount >= 3) { alert("⚠️ كحد أقصى 3 أخبار مثبتة."); return; }
-        const choice = prompt("اختر نوع التثبيت:\n1 - وفاة 🏴\n2 - زواج ✨\n3 - عام 📌"); if(!choice) return;
-        let pType = choice === "1" ? "death" : choice === "2" ? "wedding" : "general";
-        await updateDoc(doc(db, "news", id), { isPinned: true, pinnedType: pType });
-    };
+    function b64EncodeUnicode(str) { return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) { return String.fromCharCode('0x' + p1); })); }
+    window.savePrayerSettings = async () => { const enabled = document.getElementById('prayerBarToggle').checked; const fajrOffset = document.getElementById('fajrOffset').value || 0; const dhuhrOffset = document.getElementById('dhuhrOffset').value || 0; const maghribOffset = document.getElementById('maghribOffset').value || 0; await setDoc(doc(db, "settings", "prayers"), { enabled, fajrOffset, dhuhrOffset, maghribOffset }); alert("🕌 تم الحفظ!"); };
+    document.getElementById('adImageFile').addEventListener('change', function(e) { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(event) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); let w = img.width; let h = img.height; if (w > 500) { h *= 500 / w; w = 500; } canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); adImageBase64 = canvas.toDataURL('image/jpeg', 0.6); document.getElementById('adPreviewGrid').innerHTML = `<div class="preview-wrapper"><img src="${adImageBase64}"></div>`; }; img.src = event.target.result; }; reader.readAsDataURL(file); });
+    window.saveAdSettings = async () => { const active = document.getElementById('adToggle').checked; const durationSelect = document.getElementById('adDuration').value; const duration = durationSelect === 'custom' ? document.getElementById('adCustomDuration').value : durationSelect; const adData = { active, duration: duration || 5 }; if (adImageBase64) adData.image = adImageBase64; else { const currentSnap = await getDoc(doc(db, "settings", "advertisement")); if (currentSnap.exists() && currentSnap.data().image) adData.image = currentSnap.data().image; } await setDoc(doc(db, "settings", "advertisement"), adData, { merge: true }); alert("📺 تم التحديث!"); };
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => { e.preventDefault(); const newPass = document.getElementById('newAdminPassword').value.trim(); await setDoc(doc(db, "settings", "security"), { adminPassword: newPass }, { merge: true }); alert("🔒 تم التحديث!"); document.getElementById('passwordForm').reset(); });
+    onSnapshot(collection(db, "categories"), (snap) => { const select = document.getElementById('newsCategory'); const tbody = document.getElementById('adminCategoriesTable'); select.innerHTML = '<option value="">-- اختر التصنيف --</option>'; tbody.innerHTML = ''; snap.forEach(docSnap => { select.innerHTML += `<option value="${docSnap.data().name}">${docSnap.data().name}</option>`; tbody.innerHTML += `<tr><td><strong>📁 ${docSnap.data().name}</strong></td><td><button class="btn btn-danger" onclick="deleteCategoryItem('${docSnap.id}')">🗑️</button></td></tr>`; }); });
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => { e.preventDefault(); const name = document.getElementById('newCatName').value.trim(); await addDoc(collection(db, "categories"), { name, createdAt: new Date() }); document.getElementById('categoryForm').reset(); });
+    window.deleteCategoryItem = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, "categories", id)); };
+    window.promptPinMenu = async (id) => { if(currentPinnedCount >= 3) { alert("⚠️ كحد أقصى 3."); return; } const choice = prompt("نوع التثبيت:\n1 - وفاة 🏴\n2 - زواج ✨\n3 - عام 📌"); if(!choice) return; let pType = choice === "1" ? "death" : choice === "2" ? "wedding" : "general"; await updateDoc(doc(db, "news", id), { isPinned: true, pinnedType: pType }); };
     window.unpinNewsItem = async (id) => { await updateDoc(doc(db, "news", id), { isPinned: false, pinnedType: null }); };
-
-    document.getElementById('newsImageFiles').addEventListener('change', function(e) {
-        const files = Array.from(e.target.files); const grid = document.getElementById('previewGrid');
-        grid.innerHTML = ''; compressedImagesArray = [];
-        if (files.length > 4) { alert("⚠️ الحد الأقصى 4 صور."); this.value = ''; return; }
-        files.forEach(file => {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas'); let w = img.width; let h = img.height;
-                    if (w > 600) { h *= 600 / w; w = 600; } canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    const b64 = canvas.toDataURL('image/jpeg', 0.5); compressedImagesArray.push(b64);
-                    grid.innerHTML += `<div class="preview-wrapper"><img src="${b64}"></div>`;
-                }; img.src = event.target.result;
-            }; reader.readAsDataURL(file);
-        });
-    });
-
-    document.getElementById('newsForm').addEventListener('submit', async (e) => {
-        e.preventDefault(); const editId = document.getElementById('editDocId').value;
-        const category = document.getElementById('newsCategory').value;
-        const title = document.getElementById('newsTitle').value.trim();
-        const text = document.getElementById('newsText').value.trim();
-        const date = document.getElementById('newsDate').value;
-        const hasCountdown = document.getElementById('hasCountdown').checked;
-        const countdownDate = document.getElementById('countdownDate').value;
-
-        const newsData = { category, title, text, date, hasCountdown, countdownDate };
-        if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; }
-
-        if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); } 
-        else {
-            if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة");
-            newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0];
-            newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false;
-            await addDoc(collection(db, "news"), newsData); alert("تم النشر!");
-        }
-        resetFormToNormal();
-    });
-
-    window.deleteNewsItem = async (id) => { if(confirm("حذف نهائي؟")) await deleteDoc(doc(db, "news", id)); };
+    document.getElementById('newsImageFiles').addEventListener('change', function(e) { const files = Array.from(e.target.files); const grid = document.getElementById('previewGrid'); grid.innerHTML = ''; compressedImagesArray = []; if (files.length > 4) { alert("⚠️ الحد الأقصى 4."); this.value = ''; return; } files.forEach(file => { const reader = new FileReader(); reader.onload = function(event) { const img = new Image(); img.onload = function() { const canvas = document.createElement('canvas'); let w = img.width; let h = img.height; if (w > 600) { h *= 600 / w; w = 600; } canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); const b64 = canvas.toDataURL('image/jpeg', 0.5); compressedImagesArray.push(b64); grid.innerHTML += `<div class="preview-wrapper"><img src="${b64}"></div>`; }; img.src = event.target.result; }; reader.readAsDataURL(file); }); });
+    document.getElementById('newsForm').addEventListener('submit', async (e) => { e.preventDefault(); const editId = document.getElementById('editDocId').value; const category = document.getElementById('newsCategory').value; const title = document.getElementById('newsTitle').value.trim(); const text = document.getElementById('newsText').value.trim(); const date = document.getElementById('newsDate').value; const hasCountdown = document.getElementById('hasCountdown').checked; const countdownDate = document.getElementById('countdownDate').value; const newsData = { category, title, text, date, hasCountdown, countdownDate }; if(compressedImagesArray.length > 0) { newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; } if(editId) { await updateDoc(doc(db, "news", editId), newsData); alert("تم التحديث!"); } else { if(compressedImagesArray.length === 0) return alert("يرجى إرفاق صورة"); newsData.images = compressedImagesArray; newsData.image = compressedImagesArray[0]; newsData.status = 'visible'; newsData.createdAt = new Date(); newsData.isPinned = false; await addDoc(collection(db, "news"), newsData); alert("تم النشر!"); } resetFormToNormal(); });
+    window.deleteNewsItem = async (id) => { if(confirm("حذف؟")) await deleteDoc(doc(db, "news", id)); };
     window.toggleNewsStatus = async (id, s) => { await updateDoc(doc(db, "news", id), { status: s === 'hidden' ? 'visible' : 'hidden' }); };
-
-    window.startEditNews = (id, base64Data) => {
-        const item = JSON.parse(decodeURIComponent(escape(atob(base64Data))));
-        document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category;
-        document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || '';
-        document.getElementById('newsDate').value = item.date;
-        document.getElementById('hasCountdown').checked = item.hasCountdown || false;
-        document.getElementById('countdownDate').value = item.countdownDate || '';
-        document.getElementById('countdownDateGroup').style.display = item.hasCountdown ? 'block' : 'none';
-        
-        const grid = document.getElementById('previewGrid'); grid.innerHTML = '';
-        let loopImgs = item.images || (item.image ? [item.image] : []);
-        loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; });
-        document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي";
-        document.getElementById('cancelEditBtn').style.display = "block";
-    };
-
-    function resetFormToNormal() {
-        document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = '';
-        document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = [];
-        document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none";
-        document.getElementById('countdownDateGroup').style.display = 'none';
-        document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد";
-    }
+    window.startEditNews = (id, base64Data) => { const item = JSON.parse(decodeURIComponent(escape(atob(base64Data)))); document.getElementById('editDocId').value = id; document.getElementById('newsCategory').value = item.category; document.getElementById('newsTitle').value = item.title || ''; document.getElementById('newsText').value = item.text || ''; document.getElementById('newsDate').value = item.date; document.getElementById('hasCountdown').checked = item.hasCountdown || false; document.getElementById('countdownDate').value = item.countdownDate || ''; document.getElementById('countdownDateGroup').style.display = item.hasCountdown ? 'block' : 'none'; const grid = document.getElementById('previewGrid'); grid.innerHTML = ''; let loopImgs = item.images || (item.image ? [item.image] : []); loopImgs.forEach(imgUrl => { grid.innerHTML += `<div class="preview-wrapper"><img src="${imgUrl}"></div>`; }); document.getElementById('formTitle').innerText = "✏️ تعديل ومراجعة الخبر العائلي"; document.getElementById('cancelEditBtn').style.display = "block"; };
+    function resetFormToNormal() { document.getElementById('newsForm').reset(); document.getElementById('editDocId').value = ''; document.getElementById('previewGrid').innerHTML = ''; compressedImagesArray = []; document.getElementById('newsDate').valueAsDate = new Date(); document.getElementById('cancelEditBtn').style.display = "none"; document.getElementById('countdownDateGroup').style.display = 'none'; document.getElementById('formTitle').innerText = "📝 نشر خبر عائلي جديد"; }
     document.getElementById('cancelEditBtn').addEventListener('click', resetFormToNormal);
 </script>
 </body>
