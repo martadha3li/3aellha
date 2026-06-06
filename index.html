@@ -22,7 +22,6 @@
         }
         .main-container { max-width: 500px; margin: 0 auto; position: relative; }
         
-        /* 🕌 شريط مواقيت الصلاة الجعفري */
         .prayer-times-bar {
             background: linear-gradient(135deg, #2c3e50, #1a252f); color: #ffffff;
             padding: 12px 16px; border-radius: 20px; margin-bottom: 14px;
@@ -38,10 +37,10 @@
         .header-bar { background: white; padding: 16px; border-radius: 24px; margin-bottom: 16px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; display: flex; align-items: center; justify-content: center; }
         .header-bar h1 { margin: 0; font-size: 1.4rem; background: linear-gradient(135deg, var(--primary-light), var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .admin-login-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: #f8f9fa; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-        
         .category-trigger-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: #fcfaff; border: 2px solid #f3effa; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 6px rgba(118,75,162,0.05); transition: all 0.2s ease; }
+        
         .categories-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
-        .categories-popup-card { background: rgba(255, 255, 255, 0.98); width: 100%; max-width: 340px; border-radius: 28px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: cardScaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid rgba(255,255,255,0.5); }
+        .categories-popup-card { background: rgba(255, 255, 255, 0.98); width: 100%; max-width: 340px; border-radius: 28px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: cardScaleIn 0.25s ease; border: 1px solid rgba(255,255,255,0.5); }
         .popup-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #edf2f7; padding-bottom: 10px; }
         .popup-card-header h3 { margin: 0; font-size: 1.1rem; color: var(--dark); display: flex; align-items: center; gap: 6px; }
         .popup-close-btn { background: #f7fafc; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray); font-weight: bold; }
@@ -50,7 +49,6 @@
         .popup-cat-item.active { background: #f3f0ff; color: var(--primary); border-color: rgba(118,75,162,0.2); }
         .popup-cat-item.active::after { content: "🔹"; font-size: 11px; }
 
-        /* 📌 قسم التثبيت والعد التنازلي بجانب العنوان */
         .pinned-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
         .pinned-title-label { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-right: 6px; display: flex; align-items: center; gap: 4px; }
         .pinned-card { border-radius: 16px; padding: 14px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s ease; overflow: hidden; border-right: 5px solid transparent; position: relative; }
@@ -92,37 +90,21 @@
         .loader-text { font-size: 0.9rem; color: var(--gray); font-weight: 500; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); opacity: 0.9; } }
 
-        /* 🔒 شاشة التثبيت الترحيبية المطورة (Onboarding PWA Guide) */
-        .onboarding-screen {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: #ffffff; z-index: 99999; display: flex;
-            align-items: center; justify-content: center; padding: 24px;
-        }
+        /* شاشة التثبيت الترحيبية */
+        .onboarding-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; }
         .onboarding-card { width: 100%; max-width: 420px; text-align: center; background: #fafafa; padding: 24px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .onboarding-logo { width: 85px; height: 85px; object-fit: cover; border-radius: 20px; margin-bottom: 12px; }
         .onboarding-card h2 { margin: 0 0 10px 0; font-size: 1.4rem; color: var(--dark); }
         .onboarding-card p { font-size: 0.92rem; color: #4a5568; line-height: 1.6; margin: 0 0 16px 0; }
-        
-        /* 🤖 أزرار التثبيت المخصصة للأندرويد والويندوز */
-        .btn-install-pwa {
-            background: linear-gradient(135deg, #27ae60, #2ecc71); color: white;
-            border: none; padding: 16px 24px; width: 100%; font-size: 16px; font-weight: bold;
-            border-radius: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(39, 174, 96, 0.3);
-            margin-bottom: 16px; display: none; /* تظهر للأندرويد فقط عبر الجافاسكريبت */
-        }
-        
-        /* 🍏 دليل إرشادات التثبيت المصور والمكتوب حصرياً للآيفون */
-        .ios-install-instructions {
-            background: #f7fafc; border: 1px solid #e2e8f0;
-            padding: 14px; border-radius: 18px; text-align: right;
-            margin-bottom: 16px; display: none; /* تظهر للآيفون فقط عبر الجافاسكريبت */
-        }
+        .btn-install-pwa { background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; padding: 16px 24px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(39, 174, 96, 0.3); margin-bottom: 16px; display: none; }
+        .ios-install-instructions { background: #f7fafc; border: 1px solid #e2e8f0; padding: 14px; border-radius: 18px; text-align: right; margin-bottom: 16px; display: none; }
         .ios-step { font-size: 0.88rem; color: #2d3748; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
         .ios-icon-badge { background: #edf2f7; padding: 2px 6px; border-radius: 6px; font-weight: bold; font-size: 12px; border: 1px solid #cbd5e1; }
-        
+        .btn-activate-now { background: linear-gradient(135deg, var(--primary-light), var(--primary)); color: white; border: none; padding: 12px; width: 100%; font-size: 15px; font-weight: bold; border-radius: 16px; cursor: pointer; }
         .safety-note-box { border: 2px dashed var(--danger); background-color: #fff5f5; padding: 12px; border-radius: 16px; text-align: right; }
         .safety-title { font-size: 0.88rem; font-weight: bold; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
         .safety-desc { font-size: 0.78rem; color: #5c6b73; line-height: 1.5; margin: 0; }
+        
         .fullscreen-ad-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.95); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 16px; }
         .ad-image-container { position: relative; max-width: 450px; width: 100%; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .ad-image-container img { width: 100%; height: auto; display: block; object-fit: contain; max-height: 85vh; }
@@ -148,6 +130,7 @@
     </div>
 </div>
 
+<!-- شاشة مساعد التثبيت الذكي مع محرك الجدولة الحركي المتساوي -->
 <div id="onboardingScreen" class="onboarding-screen" style="display: none;">
     <div class="onboarding-card">
         <img src="logo.png" class="onboarding-logo" alt="Logo" onerror="this.src='🏡'">
@@ -166,7 +149,7 @@
         
         <div class="safety-note-box">
             <div class="safety-title">🛡️ إشعار أمان وخصوصية مشفرة:</div>
-            <p class="safety-desc">هذه العملية آمنة ومحمية بنسبة 100%؛ وتدار بالكامل عبر خوادم شركة جوجل العالمية المشفرة <b>Google Firestore & FCM</b> لضمان خصوصية بيانات العائلة.</p>
+            <p class="safety-desc">هذه العملية آمنة ومحمية بنسبة 100%؛ وتدار بالكامل عبر خوادم شركة جوجل العالمية المشفرة <b>Google Firestore & FCM</b>.</p>
         </div>
     </div>
 </div>
@@ -231,11 +214,9 @@
         }
     };
 
-    // 🤖 محرك رصد واقتناص حدث تثبيت الأندرويد البرمجي (PWA Install Prompt)
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault(); deferredPrompt = e;
-        // إذا كان الجهاز أندرويد وتم التقاط الحدث، نكشف زر التثبيت فوراً
         const btn = document.getElementById('androidInstallBtn');
         if (btn) btn.style.display = 'block';
     });
@@ -243,11 +224,8 @@
     window.triggerAndroidPWAInstall = function() {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
-                window.closeOnboardingAndContinue();
-            }
+        deferredPrompt.userChoice.then((res) => {
+            if (res.outcome === 'accepted') window.closeOnboardingAndContinue();
             deferredPrompt = null;
         });
     };
@@ -292,6 +270,75 @@
         }, 20);
     }
 
+    // 🧠 محرك الفحص والجدولة الزمنية المتساوية لظهور شاشة التثبيت مجدداً خلال ساعات اليوم الواحد
+    async function evaluateOnboardingDisplaySchedule() {
+        try {
+            const snap = await getDoc(doc(db, "settings", "onboarding_schedule"));
+            if (snap.exists() && snap.data().forcedActive) {
+                const config = snap.data();
+                const dailyLimit = parseInt(config.dailyLimit || 1); // عدد المرات باليوم
+                
+                const now = new Date();
+                const todayKey = now.toISOString().split('T')[0]; // مفتاح تاريخ اليوم YYYY-MM-DD
+                const currentHour = now.getHours();
+
+                // حساب طول الدورة الزمنية بالتساوي (24 ساعة تقسيم عدد المرات المطلوب)
+                const windowSizeHours = 24 / dailyLimit;
+                // تحديد الدورة الحالية التي يتواجد فيها المستخدم الآن (رقم من 0 إلى limit-1)
+                const currentWindowIndex = Math.floor(currentHour / windowSizeHours);
+
+                // استخراج سجل الذاكرة بجهاز المستخدم
+                let userLog = JSON.parse(localStorage.getItem("pwa_scheduled_appearances") || "{}");
+                
+                // إذا كان تاريخ اليوم جديداً، نقوم بتصفير وحذف سجلات الأيام السابقة
+                if (userLog.date !== todayKey) {
+                    userLog = { date: todayKey, completedWindows: [] };
+                }
+
+                // فحص هل ظهرت الشاشة للمستخدم في هذه الدورة الزمنية الحالية بالتحديد؟
+                if (!userLog.completedWindows.includes(currentWindowIndex)) {
+                    // لم تظهر ➔ نسجل ظهورها فوراً ونكشف الشاشة المنبثقة له
+                    userLog.completedWindows.push(currentWindowIndex);
+                    localStorage.setItem("pwa_scheduled_appearances", JSON.stringify(userLog));
+                    
+                    launchOnboardingOverlay();
+                    return;
+                }
+            }
+        } catch (e) { console.error(e); }
+
+        // إذا تم التثبيت مسبقاً أو تم استهلاك دورات اليوم ➔ نفتح الأخبار مباشرة
+        if (localStorage.getItem("family_app_onboarded_2026_v3")) {
+            startMainAppSync();
+        } else {
+            launchOnboardingOverlay();
+        }
+    }
+
+    function launchOnboardingOverlay() {
+        document.getElementById('onboardingScreen').style.display = 'flex';
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+            document.getElementById('iosInstallGuide').style.display = 'block';
+            document.getElementById('androidInstallBtn').style.display = 'none';
+        } else {
+            setTimeout(() => { document.getElementById('androidInstallBtn').style.display = 'block'; }, 1200);
+        }
+    }
+
+    window.closeOnboardingAndContinue = function() {
+        localStorage.setItem("family_app_onboarded_2026_v3", "true");
+        document.getElementById('onboardingScreen').style.display = 'none';
+        if ('Notification' in window) {
+            Notification.requestPermission().then(p => {
+                if (p === 'granted' && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(reg => { saveDeviceFCMToken(reg); });
+                }
+            });
+        }
+        startMainAppSync();
+    };
+
     window.addEventListener("load", () => {
         getDoc(doc(db, "settings", "advertisement")).then(snap => {
             if (snap.exists() && snap.data().active && snap.data().image) {
@@ -322,39 +369,9 @@
             }
         });
 
-        // 🔒 فحص حالة التثبيت والدخول لمرة واحدة مع فصل وتفريع الأنظمة
-        const onboarded = localStorage.getItem("family_app_onboarded_2026_v3");
-        if (onboarded) { 
-            startMainAppSync(); 
-        } else {
-            document.getElementById('onboardingScreen').style.display = 'flex';
-            
-            // كشف هل المستخدم داخل من آيفون؟ لتوجيهه لدليل آبل تلقائياً
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            if (isIOS) {
-                document.getElementById('iosInstallGuide').style.display = 'block';
-                document.getElementById('androidInstallBtn').style.display = 'none';
-            } else {
-                // للأندرويد والأجهزة الأخرى، ننتظر قنص حدث التثبيت قبل كشف الزر، أو يظهر احتياطياً
-                setTimeout(() => { document.getElementById('androidInstallBtn').style.display = 'block'; }, 1500);
-            }
-        }
+        // تشغيل محرك الجدولة الزمنية المتساوية الفوري
+        evaluateOnboardingDisplaySchedule();
     });
-
-    window.closeOnboardingAndContinue = function() {
-        localStorage.setItem("family_app_onboarded_2026_v3", "true");
-        document.getElementById('onboardingScreen').style.display = 'none';
-        
-        // محاولة طلب صلاحية الإشعارات فور الدخول للموقع
-        if ('Notification' in window) {
-            Notification.requestPermission().then(permission => {
-                if (permission === 'granted' && 'serviceWorker' in navigator) {
-                    navigator.serviceWorker.ready.then(reg => { saveDeviceFCMToken(reg); });
-                }
-            });
-        }
-        startMainAppSync();
-    };
 
     function saveDeviceFCMToken(serviceWorkerRegistration) {
         if (!messaging) return;
@@ -467,7 +484,7 @@
             }
             cardHtml += `<div class="news-content">`;
             if (news.title) cardHtml += `<div class="news-title">${news.title}</div>`;
-            if (news.text) cardHtml += `<div class="news-text">${news.text}</div>`;
+            if (news.text) cardHtml += `<div class="news-text padding:0;">${news.text}</div>`;
             cardHtml += `<div class="news-date">📅 ${news.date}</div>`;
             cardHtml += `</div></div>`;
             container.innerHTML += cardHtml;
