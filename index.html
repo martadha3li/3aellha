@@ -39,47 +39,36 @@
         .header-bar h1 { margin: 0; font-size: 1.4rem; background: linear-gradient(135deg, var(--primary-light), var(--primary)); -webkit-background-clip: text; background-clip: text; color: transparent; }
         .admin-login-btn { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: #f8f9fa; border: none; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         
-        /* 📌 قسم التثبيت المعدل ليظهر العداد بجانب العنوان */
+        .category-trigger-btn { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: #fcfaff; border: 2px solid #f3effa; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 2px 6px rgba(118,75,162,0.05); transition: all 0.2s ease; }
+        .categories-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .categories-popup-card { background: rgba(255, 255, 255, 0.98); width: 100%; max-width: 340px; border-radius: 28px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: cardScaleIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid rgba(255,255,255,0.5); }
+        .popup-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #edf2f7; padding-bottom: 10px; }
+        .popup-card-header h3 { margin: 0; font-size: 1.1rem; color: var(--dark); display: flex; align-items: center; gap: 6px; }
+        .popup-close-btn { background: #f7fafc; border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--gray); font-weight: bold; }
+        .popup-categories-grid { display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
+        .popup-cat-item { background: #f8fafc; padding: 12px 16px; border-radius: 14px; font-size: 0.95rem; font-weight: 600; color: #4a5568; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border: 1px solid transparent; }
+        .popup-cat-item.active { background: #f3f0ff; color: var(--primary); border-color: rgba(118,75,162,0.2); }
+        .popup-cat-item.active::after { content: "🔹"; font-size: 11px; }
+
+        /* 📌 قسم التثبيت والعد التنازلي بجانب العنوان */
         .pinned-section { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
         .pinned-title-label { font-size: 0.85rem; font-weight: bold; color: var(--primary); margin-right: 6px; display: flex; align-items: center; gap: 4px; }
         .pinned-card { border-radius: 16px; padding: 14px 16px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.04); transition: all 0.3s ease; overflow: hidden; border-right: 5px solid transparent; position: relative; }
         .pinned-death { background: linear-gradient(135deg, #34495e, #2c3e50); color: #ecf0f1; border-right-color: #1a252f; }
         .pinned-wedding { background: linear-gradient(135deg, #fdfbf7, #f5ecd7); color: #786028; border-right-color: #d4af37; border: 1px solid rgba(212, 175, 55, 0.2); }
         .pinned-general { background: white; color: var(--dark); border-right-color: var(--primary); }
-        
-        /* محاذاة الهيدر لتوزيع العنوان والعداد بجانبه مباشرة */
         .pinned-header { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; }
         .pinned-headline { font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 4px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        
-        /* المظهر الجديد والمستقل للعداد بجانب العنوان والخبر مغلق */
-        .inline-counter-badge {
-            font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 20px;
-            white-space: nowrap; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center;
-        }
+        .inline-counter-badge { font-size: 0.8rem; font-weight: bold; padding: 4px 10px; border-radius: 20px; white-space: nowrap; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; }
         .pinned-death .inline-counter-badge { background: rgba(255, 255, 255, 0.15); color: #f1c40f; }
         .pinned-wedding .inline-counter-badge { background: rgba(212, 175, 55, 0.15); color: #8e6f27; }
         .pinned-general .inline-counter-badge { background: #f3f0ff; color: var(--primary); }
-        
-        /* 🚨 تأثير الوميض الحركي الذكي عندما يحل تاريخ (هذا اليوم) */
-        .inline-counter-badge.today-active {
-            background: #e74c3c !important; color: #ffffff !important;
-            animation: danger-blink 1s infinite alternate; box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
-        }
-        @keyframes danger-blink {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0.4; transform: scale(0.96); }
-        }
-
+        .inline-counter-badge.today-active { background: #e74c3c !important; color: #ffffff !important; animation: danger-blink 1s infinite alternate; box-shadow: 0 0 8px rgba(231, 76, 60, 0.5); }
+        @keyframes danger-blink { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0.4; transform: scale(0.96); } }
         .pinned-icon { font-size: 11px; color: var(--gray); margin-right: auto; padding-right: 4px; }
-        .pinned-death .pinned-icon { color: #bdc3c7; }
-        
         .pinned-body { max-height: 0; opacity: 0; transition: all 0.4s ease; padding-top: 0; }
         .pinned-card.expanded .pinned-body { max-height: 2000px; opacity: 1; padding-top: 14px; }
 
-        .categories-container { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px 0; margin-bottom: 12px; scrollbar-width: none; }
-        .categories-container::-webkit-scrollbar { display: none; }
-        .cat-badge { background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 2px solid transparent; transition: all 0.2s; }
-        .cat-badge.active { background: var(--primary); color: white; border-color: var(--primary); }
         .news-list { display: flex; flex-direction: column; gap: 16px; }
         .news-card { background: white; border-radius: 24px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; flex-direction: column; position: relative; }
         .carousel-container { width: 100%; aspect-ratio: 1 / 1; position: relative; overflow: hidden; background-color: #f8f9fa; }
@@ -94,6 +83,7 @@
         .news-title { font-size: 1.15rem; margin: 0 0 8px 0; color: inherit; font-weight: bold; }
         .news-text { font-size: 0.95rem; color: #555; margin: 0 0 12px 0; line-height: 1.6; }
         .news-date { font-size: 0.75rem; color: var(--gray); font-weight: 500; }
+        .no-data { text-align: center; padding: 30px; color: var(--gray); font-weight: bold; }
         
         .loader-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 99998; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s ease, visibility 0.3s; }
         .loader-content { text-align: center; }
@@ -102,16 +92,37 @@
         .loader-text { font-size: 0.9rem; color: var(--gray); font-weight: 500; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.06); opacity: 1; } 100% { transform: scale(1); opacity: 0.9; } }
 
-        .onboarding-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff; z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+        /* 🔒 شاشة التثبيت الترحيبية المطورة (Onboarding PWA Guide) */
+        .onboarding-screen {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #ffffff; z-index: 99999; display: flex;
+            align-items: center; justify-content: center; padding: 24px;
+        }
         .onboarding-card { width: 100%; max-width: 420px; text-align: center; background: #fafafa; padding: 24px; border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .onboarding-logo { width: 85px; height: 85px; object-fit: cover; border-radius: 20px; margin-bottom: 12px; }
         .onboarding-card h2 { margin: 0 0 10px 0; font-size: 1.4rem; color: var(--dark); }
-        .onboarding-card p { font-size: 0.95rem; color: #4a5568; line-height: 1.6; margin: 0 0 20px 0; }
-        .btn-activate-now { background: linear-gradient(135deg, var(--primary-light), var(--primary)); color: white; border: none; padding: 16px 24px; width: 100%; font-size: 16px; font-weight: bold; border-radius: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(118, 75, 162, 0.3); margin-bottom: 16px; display: block; }
-        .safety-note-box { border: 2px dashed var(--danger); background-color: #fff5f5; padding: 14px; border-radius: 16px; text-align: right; }
-        .safety-title { font-size: 0.9rem; font-weight: bold; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
-        .safety-desc { font-size: 0.8rem; color: #5c6b73; line-height: 1.5; margin: 0; }
-
+        .onboarding-card p { font-size: 0.92rem; color: #4a5568; line-height: 1.6; margin: 0 0 16px 0; }
+        
+        /* 🤖 أزرار التثبيت المخصصة للأندرويد والويندوز */
+        .btn-install-pwa {
+            background: linear-gradient(135deg, #27ae60, #2ecc71); color: white;
+            border: none; padding: 16px 24px; width: 100%; font-size: 16px; font-weight: bold;
+            border-radius: 16px; cursor: pointer; box-shadow: 0 4px 14px rgba(39, 174, 96, 0.3);
+            margin-bottom: 16px; display: none; /* تظهر للأندرويد فقط عبر الجافاسكريبت */
+        }
+        
+        /* 🍏 دليل إرشادات التثبيت المصور والمكتوب حصرياً للآيفون */
+        .ios-install-instructions {
+            background: #f7fafc; border: 1px solid #e2e8f0;
+            padding: 14px; border-radius: 18px; text-align: right;
+            margin-bottom: 16px; display: none; /* تظهر للآيفون فقط عبر الجافاسكريبت */
+        }
+        .ios-step { font-size: 0.88rem; color: #2d3748; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .ios-icon-badge { background: #edf2f7; padding: 2px 6px; border-radius: 6px; font-weight: bold; font-size: 12px; border: 1px solid #cbd5e1; }
+        
+        .safety-note-box { border: 2px dashed var(--danger); background-color: #fff5f5; padding: 12px; border-radius: 16px; text-align: right; }
+        .safety-title { font-size: 0.88rem; font-weight: bold; color: var(--danger); margin-bottom: 4px; display: flex; align-items: center; gap: 4px; }
+        .safety-desc { font-size: 0.78rem; color: #5c6b73; line-height: 1.5; margin: 0; }
         .fullscreen-ad-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.95); z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 16px; }
         .ad-image-container { position: relative; max-width: 450px; width: 100%; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         .ad-image-container img { width: 100%; height: auto; display: block; object-fit: contain; max-height: 85vh; }
@@ -127,15 +138,35 @@
     </div>
 </div>
 
+<div id="categoriesModal" class="categories-modal-overlay" onclick="window.closeCategoriesCard()">
+    <div class="categories-popup-card" onclick="event.stopPropagation()">
+        <div class="popup-card-header">
+            <h3>📁 فرز حسب التصنيف العائلي</h3>
+            <button class="popup-close-btn" onclick="window.closeCategoriesCard()">✕</button>
+        </div>
+        <div class="popup-categories-grid" id="popupCategoriesContainer"></div>
+    </div>
+</div>
+
 <div id="onboardingScreen" class="onboarding-screen" style="display: none;">
     <div class="onboarding-card">
         <img src="logo.png" class="onboarding-logo" alt="Logo" onerror="this.src='🏡'">
-        <h2>🏡 مرحباً بك في منصة العائلة</h2>
-        <p>لمتابعة وتلقي الأخبار، المناسبات، البوستات، والتعازي العائلية الهامة فور نشرها مباشرة على شاشة جوالك، يرجى الضغط على الزر أدناه لتفعيل جدار التنبيهات السحابي.</p>
-        <button class="btn-activate-now" onclick="clickToRequestPermission()">🔔 اضغط هنا لتفعيل إشعارات الجوال</button>
+        <h2>🏡 تثبيت تطبيق العائلة ومزامنة الإشعارات</h2>
+        <p>لتشغيل المنصة كتطبيق حقيقي على جوالك وتفعيل جدار الإشعارات الفورية لتصلك المناسبات والأخبار العائلية فوراً على شاشة القفل، يرجى تثبيت التطبيق الآن:</p>
+        
+        <button id="androidInstallBtn" class="btn-install-pwa" onclick="triggerAndroidPWAInstall()">📲 اضغط هنا لتثبيت التطبيق فوراً</button>
+        
+        <div id="iosInstallGuide" class="ios-install-instructions">
+            <div style="font-weight: bold; color: var(--primary); margin-bottom: 8px; font-size: 0.9rem;">🍏 خطوات التثبيت على الآيفون:</div>
+            <div class="ios-step">1️⃣ اضغط على زر <b>المشاركة</b> <span class="ios-icon-badge">Share 📤</span> الموجود في أسفل شاشة المتصفح.</div>
+            <div class="ios-step">2️⃣ مرر الخيارات للأسفل واختر <b>"إضافة إلى الشاشة الرئيسية"</b> <span class="ios-icon-badge">Add to Home Screen ➕</span>.</div>
+            <div class="ios-step">3️⃣ اضغط على كلمة <b>"إضافة" (Add)</b> في أعلى اليمين ليظهر التطبيق على سطح مكتبك فوراً.</div>
+            <button class="btn-activate-now" onclick="closeOnboardingAndContinue()" style="background:#718096; margin-top:10px; padding:10px; font-size:13px;">تخطى الدليل وافتح الموقع ➔</button>
+        </div>
+        
         <div class="safety-note-box">
             <div class="safety-title">🛡️ إشعار أمان وخصوصية مشفرة:</div>
-            <p class="safety-desc">هذا الإجراء آمن ومحمي بنسبة 100%؛ حيث يتم تشغيل وإدارة هذه العملية بالكامل من خلال خوادم سحابية رسمية مشفرة تابعة لشركة جوجل العالمية وهي <b>Google Firestore & FCM</b>.</p>
+            <p class="safety-desc">هذه العملية آمنة ومحمية بنسبة 100%؛ وتدار بالكامل عبر خوادم شركة جوجل العالمية المشفرة <b>Google Firestore & FCM</b> لضمان خصوصية بيانات العائلة.</p>
         </div>
     </div>
 </div>
@@ -149,7 +180,6 @@
 </div>
 
 <div class="main-container">
-    
     <div class="prayer-times-bar" id="prayerTimesBar">
         <div class="prayer-title">🕌 مواقيت الأذان:</div>
         <div class="prayer-flex">
@@ -162,15 +192,12 @@
     <div class="header-bar">
         <button class="admin-login-btn" onclick="goToAdminPanel()">🔐</button>
         <h1>🏡 منصة الأخبار العائلية</h1>
+        <button class="category-trigger-btn" onclick="window.openCategoriesCard()">📁</button>
     </div>
     
     <div class="pinned-section" id="pinnedContainer" style="display: none;">
         <div class="pinned-title-label">📌 إعلانات عائلية مثبتة هامة:</div>
         <div id="pinnedNewsItems"></div>
-    </div>
-    
-    <div class="categories-container" id="categoriesBar">
-        <div class="cat-badge active" onclick="filterNews('all')">الكل</div>
     </div>
     
     <div class="news-list" id="newsList"></div>
@@ -202,6 +229,27 @@
                 );
             } else { ShiahPrayerCalculator.calculate(24.7136, 46.6753, 3); }
         }
+    };
+
+    // 🤖 محرك رصد واقتناص حدث تثبيت الأندرويد البرمجي (PWA Install Prompt)
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault(); deferredPrompt = e;
+        // إذا كان الجهاز أندرويد وتم التقاط الحدث، نكشف زر التثبيت فوراً
+        const btn = document.getElementById('androidInstallBtn');
+        if (btn) btn.style.display = 'block';
+    });
+
+    window.triggerAndroidPWAInstall = function() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+                window.closeOnboardingAndContinue();
+            }
+            deferredPrompt = null;
+        });
     };
 </script>
 
@@ -274,22 +322,46 @@
             }
         });
 
-        const onboarded = localStorage.getItem("family_app_onboarded_2026_v2");
-        if (onboarded) { startMainAppSync(); } 
-        else { document.getElementById('onboardingScreen').style.display = 'flex'; }
+        // 🔒 فحص حالة التثبيت والدخول لمرة واحدة مع فصل وتفريع الأنظمة
+        const onboarded = localStorage.getItem("family_app_onboarded_2026_v3");
+        if (onboarded) { 
+            startMainAppSync(); 
+        } else {
+            document.getElementById('onboardingScreen').style.display = 'flex';
+            
+            // كشف هل المستخدم داخل من آيفون؟ لتوجيهه لدليل آبل تلقائياً
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            if (isIOS) {
+                document.getElementById('iosInstallGuide').style.display = 'block';
+                document.getElementById('androidInstallBtn').style.display = 'none';
+            } else {
+                // للأندرويد والأجهزة الأخرى، ننتظر قنص حدث التثبيت قبل كشف الزر، أو يظهر احتياطياً
+                setTimeout(() => { document.getElementById('androidInstallBtn').style.display = 'block'; }, 1500);
+            }
+        }
     });
 
-    window.clickToRequestPermission = function() {
-        localStorage.setItem("family_app_onboarded_2026_v2", "true");
+    window.closeOnboardingAndContinue = function() {
+        localStorage.setItem("family_app_onboarded_2026_v3", "true");
         document.getElementById('onboardingScreen').style.display = 'none';
-        if (!('Notification' in window)) { startMainAppSync(); return; }
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted' && 'serviceWorker' in navigator) {
-                navigator.serviceWorker.ready.then(reg => { saveDeviceFCMToken(reg); });
-            }
-            startMainAppSync();
-        }).catch(() => { startMainAppSync(); });
+        
+        // محاولة طلب صلاحية الإشعارات فور الدخول للموقع
+        if ('Notification' in window) {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted' && 'serviceWorker' in navigator) {
+                    navigator.serviceWorker.ready.then(reg => { saveDeviceFCMToken(reg); });
+                }
+            });
+        }
+        startMainAppSync();
     };
+
+    function saveDeviceFCMToken(serviceWorkerRegistration) {
+        if (!messaging) return;
+        getToken(messaging, { serviceWorkerRegistration, vapidKey: "BJJgegMbEW-l8VZDlsv56olTIiugii5aT4EZU5NVeHk-MegDt7j6NtHFh_y7TlAoJ2O4IpLG7fsf2yj-eLwP6mc" }).then(async (t) => {
+            if (t) await setDoc(doc(db, "fcm_tokens", t), { token: t, updatedAt: new Date() });
+        }).catch(() => {});
+    }
 
     function startMainAppSync() {
         runPercentageLoader(() => {
@@ -300,51 +372,49 @@
                     if (data.status !== 'hidden') tempNews.push({ id: doc.id, ...data });
                 });
                 allNews = tempNews.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-                renderNews(); loadCategories();
+                renderNews(); loadCategoriesLive();
             });
         });
     }
 
-    // ⏳ محرك حساب وتقسيم العداد التنازلي التنبيهي بجانب العنوان مباشرة
+    async function loadCategoriesLive() {
+        try {
+            const snap = await getDocs(collection(db, "categories"));
+            const popupContainer = document.getElementById('popupCategoriesContainer');
+            let popupHtml = `<div class="popup-cat-item ${selectedCategory === 'all' ? 'active' : ''}" onclick="window.filterFromPopup('all')">📁 عرض جميع الأخبار (الكل)</div>`;
+            snap.forEach(doc => {
+                const name = doc.data().name;
+                popupHtml += `<div class="popup-cat-item ${selectedCategory === name ? 'active' : ''}" onclick="window.filterFromPopup('${name}')">📄 ${name}</div>`;
+            });
+            popupContainer.innerHTML = popupHtml;
+        } catch (e) { console.error(e); }
+    }
+
+    window.openCategoriesCard = () => { document.getElementById('categoriesModal').style.display = 'flex'; };
+    window.closeCategoriesCard = () => { document.getElementById('categoriesModal').style.display = 'none'; };
+    window.filterFromPopup = (cat) => { selectedCategory = cat; renderNews(); loadCategoriesLive(); window.closeCategoriesCard(); };
+
     function startCountdownEngine(targetDateStr, badgeId) {
-        const badge = document.getElementById(badgeId);
-        if(!badge) return;
-
+        const badge = document.getElementById(badgeId); if(!badge) return;
         function updateTimer() {
-            const now = new Date().getTime();
-            const target = new Date(targetDateStr).getTime();
-            const diff = target - now;
-
-            if (diff <= 0) {
-                badge.innerText = "هذا اليوم";
-                badge.classList.add('today-active'); // تفعيل الوميض الأحمر التحذيري
-                return;
-            }
-
+            const now = new Date().getTime(); const target = new Date(targetDateStr).getTime(); const diff = target - now;
+            if (diff <= 0) { badge.innerText = "هذا اليوم"; badge.classList.add('today-active'); return; }
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            if (days >= 1) {
-                badge.innerText = `متبقي: ${days} يوم`;
-                badge.classList.remove('today-active');
-            } else {
+            if (days >= 1) { badge.innerText = `متبقي: ${days} يوم`; badge.classList.remove('today-active'); } 
+            else {
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                badge.innerText = `متبقي: ${hours}س`;
-                badge.classList.remove('today-active');
+                badge.innerText = `متبقي: ${hours}س`; badge.classList.remove('today-active');
             }
         }
-        updateTimer();
-        const interval = setInterval(updateTimer, 60000);
-        countdownIntervals.push(interval);
+        updateTimer(); const interval = setInterval(updateTimer, 60000); countdownIntervals.push(interval);
     }
 
     function renderNews() {
         countdownIntervals.forEach(clearInterval); countdownIntervals = [];
-        const container = document.getElementById('newsList');
-        const pinnedItemsContainer = document.getElementById('pinnedNewsItems');
-        const pinnedSection = document.getElementById('pinnedContainer');
+        const container = document.getElementById('newsList'); const pinnedItemsContainer = document.getElementById('pinnedNewsItems'); const pinnedSection = document.getElementById('pinnedContainer');
         container.innerHTML = ''; pinnedItemsContainer.innerHTML = '';
 
-        const pinnedNews = allNews.filter(n => n.isPinned === true).slice(0, 3);
-        const regularNews = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
+        const pinnedNews = allNews.filter(n => n.isPinned === true).slice(0, 3); const regularNews = selectedCategory === 'all' ? allNews : allNews.filter(n => n.category === selectedCategory);
 
         if (pinnedNews.length > 0) {
             pinnedSection.style.display = 'flex';
@@ -354,11 +424,8 @@
                 else if (news.pinnedType === 'wedding') { pClass = 'pinned-wedding'; pLabel = '✨ فرح'; }
                 let imgList = news.images || (news.image ? [news.image] : []);
 
-                // إعداد تاج العداد لعرضه فوراً بجانب العنوان والخبر مغلق
                 let inlineCountdownHtml = "";
-                if (news.hasCountdown && news.countdownDate) {
-                    inlineCountdownHtml = `<div class="inline-counter-badge" id="inline-timer-${pIdx}">حساب...</div>`;
-                }
+                if (news.hasCountdown && news.countdownDate) { inlineCountdownHtml = `<div class="inline-counter-badge" id="inline-timer-${pIdx}">حساب...</div>`; }
 
                 let pHtml = `
                     <div class="pinned-card ${pClass}" onclick="if(!event.target.closest('.carousel-container')) this.classList.toggle('expanded')">
@@ -369,33 +436,23 @@
                         </div>
                         <div class="pinned-body">
                 `;
-                
                 if (imgList.length > 0) {
                     pHtml += `<div class="carousel-container" id="p-carousel-${pIdx}">`;
                     if (imgList.length > 1) pHtml += `<div class="image-counter" id="p-counter-${pIdx}">1 / ${imgList.length}</div>`;
                     pHtml += `<div class="carousel-track" id="p-track-${pIdx}">`;
                     imgList.forEach(url => { pHtml += `<div class="carousel-slide"><img src="${url}" class="news-img"></div>`; });
                     pHtml += `</div>`;
-                    if (imgList.length > 1) {
-                        pHtml += `<div class="carousel-dots">`;
-                        imgList.forEach((_, i) => { pHtml += `<div class="dot ${i === 0 ? 'active' : ''}" id="p-dot-${pIdx}-${i}"></div>`; });
-                        pHtml += `</div>`;
-                    }
+                    if (imgList.length > 1) { pHtml += `<div class="carousel-dots">`; imgList.forEach((_, i) => { pHtml += `<div class="dot ${i === 0 ? 'active' : ''}" id="p-dot-${pIdx}-${i}"></div>`; }); pHtml += `</div>`; }
                     pHtml += `</div>`;
                 }
-                
                 pHtml += `<div style="padding: 10px 0 0 0;">${news.text ? `<div class="news-text">${news.text}</div>` : ''}<div class="news-date">📅 ${news.date}</div></div></div></div>`;
                 pinnedItemsContainer.innerHTML += pHtml;
-                
-                if (news.hasCountdown && news.countdownDate) {
-                    startCountdownEngine(news.countdownDate, `inline-timer-${pIdx}`);
-                }
-
+                if (news.hasCountdown && news.countdownDate) { startCountdownEngine(news.countdownDate, `inline-timer-${pIdx}`); }
                 if (imgList.length > 1) { setTimeout(() => { setupCarouselTouch(`p-carousel-${pIdx}`, `p-track-${pIdx}`, 'p-', pIdx, imgList.length); }, 100); }
             });
         } else { pinnedSection.style.display = 'none'; }
 
-        if (regularNews.length === 0) { container.innerHTML = '<div class="no-data">لا توجد أخبار معروضة حالياً.</div>'; return; }
+        if (regularNews.length === 0) { container.innerHTML = '<div class="no-data">لا توجد أخبار معروضة تحت هذا التصنيف حالياً.</div>'; return; }
         regularNews.forEach((news, newsIndex) => {
             let imgList = news.images || (news.image ? [news.image] : []);
             let cardHtml = `<div class="news-card">`;
@@ -405,11 +462,7 @@
                 cardHtml += `<div class="carousel-track" id="track-${newsIndex}">`;
                 imgList.forEach(imgUrl => { cardHtml += `<div class="carousel-slide"><img src="${imgUrl}" class="news-img" loading="lazy"></div>`; });
                 cardHtml += `</div>`;
-                if (imgList.length > 1) {
-                    cardHtml += `<div class="carousel-dots">`;
-                    imgList.forEach((_, i) => { cardHtml += `<div class="dot ${i === 0 ? 'active' : ''}" id="dot-${newsIndex}-${i}"></div>`; });
-                    cardHtml += `</div>`;
-                }
+                if (imgList.length > 1) { cardHtml += `<div class="carousel-dots">`; imgList.forEach((_, i) => { cardHtml += `<div class="dot ${i === 0 ? 'active' : ''}" id="dot-${newsIndex}-${i}"></div>`; }); cardHtml += `</div>`; }
                 cardHtml += `</div>`;
             }
             cardHtml += `<div class="news-content">`;
@@ -423,36 +476,23 @@
     }
 
     function setupCarouselTouch(containerId, trackId, prefix, newsIndex, totalImages) {
-        const container = document.getElementById(containerId); const track = document.getElementById(trackId);
-        if (!container || !track) return;
+        const container = document.getElementById(containerId); const track = document.getElementById(trackId); if (!container || !track) return;
         let startX = 0, currentX = 0, currentIndex = 0;
         container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
         container.addEventListener('touchmove', e => { currentX = e.touches[0].clientX; }, { passive: true });
         container.addEventListener('touchend', () => {
             const diffX = startX - currentX;
-            if (diffX > 40 && currentIndex < totalImages - 1) currentIndex++;
-            else if (diffX < -40 && currentIndex > 0) currentIndex--;
+            if (diffX > 40 && currentIndex < totalImages - 1) currentIndex++; else if (diffX < -40 && currentIndex > 0) currentIndex--;
             track.style.transform = `translateX(${currentIndex * 100}%)`;
-            const counter = document.getElementById(`${prefix}counter-${newsIndex}`);
-            if (counter) counter.innerText = `${currentIndex + 1} / ${totalImages}`;
-            for (let i = 0; i < totalImages; i++) {
-                const dot = document.getElementById(`${prefix}dot-${newsIndex}-${i}`);
-                if (dot) { if (i === currentIndex) dot.classList.add('active'); else dot.classList.remove('active'); }
-            }
+            const counter = document.getElementById(`${prefix}counter-${newsIndex}`); if (counter) counter.innerText = `${currentIndex + 1} / ${totalImages}`;
+            for (let i = 0; i < totalImages; i++) { const dot = document.getElementById(`${prefix}dot-${newsIndex}-${i}`); if (dot) { if (i === currentIndex) dot.classList.add('active'); else dot.classList.remove('active'); } }
         });
     }
     window.goToAdminPanel = async () => {
-        const pass = prompt("الرجاء إدخال كلمة مرور لوحة التحكم:");
-        if (!pass) return;
-        let correctPassword = "123";
-        try {
-            const passSnap = await getDoc(doc(db, "settings", "security"));
-            if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword;
-        } catch(e) {}
-        if (pass === correctPassword) window.location.href = "admin.html";
-        else alert("❌ كلمة المرور خاطئة!");
+        const pass = prompt("الرجاء إدخال كلمة مرور لوحة التحكم:"); if (!pass) return; let correctPassword = "123";
+        try { const passSnap = await getDoc(doc(db, "settings", "security")); if (passSnap.exists() && passSnap.data().adminPassword) correctPassword = passSnap.data().adminPassword; } catch(e) {}
+        if (pass === correctPassword) window.location.href = "admin.html"; else alert("❌ كلمة المرور خاطئة!");
     };
-    window.filterNews = (cat) => { selectedCategory = cat; renderNews(); };
 </script>
 </body>
 </html>
